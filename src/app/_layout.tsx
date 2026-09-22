@@ -49,6 +49,10 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
           <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
           <Stack.Screen
+            name="login"
+            options={{ presentation: "transparentModal", animation: "fade" }}
+          />
+          <Stack.Screen
             name="product/[id]"
             options={{ presentation: "modal", animation: "slide_from_bottom" }}
           />

@@ -6,15 +6,9 @@ import { StatusBar } from "expo-status-bar";
 import { Button } from "../components/ui";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { ink } from "../theme/colors";
-import { useAuthStore } from "../store/authStore";
 
 export default function WelcomeScreen() {
-  const completeOnboarding = useAuthStore((s) => s.completeOnboarding);
-
-  const openLogin = () => {
-    completeOnboarding();
-    router.push("/login");
-  };
+  const openLogin = () => router.push("/login");
 
   return (
     <View style={{ flex: 1, backgroundColor: ink[200] }}>

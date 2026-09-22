@@ -1,121 +1,202 @@
 import React, { useState } from "react";
-import { View, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { router } from "expo-router";
-import { X, Phone } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import Animated, { SlideInDown } from "react-native-reanimated";
+import { Check, X } from "lucide-react-native";
+import { AppText, Button } from "../components/ui";
 import { PressableScale } from "../components/ui/PressableScale";
-import { AppText, Button, Input, Screen } from "../components/ui";
 import { brand, ink } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { useAuthStore } from "../store/authStore";
 
-export default function LoginScreen() {
+export default function LoginSheet() {
   const [phone, setPhone] = useState("");
   const [agree, setAgree] = useState(true);
   const setPhoneStore = useAuthStore((s) => s.setPhone);
 
   const canSubmit = phone.length >= 8 && agree;
 
+  const submit = () => {
+    setPhoneStore(phone);
+    router.push("/otp");
+  };
+
   return (
-    <Screen>
+    <View style={{ flex: 1 }}>
+      <StatusBar style="light" />
+
+      <Pressable style={StyleSheet.absoluteFill} onPress={() => router.back()}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(4,16,47,0.55)" }]} />
+      </Pressable>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
+        style={{ flex: 1, justifyContent: "flex-end" }}
+        pointerEvents="box-none"
       >
-        <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 24, gap: 28 }}>
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 20,
-              backgroundColor: brand[600],
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <AppText variant="h2" color="#FFFFFF">
-              GWG
-            </AppText>
-          </View>
-
-          <View style={{ gap: 8 }}>
-            <AppText variant="h1">Masuk ke Akun{"\n"}Good Will Grow</AppText>
-            <AppText variant="body" color={ink[500]}>
-              Silakan masuk dengan nomor WhatsApp yang terdaftar. Pastikan nomor kamu aktif.
-            </AppText>
-          </View>
-
-          <View style={{ flexDirection: "row", gap: 10 }}>
+        <Animated.View
+          entering={SlideInDown.duration(320)}
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderTopLeftRadius: 26,
+            borderTopRightRadius: 26,
+          }}
+        >
+          <SafeAreaView edges={["bottom"]}>
             <View
               style={{
-                width: 68,
-                height: 54,
-                borderRadius: 16,
-                backgroundColor: ink[50],
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1.5,
-                borderColor: ink[200],
+                width: "100%",
+                maxWidth: 520,
+                alignSelf: "center",
+                paddingHorizontal: 30,
+                paddingTop: 34,
+                paddingBottom: 14,
               }}
             >
-              <AppText variant="titleLg">+62</AppText>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Input
-                placeholder="82354860207"
-                keyboardType="number-pad"
-                value={phone}
-                onChangeText={(t) => setPhone(t.replace(/[^0-9]/g, ""))}
-                left={<Phone size={18} color={ink[400]} />}
-                right={
-                  phone.length > 0 ? (
-                    <PressableScale onPress={() => setPhone("")}>
-                      <X size={18} color={ink[400]} />
+              <AppText variant="h2" color={brand[700]}>
+                Masuk ke Akun Good Will Grow
+              </AppText>
+
+              <AppText
+                variant="body"
+                color={ink[600]}
+                style={{ fontSize: 15.5, lineHeight: 23, marginTop: 14 }}
+              >
+                Silakan masuk dengan nomor WhatsApp yang terdaftar. Pastikan nomor kamu aktif.
+              </AppText>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  height: 64,
+                  marginTop: 26,
+                  borderRadius: 14,
+                  borderWidth: 1.5,
+                  borderColor: brand[600],
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    width: 68,
+                    backgroundColor: brand[50],
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRightWidth: 1.5,
+                    borderRightColor: brand[600],
+                  }}
+                >
+                  <AppText variant="titleLg" color={brand[700]}>
+                    +62
+                  </AppText>
+                </View>
+
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <TextInput
+                    value={phone}
+                    onChangeText={(t) => setPhone(t.replace(/[^0-9]/g, ""))}
+                    keyboardType="number-pad"
+                    placeholder="82354860207"
+                    placeholderTextColor={ink[300]}
+                    style={[
+                      {
+                        flex: 1,
+                        // Without this the web <input> refuses to shrink below
+                        // its intrinsic width and pushes the clear button out.
+                        minWidth: 0,
+                        padding: 0,
+                        fontFamily: fontFamilies.medium,
+                        fontSize: 19,
+                        color: ink[900],
+                      },
+                      // react-native-web renders a real <input>, which draws a
+                      // focus ring the native platforms do not have.
+                      Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
+                    ]}
+                  />
+                  {phone.length > 0 ? (
+                    <PressableScale onPress={() => setPhone("")} hitSlop={10}>
+                      <X size={20} color={ink[400]} />
                     </PressableScale>
-                  ) : undefined
-                }
+                  ) : null}
+                </View>
+              </View>
+
+              <PressableScale
+                onPress={() => setAgree((v) => !v)}
+                style={{ flexDirection: "row", gap: 12, marginTop: 20 }}
+              >
+                <View
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 6,
+                    marginTop: 1,
+                    backgroundColor: agree ? brand[900] : "#FFFFFF",
+                    borderWidth: 1.5,
+                    borderColor: agree ? brand[900] : ink[300],
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {agree ? <Check size={14} color="#FFFFFF" strokeWidth={3} /> : null}
+                </View>
+                <AppText variant="caption" color={ink[600]} style={{ flex: 1, lineHeight: 18 }}>
+                  Dengan melanjutkan ke aplikasi Good Will Grow, kamu menyetujui segala{" "}
+                  <AppText
+                    variant="caption"
+                    color={ink[900]}
+                    style={{
+                      fontFamily: fontFamilies.semibold,
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Syarat dan Ketentuan
+                  </AppText>{" "}
+                  dan{" "}
+                  <AppText
+                    variant="caption"
+                    color={ink[900]}
+                    style={{
+                      fontFamily: fontFamilies.semibold,
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Kebijakan Privasi
+                  </AppText>{" "}
+                  Aplikasi Good Will Grow.
+                </AppText>
+              </PressableScale>
+
+              <Button
+                label="Masuk"
+                size="lg"
+                fullWidth
+                disabled={!canSubmit}
+                onPress={submit}
+                style={{ height: 58, marginTop: 28, backgroundColor: canSubmit ? brand[900] : undefined }}
               />
             </View>
-          </View>
-
-          <PressableScale
-            onPress={() => setAgree((a) => !a)}
-            style={{ flexDirection: "row", gap: 10, alignItems: "flex-start" }}
-          >
-            <View
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 7,
-                marginTop: 2,
-                backgroundColor: agree ? brand[600] : "#FFFFFF",
-                borderWidth: 1.5,
-                borderColor: agree ? brand[600] : ink[300],
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {agree ? <AppText variant="micro" color="#FFFFFF">✓</AppText> : null}
-            </View>
-            <AppText variant="caption" color={ink[500]} style={{ flex: 1 }}>
-              Dengan melanjutkan ke aplikasi Good Will Grow, kamu menyetujui Syarat dan Ketentuan
-              dan Kebijakan Privasi kami.
-            </AppText>
-          </PressableScale>
-
-          <View style={{ flex: 1 }} />
-
-          <Button
-            label="Kirim Kode OTP"
-            fullWidth
-            size="lg"
-            disabled={!canSubmit}
-            onPress={() => {
-              setPhoneStore(phone);
-              router.push("/otp");
-            }}
-            style={{ marginBottom: 24 }}
-          />
-        </View>
+          </SafeAreaView>
+        </Animated.View>
       </KeyboardAvoidingView>
-    </Screen>
+    </View>
   );
 }
