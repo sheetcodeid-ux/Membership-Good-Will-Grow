@@ -1,6 +1,6 @@
 import React from "react";
 import { View, useWindowDimensions } from "react-native";
-import { Delete } from "lucide-react-native";
+import Svg, { Path } from "react-native-svg";
 import { PressableScale } from "./ui/PressableScale";
 import { AppText } from "./ui/AppText";
 import { brand, ink, danger } from "../theme/colors";
@@ -45,6 +45,24 @@ export function PinDots({
 
 const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
 
+/** Flat navy backspace key with a thin white cross — no outline. */
+function BackspaceIcon({ size = 46 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"
+        fill={brand[900]}
+      />
+      <Path
+        d="M18 9 12 15M12 9l6 6"
+        stroke="#FFFFFF"
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 export function PinKeypad({ length = 6, value, onChange }: PinKeypadProps) {
   const { width } = useWindowDimensions();
   const key = Math.min(MAX_KEY, (Math.min(width, 520) * GRID_RATIO - GAP * 2) / 3);
@@ -80,8 +98,7 @@ export function PinKeypad({ length = 6, value, onChange }: PinKeypadProps) {
               onPress={() => press(k)}
               style={{ width: key, height: key, alignItems: "center", justifyContent: "center" }}
             >
-              {/* Filled backspace key: navy body, white outline and cross. */}
-              <Delete size={46} color="#FFFFFF" fill={brand[900]} strokeWidth={2} />
+              <BackspaceIcon size={Math.round(key * 0.52)} />
             </PressableScale>
           );
         }
