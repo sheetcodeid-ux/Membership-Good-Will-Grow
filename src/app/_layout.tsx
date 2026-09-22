@@ -1,14 +1,16 @@
 import "../global.css";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { PromoPopup } from "../components/PromoPopup";
+import { OutletServiceSheet } from "../components/OutletServiceSheet";
 import { useUiStore } from "../store/uiStore";
+import { useOrderStore } from "../store/orderStore";
 import {
   useFonts,
   Urbanist_400Regular,
@@ -24,6 +26,8 @@ SystemUI.setBackgroundColorAsync("#FFFFFF").catch(() => {});
 export default function RootLayout() {
   const promoOpen = useUiStore((s) => s.promoOpen);
   const closePromo = useUiStore((s) => s.closePromo);
+  const pathname = usePathname();
+  const outletConfirmed = useOrderStore((s) => s.outletConfirmed);
   const [fontsLoaded] = useFonts({
     Urbanist_400Regular,
     Urbanist_500Medium,
@@ -69,7 +73,8 @@ export default function RootLayout() {
             options={{ presentation: "transparentModal", animation: "fade" }}
           />
         </Stack>
-        {/* Above the navigator so the poster dims the tab bar too. */}
+        {/* Both sheets live above the navigator so they dim the tab bar too. */}
+        {pathname === "/order" && !outletConfirmed ? <OutletServiceSheet /> : null}
         {promoOpen ? <PromoPopup onClose={closePromo} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>

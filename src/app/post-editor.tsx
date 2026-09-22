@@ -31,7 +31,7 @@ import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
 import { brand, ink, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
-import { outlets } from "../data/mock";
+import { outlets, outletFullName } from "../data/mock";
 import { useFeedStore } from "../store/feedStore";
 import type { PostVisibility } from "../data/types";
 
@@ -78,7 +78,7 @@ export default function PostEditorScreen() {
     if (!canPost) return;
     addPost(
       caption.trim(),
-      isCheckIn ? selectedOutlet.name : undefined,
+      isCheckIn ? outletFullName(selectedOutlet) : undefined,
       isCheckIn ? selectedOutlet.brandId : undefined
     );
     router.dismissAll();
@@ -156,7 +156,7 @@ export default function PostEditorScreen() {
                   >
                     <View style={{ flex: 1 }}>
                       <AppText variant="bodySemibold" numberOfLines={1}>
-                        {outlet.name}
+                        {outletFullName(outlet)}
                       </AppText>
                       <AppText variant="caption" color={ink[400]}>
                         {outlet.city} · ~{outlet.distanceKm} km

@@ -6,7 +6,7 @@ import { Screen, ScreenHeader, AppText, Card, Button, Input, Divider } from "../
 import { PressableScale } from "../components/ui/PressableScale";
 import { brand, ink, warning } from "../theme/colors";
 import { useCartStore } from "../store/cartStore";
-import { getOutlet } from "../data/mock";
+import { getOutlet, outletFullName } from "../data/mock";
 import { formatRupiah } from "../utils/format";
 
 export default function CheckoutScreen() {
@@ -21,7 +21,7 @@ export default function CheckoutScreen() {
       <View style={{ paddingHorizontal: 20, gap: 20 }}>
         <Card style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <View>
-            <AppText variant="titleLg">{outlet?.name ?? "-"}</AppText>
+            <AppText variant="titleLg">{outlet ? outletFullName(outlet) : "-"}</AppText>
             <AppText variant="caption" color={ink[500]}>{outlet?.city}</AppText>
           </View>
           <View style={{ backgroundColor: brand[600], paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 }}>

@@ -8,7 +8,7 @@ import { MediaTile } from "../components/ui/MediaTile";
 import { brand, ink } from "../theme/colors";
 import { formatRupiah } from "../utils/format";
 import { useCartStore } from "../store/cartStore";
-import { getOutlet, getBrand, toppingPool } from "../data/mock";
+import { getOutlet, getBrand, toppingPool, outletFullName } from "../data/mock";
 
 export default function CartScreen() {
   const cart = useCartStore();
@@ -43,7 +43,7 @@ export default function CartScreen() {
             {outlet ? (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <MediaTile colors={brandInfo?.gradient ?? [brand[600], brand[400]]} icon="coffee" size={36} radius={11} iconSize={16} />
-                <AppText variant="titleLg">{outlet.name}</AppText>
+                <AppText variant="titleLg">{outletFullName(outlet)}</AppText>
               </View>
             ) : null}
             <Divider />

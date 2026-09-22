@@ -6,7 +6,7 @@ import { Check } from "lucide-react-native";
 import { AppText, Button, Screen } from "../components/ui";
 import { success, ink, brand } from "../theme/colors";
 import { useCartStore } from "../store/cartStore";
-import { getOutlet } from "../data/mock";
+import { getOutlet, outletFullName } from "../data/mock";
 import { formatRupiah } from "../utils/format";
 import { computeBreakdown } from "../utils/pricing";
 import { useMemberStore } from "../store/memberStore";
@@ -62,7 +62,7 @@ export default function OrderSuccessScreen() {
         <View style={{ gap: 8 }}>
           <AppText variant="h1" center>Pembayaran Berhasil</AppText>
           <AppText variant="body" color={ink[500]} center>
-            Pesananmu di {outlet?.name ?? "outlet"} sedang diproses. Kamu akan mendapat notifikasi saat
+            Pesananmu di {outlet ? outletFullName(outlet) : "outlet"} sedang diproses. Kamu akan mendapat notifikasi saat
             pesanan siap.
           </AppText>
         </View>
