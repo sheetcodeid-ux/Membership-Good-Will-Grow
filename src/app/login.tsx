@@ -27,7 +27,7 @@ export default function LoginSheet() {
 
   const submit = () => {
     setPhoneStore(phone);
-    router.push("/otp");
+    router.push("/unlock");
   };
 
   return (

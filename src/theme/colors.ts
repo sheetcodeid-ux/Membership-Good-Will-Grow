@@ -39,6 +39,9 @@ export const success = { 50: "#E8F8EE", 500: "#16A34A", 600: "#0F8A3C" } as cons
 export const warning = { 50: "#FFF4E0", 500: "#F59E0B", 600: "#D6860A" } as const;
 export const danger = { 50: "#FDE8ED", 500: "#E11D48", 600: "#C21A40" } as const;
 
+/** App background: a whisper of the brand navy over white. */
+export const surface = "#F3F4F9";
+
 export const colors = {
   brand,
   ink,
@@ -46,6 +49,7 @@ export const colors = {
   success,
   warning,
   danger,
+  surface,
   white: "#FFFFFF",
   black: "#000000",
 };

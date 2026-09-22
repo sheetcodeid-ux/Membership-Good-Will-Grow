@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
-import { AppText, Screen } from "../components/ui";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { AppText } from "../components/ui";
+import { AppHeader } from "../components/ui/AppHeader";
+import { PressableScale } from "../components/ui/PressableScale";
 import { PinDots, PinKeypad } from "../components/PinPad";
-import { brand, ink } from "../theme/colors";
+import { ink, surface } from "../theme/colors";
 import { useAuthStore } from "../store/authStore";
 
-export default function UnlockScreen() {
+export default function AccessPinScreen() {
   const [pin, setPin] = useState("");
   const unlock = useAuthStore((s) => s.unlock);
-  const name = useAuthStore((s) => s.name);
 
   const onChange = (next: string) => {
     setPin(next);
@@ -17,52 +20,51 @@ export default function UnlockScreen() {
       setTimeout(() => {
         unlock();
         router.replace("/(tabs)");
-      }, 200);
+      }, 180);
     }
   };
 
   return (
-    <Screen>
-      <View style={{ flex: 1, paddingTop: 56, gap: 36 }}>
-        <View style={{ alignItems: "center", gap: 12 }}>
-          <View
+    <View style={{ flex: 1, backgroundColor: surface }}>
+      <StatusBar style="dark" />
+      <AppHeader title="Akses Pin" />
+
+      <SafeAreaView edges={["bottom"]} style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingHorizontal: 24 }}>
+          <AppText
+            center
+            color={ink[950]}
             style={{
-              width: 76,
-              height: 76,
-              borderRadius: 24,
-              backgroundColor: brand[600],
-              alignItems: "center",
-              justifyContent: "center",
+              marginTop: 46,
+              fontSize: 25,
+              lineHeight: 32,
+              fontFamily: "Urbanist_700Bold",
             }}
           >
-            <AppText variant="h2" color="#FFFFFF">
-              {name.charAt(0)}
-            </AppText>
-          </View>
-          <AppText variant="h2">Halo, {name.split(" ")[0]}</AppText>
-          <AppText variant="body" color={ink[500]}>
-            Masukkan PIN untuk melanjutkan
+            Masukkan PIN Good Will Grow
           </AppText>
+
+          <View style={{ marginTop: 64 }}>
+            <PinDots value={pin} />
+          </View>
+
+          <View style={{ marginTop: 58 }}>
+            <PinKeypad value={pin} onChange={onChange} />
+          </View>
+
+          <PressableScale
+            onPress={() => router.replace("/welcome")}
+            style={{ alignSelf: "center", marginTop: 34 }}
+            hitSlop={10}
+          >
+            <AppText variant="bodyMedium" color={ink[400]}>
+              Lupa PIN Akses?
+            </AppText>
+          </PressableScale>
+
+          <View style={{ flex: 1 }} />
         </View>
-
-        <PinDots value={pin} />
-
-        <View style={{ flex: 1 }} />
-
-        <View style={{ paddingBottom: 16 }}>
-          <PinKeypad value={pin} onChange={onChange} />
-        </View>
-
-        <AppText
-          variant="bodySemibold"
-          color={brand[600]}
-          center
-          onPress={() => router.replace("/login")}
-          style={{ paddingBottom: 24 }}
-        >
-          Masuk dengan nomor lain
-        </AppText>
-      </View>
-    </Screen>
+      </SafeAreaView>
+    </View>
   );
 }
