@@ -23,9 +23,11 @@ const SIDE_CARD_W = 67;
 const SIDE_CARD_H = 53;
 const SIDE_GAP = 10;
 const SIDE_PAD_TOP = 14;
-/** Left edge of the product column; the indicator bar sits in between. */
+/** Left edge of the product column; the rail sits in between. */
 const CONTENT_X = 107;
-const INDICATOR_X = 94;
+/** The reference draws a full-height hairline with a darker segment parked
+ *  beside the active card, so both live at the same x. */
+const RAIL_X = 95;
 
 export default function OrderScreen() {
   const insets = useSafeAreaInsets();
@@ -164,7 +166,7 @@ export default function OrderScreen() {
             paddingTop: SIDE_PAD_TOP,
             paddingLeft: GUTTER,
             gap: SIDE_GAP,
-            paddingBottom: insets.bottom + 110,
+            paddingBottom: insets.bottom + 70,
           }}
           style={{ width: GUTTER + SIDE_CARD_W, flexGrow: 0 }}
         >
@@ -203,14 +205,25 @@ export default function OrderScreen() {
           })}
         </ScrollView>
 
-        {/* Active-category indicator, parked outside the scroller so it is not
-            clipped while still following the selected card. */}
-        {!searching && indicatorTop > -SIDE_CARD_H ? (
+        {/* The rail: a hairline the full height of the column, with a darker
+            segment that tracks the active card as the sidebar scrolls. */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            left: RAIL_X,
+            top: 0,
+            bottom: 0,
+            width: 1.5,
+            backgroundColor: brand[100],
+          }}
+        />
+        {!searching ? (
           <View
             pointerEvents="none"
             style={{
               position: "absolute",
-              left: INDICATOR_X,
+              left: RAIL_X - 0.5,
               top: indicatorTop,
               width: 2.5,
               height: SIDE_CARD_H,
@@ -227,7 +240,7 @@ export default function OrderScreen() {
             paddingLeft: CONTENT_X - (GUTTER + SIDE_CARD_W),
             paddingRight: 11,
             paddingTop: SIDE_PAD_TOP,
-            paddingBottom: insets.bottom + 110,
+            paddingBottom: insets.bottom + 70,
             gap: 10,
           }}
           style={{ flex: 1 }}
@@ -351,7 +364,7 @@ export default function OrderScreen() {
       </View>
 
       {couponVisible ? (
-        <View style={{ position: "absolute", right: 11, bottom: insets.bottom + 78 }}>
+        <View style={{ position: "absolute", right: 11, bottom: insets.bottom + 70 }}>
           <PressableScale onPress={() => router.push("/promo")} scaleTo={0.96}>
             <ImagePlaceholder
               label="Sticker Kupon"

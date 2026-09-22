@@ -7,6 +7,7 @@ import {
   CreditCard,
   Hash,
   ReceiptText,
+  Search,
   ShoppingBag,
   Store,
 } from "lucide-react-native";
@@ -297,7 +298,7 @@ export default function OrderHistoryScreen() {
             {statusOrder.map((key) => (
               <OptionRow
                 key={key}
-                icon={<StatusIcon status={key} size={22} />}
+                icon={<StatusIcon status={key} size={21} color={filters.status === key ? brand[700] : ink[600]} />}
                 title={statusMeta[key].label}
                 description={statusMeta[key].description}
                 selected={filters.status === key}
@@ -325,7 +326,7 @@ export default function OrderHistoryScreen() {
                 height: 50,
               }}
             >
-              <Store size={20} color={ink[400]} />
+              <Search size={18} color={ink[400]} />
               <TextInput
                 value={outletQuery}
                 onChangeText={setOutletQuery}

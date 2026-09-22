@@ -1,14 +1,14 @@
 import React from "react";
 import Svg, { Path, Rect } from "react-native-svg";
 import {
-  CircleCheck,
-  CircleEllipsis,
-  CirclePause,
-  CircleX,
+  Check,
+  Hourglass,
   Infinity as InfinityIcon,
   Monitor,
+  Pause,
   QrCode,
   Smartphone,
+  X,
   type LucideIcon,
 } from "lucide-react-native";
 import { danger, ink, success, warning } from "../theme/colors";
@@ -29,8 +29,9 @@ export function PosIcon({ size = 24, color = ink[600] }: { size?: number; color?
 }
 
 /**
- * Status glyphs are outline icons on the same 2pt stroke grid as the channel
- * icons, so both picker sheets read as one icon set; only the colour changes.
+ * Status glyphs are bare outline marks — no disc, no colour of their own — so
+ * they sit on the same 2pt stroke grid as the channel icons and read as one
+ * icon set. `tint` stays for the coloured status badges on the order cards.
  */
 export const statusMeta: Record<
   OrderStatus,
@@ -40,31 +41,39 @@ export const statusMeta: Record<
     label: "Dibayar",
     description: "Pesanan yang sudah dibayar",
     tint: success[500],
-    icon: CircleCheck,
+    icon: Check,
   },
   "belum-bayar": {
     label: "Belum Bayar",
     description: "Pesanan yang belum dibayar",
     tint: warning[500],
-    icon: CircleEllipsis,
+    icon: Hourglass,
   },
   ditahan: {
     label: "Ditahan",
     description: "Pesanan yang ditahan",
     tint: HOLD,
-    icon: CirclePause,
+    icon: Pause,
   },
   dibatalkan: {
     label: "Dibatalkan",
     description: "Pesanan yang dibatalkan",
     tint: danger[500],
-    icon: CircleX,
+    icon: X,
   },
 };
 
-export function StatusIcon({ status, size = 22 }: { status: OrderStatus; size?: number }) {
-  const { icon: Icon, tint } = statusMeta[status];
-  return <Icon size={size} color={tint} strokeWidth={2} />;
+export function StatusIcon({
+  status,
+  size = 22,
+  color = ink[600],
+}: {
+  status: OrderStatus;
+  size?: number;
+  color?: string;
+}) {
+  const { icon: Icon } = statusMeta[status];
+  return <Icon size={size} color={color} strokeWidth={2} />;
 }
 
 export const channelMeta: Record<

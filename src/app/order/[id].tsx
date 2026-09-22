@@ -16,6 +16,9 @@ import { formatRupiah } from "../../utils/format";
 import { getBrand, getOrder } from "../../data/mock";
 import type { ServiceType } from "../../data/types";
 
+/** Width reserved for the copy button column on every info row. */
+const COPY_COL = 28;
+
 const serviceLabels: Record<ServiceType, string> = {
   dine_in: "Dine In",
   takeaway: "Take Away",
@@ -37,7 +40,8 @@ function Card({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Label / value pair; long values wrap under the colon rather than clipping. */
+/** Label / value pair. The copy slot is always reserved at the right edge so
+ *  every copy button lines up in one column, whatever the value's length. */
 function InfoRow({
   label,
   value,
@@ -50,7 +54,7 @@ function InfoRow({
   return (
     <View style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 5 }}>
       {/* Fixed, non-shrinking label column so every colon lines up. */}
-      <AppText variant="body" color={ink[600]} style={{ width: 125, flexShrink: 0 }}>
+      <AppText variant="body" color={ink[600]} style={{ width: 128, flexShrink: 0 }}>
         {label}
       </AppText>
       <AppText variant="body" color={ink[600]} style={{ flexShrink: 0 }}>
@@ -59,7 +63,9 @@ function InfoRow({
       <AppText variant="bodySemibold" color={ink[900]} style={{ flex: 1 }}>
         {value}
       </AppText>
-      {onCopy ? <CopyButton onPress={onCopy} /> : null}
+      <View style={{ width: COPY_COL, alignItems: "flex-end" }}>
+        {onCopy ? <CopyButton onPress={onCopy} /> : null}
+      </View>
     </View>
   );
 }
@@ -75,10 +81,9 @@ function CopyButton({ onPress }: { onPress: () => void }) {
         setTimeout(() => setCopied(false), 1400);
       }}
       style={{
-        width: 21,
-        height: 21,
+        width: 20,
+        height: 20,
         borderRadius: 6,
-        marginLeft: 8,
         backgroundColor: brand[900],
         alignItems: "center",
         justifyContent: "center",

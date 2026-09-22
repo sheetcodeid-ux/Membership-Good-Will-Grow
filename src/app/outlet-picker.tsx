@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Clock, Info, MapPin, Search, ShoppingCart, Store } from "lucide-react-native";
+import { Building2, Clock, Info, MapPin, Search, ShoppingCart, Store } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -21,6 +21,13 @@ const serviceLabels: Record<ServiceType, string> = {
   delivery: "Delivery",
 };
 
+/* Sidebar metrics, mirroring the Daftar Menu rail. */
+const SIDE_PAD = 12;
+const SIDE_CARD_W = 64;
+const SIDE_CARD_H = 62;
+const SIDE_GAP = 10;
+const RAIL_X = SIDE_PAD + SIDE_CARD_W + 12;
+
 function formatDistance(km: number) {
   return km < 1 ? `~${(km * 1000).toFixed(2)} m` : `~${km.toFixed(2)} km`;
 }
@@ -33,6 +40,7 @@ export default function OutletPickerScreen() {
   const [brandId, setBrandId] = useState(brands[0].id);
   const [query, setQuery] = useState("");
   const [infoOutlet, setInfoOutlet] = useState<Outlet | null>(null);
+  const [sideScrollY, setSideScrollY] = useState(0);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -47,6 +55,11 @@ export default function OutletPickerScreen() {
       )
       .sort((a, b) => a.distanceKm - b.distanceKm);
   }, [brandId, query]);
+
+  const activeBrandIndex = brands.findIndex((b) => b.id === brandId);
+  // Same rail as Daftar Menu: hairline for the whole column, darker segment
+  // parked beside the brand currently selected.
+  const indicatorTop = 14 + activeBrandIndex * (SIDE_CARD_H + SIDE_GAP) - sideScrollY;
 
   const choose = (outlet: Outlet) => {
     setOutlet(outlet.id);
@@ -99,8 +112,15 @@ export default function OutletPickerScreen() {
       <View style={{ flex: 1, flexDirection: "row" }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingVertical: 14, paddingLeft: 12, paddingRight: 9, gap: 10 }}
-          style={{ width: 88, flexGrow: 0, borderRightWidth: 1.5, borderRightColor: brand[100] }}
+          scrollEventThrottle={16}
+          onScroll={(e) => setSideScrollY(e.nativeEvent.contentOffset.y)}
+          contentContainerStyle={{
+            paddingTop: 14,
+            paddingBottom: 24,
+            paddingLeft: SIDE_PAD,
+            gap: SIDE_GAP,
+          }}
+          style={{ width: SIDE_PAD + SIDE_CARD_W, flexGrow: 0 }}
         >
           {brands.map((b) => {
             const active = !query && brandId === b.id;
@@ -113,7 +133,8 @@ export default function OutletPickerScreen() {
                 }}
                 scaleTo={0.97}
                 style={{
-                  height: 62,
+                  width: SIDE_CARD_W,
+                  height: SIDE_CARD_H,
                   borderRadius: 14,
                   backgroundColor: "#FFFFFF",
                   borderWidth: 1.5,
@@ -129,10 +150,36 @@ export default function OutletPickerScreen() {
           })}
         </ScrollView>
 
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            left: RAIL_X,
+            top: 0,
+            bottom: 0,
+            width: 1.5,
+            backgroundColor: brand[100],
+          }}
+        />
+        {!query ? (
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              left: RAIL_X - 0.5,
+              top: indicatorTop,
+              width: 2.5,
+              height: SIDE_CARD_H,
+              borderRadius: 2,
+              backgroundColor: brand[900],
+            }}
+          />
+        ) : null}
+
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ padding: 11, gap: 10, flexGrow: 1 }}
+          contentContainerStyle={{ paddingLeft: 22, paddingRight: 12, paddingVertical: 12, gap: 10, flexGrow: 1 }}
           style={{ flex: 1 }}
         >
           {visible.length === 0 ? (
@@ -230,9 +277,12 @@ export default function OutletPickerScreen() {
 
                 <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
                   <View style={{ flex: 1, gap: 8 }}>
-                    <AppText variant="caption" color={ink[600]}>
-                      {o.city}
-                    </AppText>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <Building2 size={12} color={ink[400]} />
+                      <AppText variant="caption" color={ink[600]}>
+                        {o.city}
+                      </AppText>
+                    </View>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                       <Clock size={12} color={ink[400]} />
                       <AppText variant="caption" color={ink[600]}>
@@ -244,15 +294,15 @@ export default function OutletPickerScreen() {
                     onPress={() => setInfoOutlet(o)}
                     hitSlop={8}
                     style={{
-                      width: 27,
-                      height: 27,
-                      borderRadius: 9,
+                      width: 20,
+                      height: 20,
+                      borderRadius: 7,
                       backgroundColor: brand[900],
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Info size={15} color="#FFFFFF" />
+                    <Info size={12} color="#FFFFFF" />
                   </PressableScale>
                 </View>
               </PressableScale>

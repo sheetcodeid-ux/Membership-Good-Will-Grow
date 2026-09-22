@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { Bike, Coffee, ShoppingBag } from "lucide-react-native";
+import { Coffee, Scooter, ShoppingBag } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { PressableScale } from "./ui/PressableScale";
 import { brand, ink } from "../theme/colors";
@@ -9,7 +9,7 @@ import type { ServiceType } from "../data/types";
 const options: { key: ServiceType; label: string; icon: typeof Coffee }[] = [
   { key: "dine_in", label: "Dine In", icon: Coffee },
   { key: "takeaway", label: "Take Away", icon: ShoppingBag },
-  { key: "delivery", label: "Delivery", icon: Bike },
+  { key: "delivery", label: "Delivery", icon: Scooter },
 ];
 
 interface ServiceTypeRowProps {
@@ -40,24 +40,24 @@ export function ServiceTypeRow({ value, onChange, available }: ServiceTypeRowPro
               justifyContent: "center",
               gap: 4,
               height: 32,
-              paddingHorizontal: 4,
+              paddingHorizontal: 3,
               borderRadius: 16,
               backgroundColor: active ? brand[50] : ink[50],
             }}
           >
-            <Icon size={13} color={active ? brand[700] : ink[500]} />
+            <Icon size={12} color={active ? brand[700] : ink[500]} />
             <AppText
               numberOfLines={1}
               color={active ? brand[800] : ink[600]}
-              style={{ fontSize: 11, lineHeight: 15, fontFamily: "Urbanist_500Medium" }}
+              style={{ fontSize: 10.5, lineHeight: 14, fontFamily: "Urbanist_500Medium" }}
             >
               {label}
             </AppText>
             <View
               style={{
-                width: 15,
-                height: 15,
-                borderRadius: 8,
+                width: 14,
+                height: 14,
+                borderRadius: 7,
                 borderWidth: 1.5,
                 borderColor: active ? brand[700] : ink[300],
                 backgroundColor: active ? brand[700] : "transparent",
