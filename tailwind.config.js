@@ -2,6 +2,10 @@
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
+  // "class" (rather than the default "media") lets Expo's userInterfaceStyle
+  // force a fixed light/dark scheme via Appearance.setColorScheme without
+  // NativeWind throwing on web ("Cannot manually set color scheme...").
+  darkMode: "class",
   theme: {
     extend: {
       colors: {

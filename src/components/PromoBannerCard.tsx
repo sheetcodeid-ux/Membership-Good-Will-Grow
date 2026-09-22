@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Dimensions } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Sparkles } from "lucide-react-native";
@@ -8,12 +8,12 @@ import { AppText } from "./ui/AppText";
 import { Badge } from "./ui/Badge";
 import type { Promo } from "../data/types";
 
-const { width } = Dimensions.get("window");
-const CARD_WIDTH = width - 72;
-
 export function PromoBannerCard({ promo }: { promo: Promo }) {
+  const { width } = useWindowDimensions();
+  const cardWidth = Math.min(width - 72, 340);
+
   return (
-    <PressableScale onPress={() => router.push(`/promo/${promo.id}`)} style={{ width: CARD_WIDTH }}>
+    <PressableScale onPress={() => router.push(`/promo/${promo.id}`)} style={{ width: cardWidth }}>
       <LinearGradient
         colors={["#0B2B73", "#123CA3", "#4066C2"]}
         start={{ x: 0, y: 0 }}

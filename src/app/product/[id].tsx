@@ -122,23 +122,21 @@ export default function ProductDetailScreen() {
 
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 16,
+          gap: 14,
           padding: 20,
           paddingBottom: 28,
           borderTopWidth: 1,
           borderTopColor: ink[100],
         }}
       >
-        <View>
-          <AppText variant="caption" color={ink[500]}>Total</AppText>
-          <AppText variant="h3" color={brand[700]}>{formatRupiah(total)}</AppText>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <View>
+            <AppText variant="caption" color={ink[500]}>Total</AppText>
+            <AppText variant="h3" color={brand[700]}>{formatRupiah(total)}</AppText>
+          </View>
+          <QuantityStepper value={qty} onChange={setQty} min={1} />
         </View>
-        <QuantityStepper value={qty} onChange={setQty} min={1} />
-        <View style={{ flex: 1 }}>
-          <Button label="Tambah ke Keranjang" fullWidth onPress={submit} />
-        </View>
+        <Button label="Tambah ke Keranjang" size="lg" fullWidth onPress={submit} />
       </View>
     </View>
   );

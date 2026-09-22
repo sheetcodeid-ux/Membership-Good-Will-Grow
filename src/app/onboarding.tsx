@@ -1,13 +1,11 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Dimensions, FlatList, View, type ViewToken } from "react-native";
+import { FlatList, View, useWindowDimensions, type ViewToken } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Users, Gift, ShoppingBag, Sparkles } from "lucide-react-native";
 import { AppText, Button } from "../components/ui";
 import { useAuthStore } from "../store/authStore";
-
-const { width } = Dimensions.get("window");
 
 const slides = [
   {
@@ -41,6 +39,7 @@ const slides = [
 ];
 
 export default function OnboardingScreen() {
+  const { width } = useWindowDimensions();
   const [index, setIndex] = useState(0);
   const listRef = useRef<FlatList>(null);
   const completeOnboarding = useAuthStore((s) => s.completeOnboarding);
@@ -81,7 +80,17 @@ export default function OnboardingScreen() {
               end={{ x: 0.9, y: 1 }}
             >
               <SafeAreaView style={{ flex: 1, paddingHorizontal: 28 }}>
-                <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 28 }}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 28,
+                    width: "100%",
+                    maxWidth: 480,
+                    alignSelf: "center",
+                  }}
+                >
                   <View
                     style={{
                       width: 108,
@@ -115,7 +124,10 @@ export default function OnboardingScreen() {
       />
 
       <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, paddingBottom: 36 }}>
-        <SafeAreaView edges={["bottom"]} style={{ paddingHorizontal: 28, gap: 24 }}>
+        <SafeAreaView
+          edges={["bottom"]}
+          style={{ paddingHorizontal: 28, gap: 24, width: "100%", maxWidth: 480, alignSelf: "center" }}
+        >
           <View style={{ flexDirection: "row", justifyContent: "center", gap: 8 }}>
             {slides.map((s, i) => (
               <View
