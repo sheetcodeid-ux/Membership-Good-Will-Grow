@@ -45,14 +45,18 @@ export function PinDots({
 
 const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
 
-/** Flat navy backspace key with a thin white cross — no outline. */
+/**
+ * Flat navy backspace key with a thin white cross. Every corner is curved,
+ * including the left tip, so the key reads as soft rather than spiky.
+ */
+const BACKSPACE_BODY =
+  "M3.7 10.3 L7.3 6.7 Q9 5 11.4 5 L18.5 5 Q22 5 22 8.5 L22 15.5 Q22 19 18.5 19 " +
+  "L11.4 19 Q9 19 7.3 17.3 L3.7 13.7 Q2 12 3.7 10.3 Z";
+
 function BackspaceIcon({ size = 46 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path
-        d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"
-        fill={brand[900]}
-      />
+      <Path d={BACKSPACE_BODY} fill={brand[900]} />
       <Path
         d="M18 9 12 15M12 9l6 6"
         stroke="#FFFFFF"
