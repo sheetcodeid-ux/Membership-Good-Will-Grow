@@ -102,7 +102,7 @@ export function PinKeypad({ length = 6, value, onChange }: PinKeypadProps) {
               onPress={() => press(k)}
               style={{ width: key, height: key, alignItems: "center", justifyContent: "center" }}
             >
-              <BackspaceIcon width={Math.round(key * 0.58)} />
+              <BackspaceIcon width={Math.round(key * 0.43)} />
             </PressableScale>
           );
         }
