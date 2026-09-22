@@ -25,7 +25,7 @@ export default function SearchMemberScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Search Member" />
+      <AppHeader title="Cari Member" />
 
       <FlatList
         data={results}
@@ -50,7 +50,7 @@ export default function SearchMemberScreen() {
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder="Search members..."
+              placeholder="Cari nama atau username..."
               placeholderTextColor={ink[300]}
               style={[
                 {

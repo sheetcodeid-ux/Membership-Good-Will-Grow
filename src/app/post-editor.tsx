@@ -43,7 +43,7 @@ const visibilityOptions: {
 }[] = [
   { key: "publik", icon: Globe, title: "Publik", subtitle: "Semua orang bisa melihat post ini" },
   { key: "hanya-saya", icon: Lock, title: "Hanya Saya", subtitle: "Hanya kamu yang bisa melihat post ini" },
-  { key: "followers", icon: Users, title: "Followers", subtitle: "Hanya followers yang bisa melihat" },
+  { key: "followers", icon: Users, title: "Pengikut", subtitle: "Hanya pengikut yang bisa melihat" },
   {
     key: "teman",
     icon: UserCheck,

@@ -12,7 +12,7 @@ import { useNotificationStore } from "../store/notificationStore";
 import type { NotificationItem } from "../data/types";
 
 const categories = [
-  { key: "all", label: "All" },
+  { key: "all", label: "Semua" },
   { key: "disukai", label: "Disukai" },
   { key: "postingan-disukai", label: "Postingan Disukai" },
   { key: "komentar-disukai", label: "Komentar Disukai" },
@@ -57,7 +57,7 @@ export default function NotificationsScreen() {
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
 
-      <AppHeader title="Notifications">
+      <AppHeader title="Notifikasi">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -129,8 +129,8 @@ export default function NotificationsScreen() {
         ListEmptyComponent={
           <EmptyState
             icon={<BellOff size={54} color={ink[300]} strokeWidth={1.7} />}
-            title="No notifications yet"
-            subtitle="When you receive notifications, they will appear here."
+            title="Belum ada notifikasi"
+            subtitle="Notifikasi yang masuk akan muncul di sini."
           />
         }
       />

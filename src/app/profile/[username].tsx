@@ -126,9 +126,9 @@ export default function MemberProfileScreen() {
           value={tab}
           onChange={setTab}
           tabs={[
-            { key: "posts", label: `Posts (${counts.posts})` },
-            { key: "followers", label: `Followers (${counts.followers})` },
-            { key: "following", label: `Following (${counts.following})` },
+            { key: "posts", label: `Postingan (${counts.posts})` },
+            { key: "followers", label: `Pengikut (${counts.followers})` },
+            { key: "following", label: `Mengikuti (${counts.following})` },
           ]}
         />
       </AppHeader>
