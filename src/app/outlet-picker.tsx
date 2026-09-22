@@ -68,12 +68,12 @@ export default function OutletPickerScreen() {
               alignItems: "center",
               gap: 12,
               backgroundColor: brand[50],
-              borderRadius: 16,
-              paddingHorizontal: 14,
-              height: 52,
+              borderRadius: 14,
+              paddingHorizontal: 12,
+              height: 44,
             }}
           >
-            <Store size={20} color={brand[600]} />
+            <Store size={17} color={brand[600]} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -85,13 +85,13 @@ export default function OutletPickerScreen() {
                   minWidth: 0,
                   padding: 0,
                   fontFamily: "Urbanist_400Regular",
-                  fontSize: 15,
+                  fontSize: 12.5,
                   color: ink[900],
                 },
                 Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
               ]}
             />
-            <Search size={21} color={brand[700]} />
+            <Search size={18} color={brand[700]} />
           </View>
         </View>
       </AppHeader>
@@ -99,8 +99,8 @@ export default function OutletPickerScreen() {
       <View style={{ flex: 1, flexDirection: "row" }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingVertical: 16, paddingLeft: 12, paddingRight: 10, gap: 12 }}
-          style={{ width: 100, flexGrow: 0, borderRightWidth: 1.5, borderRightColor: brand[100] }}
+          contentContainerStyle={{ paddingVertical: 14, paddingLeft: 12, paddingRight: 9, gap: 10 }}
+          style={{ width: 88, flexGrow: 0, borderRightWidth: 1.5, borderRightColor: brand[100] }}
         >
           {brands.map((b) => {
             const active = !query && brandId === b.id;
@@ -113,8 +113,8 @@ export default function OutletPickerScreen() {
                 }}
                 scaleTo={0.97}
                 style={{
-                  height: 78,
-                  borderRadius: 16,
+                  height: 62,
+                  borderRadius: 14,
                   backgroundColor: "#FFFFFF",
                   borderWidth: 1.5,
                   borderColor: active ? brand[600] : "transparent",
@@ -123,7 +123,7 @@ export default function OutletPickerScreen() {
                   ...(shadow.xs as object),
                 }}
               >
-                <BrandLogo brandId={b.id} size={54} />
+                <BrandLogo brandId={b.id} size={44} />
               </PressableScale>
             );
           })}
@@ -132,7 +132,7 @@ export default function OutletPickerScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ padding: 12, gap: 12, flexGrow: 1 }}
+          contentContainerStyle={{ padding: 11, gap: 10, flexGrow: 1 }}
           style={{ flex: 1 }}
         >
           {visible.length === 0 ? (
@@ -153,24 +153,24 @@ export default function OutletPickerScreen() {
                 scaleTo={0.99}
                 style={{
                   backgroundColor: "#FFFFFF",
-                  borderRadius: 16,
-                  padding: 12,
-                  gap: 8,
+                  borderRadius: 14,
+                  padding: 10,
+                  gap: 6,
                   borderWidth: 1.5,
                   borderColor: isSelected ? brand[600] : "transparent",
                   ...(shadow.xs as object),
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                  <BrandLogo brandId={o.brandId} size={30} />
+                  <BrandLogo brandId={o.brandId} size={25} />
                   <View style={{ flex: 1 }} />
                   {isSelected ? (
                     <View
                       style={{
                         backgroundColor: brand[50],
-                        borderRadius: 8,
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
+                        borderRadius: 7,
+                        paddingHorizontal: 7,
+                        paddingVertical: 3,
                       }}
                     >
                       <AppText variant="micro" color={brand[700]}>
@@ -187,9 +187,9 @@ export default function OutletPickerScreen() {
                   <View
                     style={{
                       backgroundColor: o.isOpen ? success[50] : ink[100],
-                      borderRadius: 7,
-                      paddingHorizontal: 8,
-                      paddingVertical: 3,
+                      borderRadius: 6,
+                      paddingHorizontal: 7,
+                      paddingVertical: 2,
                     }}
                   >
                     <AppText variant="micro" color={o.isOpen ? success[600] : ink[500]}>
@@ -199,14 +199,14 @@ export default function OutletPickerScreen() {
                 </View>
 
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <ShoppingCart size={14} color={ink[400]} />
+                  <ShoppingCart size={12} color={ink[400]} />
                   <AppText variant="caption" color={ink[600]} numberOfLines={1}>
                     {o.services.map((s) => serviceLabels[s]).join(", ")}
                   </AppText>
                 </View>
 
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <MapPin size={14} color={ink[400]} />
+                  <MapPin size={12} color={ink[400]} />
                   <AppText
                     variant="caption"
                     color={ink[600]}
@@ -234,7 +234,7 @@ export default function OutletPickerScreen() {
                       {o.city}
                     </AppText>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <Clock size={14} color={ink[400]} />
+                      <Clock size={12} color={ink[400]} />
                       <AppText variant="caption" color={ink[600]}>
                         {o.hours}
                       </AppText>
@@ -244,15 +244,15 @@ export default function OutletPickerScreen() {
                     onPress={() => setInfoOutlet(o)}
                     hitSlop={8}
                     style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 10,
+                      width: 27,
+                      height: 27,
+                      borderRadius: 9,
                       backgroundColor: brand[900],
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Info size={18} color="#FFFFFF" />
+                    <Info size={15} color="#FFFFFF" />
                   </PressableScale>
                 </View>
               </PressableScale>

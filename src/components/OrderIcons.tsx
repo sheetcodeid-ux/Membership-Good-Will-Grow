@@ -1,62 +1,22 @@
 import React from "react";
-import Svg, { Circle, Path, Rect } from "react-native-svg";
-import { Infinity as InfinityIcon, Monitor, QrCode, Smartphone } from "lucide-react-native";
+import Svg, { Path, Rect } from "react-native-svg";
+import {
+  CircleCheck,
+  CircleEllipsis,
+  CirclePause,
+  CircleX,
+  Infinity as InfinityIcon,
+  Monitor,
+  QrCode,
+  Smartphone,
+  type LucideIcon,
+} from "lucide-react-native";
 import { danger, ink, success, warning } from "../theme/colors";
 import type { OrderChannel, OrderStatus } from "../data/types";
 
-const statusTint: Record<OrderStatus, string> = {
-  dibayar: success[500],
-  "belum-bayar": warning[500],
-  ditahan: "#2563EB",
-  dibatalkan: danger[500],
-};
+const HOLD = "#2563EB";
 
-/**
- * Filled status pip. Hand-drawn rather than composed from two lucide icons so
- * the glyph is always optically centred in its disc at any size.
- */
-export function StatusBadgeIcon({ status, size = 24 }: { status: OrderStatus; size?: number }) {
-  const tint = statusTint[status];
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Circle cx={12} cy={12} r={11} fill={tint} />
-      {status === "dibayar" ? (
-        <Path
-          d="M7.2 12.4 10.4 15.6 16.8 9.2"
-          stroke="#FFFFFF"
-          strokeWidth={2.4}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      ) : null}
-      {status === "belum-bayar" ? (
-        <>
-          <Circle cx={7.4} cy={12} r={1.6} fill="#FFFFFF" />
-          <Circle cx={12} cy={12} r={1.6} fill="#FFFFFF" />
-          <Circle cx={16.6} cy={12} r={1.6} fill="#FFFFFF" />
-        </>
-      ) : null}
-      {status === "ditahan" ? (
-        <>
-          <Rect x={8.4} y={7.6} width={2.6} height={8.8} rx={1.3} fill="#FFFFFF" />
-          <Rect x={13} y={7.6} width={2.6} height={8.8} rx={1.3} fill="#FFFFFF" />
-        </>
-      ) : null}
-      {status === "dibatalkan" ? (
-        <Path
-          d="M8.4 8.4 15.6 15.6 M15.6 8.4 8.4 15.6"
-          stroke="#FFFFFF"
-          strokeWidth={2.4}
-          strokeLinecap="round"
-          fill="none"
-        />
-      ) : null}
-    </Svg>
-  );
-}
-
-/** Cash register, drawn to lucide's 24pt grid so it sits beside their icons. */
+/** Cash register, drawn on lucide's 24pt grid so it sits beside their icons. */
 export function PosIcon({ size = 24, color = ink[600] }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -68,20 +28,44 @@ export function PosIcon({ size = 24, color = ink[600] }: { size?: number; color?
   );
 }
 
-export const statusMeta: Record<OrderStatus, { label: string; description: string; tint: string }> = {
-  dibayar: { label: "Dibayar", description: "Pesanan yang sudah dibayar", tint: success[500] },
+/**
+ * Status glyphs are outline icons on the same 2pt stroke grid as the channel
+ * icons, so both picker sheets read as one icon set; only the colour changes.
+ */
+export const statusMeta: Record<
+  OrderStatus,
+  { label: string; description: string; tint: string; icon: LucideIcon }
+> = {
+  dibayar: {
+    label: "Dibayar",
+    description: "Pesanan yang sudah dibayar",
+    tint: success[500],
+    icon: CircleCheck,
+  },
   "belum-bayar": {
     label: "Belum Bayar",
     description: "Pesanan yang belum dibayar",
     tint: warning[500],
+    icon: CircleEllipsis,
   },
-  ditahan: { label: "Ditahan", description: "Pesanan yang ditahan", tint: "#2563EB" },
+  ditahan: {
+    label: "Ditahan",
+    description: "Pesanan yang ditahan",
+    tint: HOLD,
+    icon: CirclePause,
+  },
   dibatalkan: {
     label: "Dibatalkan",
     description: "Pesanan yang dibatalkan",
     tint: danger[500],
+    icon: CircleX,
   },
 };
+
+export function StatusIcon({ status, size = 22 }: { status: OrderStatus; size?: number }) {
+  const { icon: Icon, tint } = statusMeta[status];
+  return <Icon size={size} color={tint} strokeWidth={2} />;
+}
 
 export const channelMeta: Record<
   OrderChannel,

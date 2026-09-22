@@ -4,7 +4,7 @@ import { outlets } from "../data/mock";
 
 /** Geofence radius: past this the outlet sheet warns the member they are too
  *  far to place a self-order. Business-configurable, so it lives in one place. */
-export const MAX_ORDER_DISTANCE_KM = 0.5;
+export const MAX_ORDER_DISTANCE_KM = 1.0;
 
 /** Filters on Riwayat Pesanan; `undefined` means "show everything". */
 export interface HistoryFilters {

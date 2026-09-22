@@ -1,3 +1,5 @@
+import type { CategoryIconName } from "../components/CategoryIcons";
+
 export type ServiceType = "dine_in" | "takeaway" | "delivery";
 
 export interface Brand {
@@ -37,7 +39,7 @@ export interface Outlet {
 export interface MenuCategory {
   id: string;
   name: string;
-  icon: "coffee" | "cup" | "drumstick" | "cake" | "soup" | "gift" | "ticket" | "cookie";
+  icon: CategoryIconName;
 }
 
 export interface ToppingOption {

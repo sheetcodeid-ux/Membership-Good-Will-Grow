@@ -1,13 +1,14 @@
 import React from "react";
-import { View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
+import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
 import { ChevronRight, CircleAlert, TriangleAlert } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
-import { BottomSheet } from "./ui/BottomSheet";
 import { PressableScale } from "./ui/PressableScale";
 import { BrandLogo } from "./BrandLogo";
 import { ServiceTypeRow } from "./ServiceTypeRow";
 import { brand, danger, ink } from "../theme/colors";
+import { shadow } from "../theme/shadows";
 import { getOutlet } from "../data/mock";
 import { MAX_ORDER_DISTANCE_KM, useOrderStore } from "../store/orderStore";
 
@@ -15,7 +16,11 @@ function formatDistance(km: number) {
   return km < 1 ? `~${(km * 1000).toFixed(2)} m` : `~${km.toFixed(2)} km`;
 }
 
-/** First thing the Order tab shows: confirm which outlet you are ordering from. */
+/**
+ * First thing the Order tab shows: confirm which outlet you are ordering from.
+ * The reference renders this as a centred dialog, not an edge-to-edge sheet,
+ * so the metrics below are taken from that card.
+ */
 export function OutletServiceSheet() {
   const outletId = useOrderStore((s) => s.outletId);
   const serviceType = useOrderStore((s) => s.serviceType);
@@ -28,101 +33,145 @@ export function OutletServiceSheet() {
   const tooFar = outlet.distanceKm > MAX_ORDER_DISTANCE_KM;
 
   return (
-    <BottomSheet
-      title="Pilih Outlet & Tipe Pembelian"
-      onClose={confirmOutlet}
-      showClose={false}
-      maxHeightRatio={0.7}
-    >
-      <View style={{ paddingHorizontal: 22, paddingTop: 12, paddingBottom: 20, gap: 14 }}>
-        <PressableScale
-          onPress={() => router.push("/outlet-picker")}
-          scaleTo={0.99}
+    <View style={StyleSheet.absoluteFill}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={confirmOutlet}>
+        <Animated.View
+          entering={FadeIn.duration(180)}
+          style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(10,14,26,0.45)" }]}
+        />
+      </Pressable>
+
+      <View
+        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        pointerEvents="box-none"
+      >
+        <Animated.View
+          entering={ZoomIn.duration(220)}
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 14,
-            backgroundColor: brand[50],
-            borderRadius: 14,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
+            width: "92%",
+            maxWidth: 420,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 16,
+            paddingHorizontal: 12,
+            paddingTop: 15,
+            paddingBottom: 13,
+            ...(shadow.lg as object),
           }}
         >
-          <BrandLogo brandId={outlet.brandId} size={34} />
-          <View style={{ flex: 1 }}>
-            <AppText variant="titleLg" numberOfLines={1}>
-              {outlet.name}
-            </AppText>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <AppText variant="caption" color={ink[500]}>
-                {outlet.city} •
-              </AppText>
-              <AppText
-                variant="caption"
-                color={tooFar ? danger[500] : ink[500]}
-                style={{ fontFamily: "Urbanist_700Bold" }}
-              >
-                {formatDistance(outlet.distanceKm)}
-              </AppText>
-              {tooFar ? <TriangleAlert size={13} color={danger[500]} /> : null}
-            </View>
-          </View>
-          <ChevronRight size={22} color={brand[700]} />
-        </PressableScale>
+          <AppText style={{ fontSize: 13.5, lineHeight: 19, fontFamily: "Urbanist_600SemiBold" }}>
+            Pilih Outlet & Tipe Pembelian
+          </AppText>
 
-        {tooFar ? (
-          <View
+          <PressableScale
+            onPress={() => router.push("/outlet-picker")}
+            scaleTo={0.99}
             style={{
+              height: 48,
+              marginTop: 13,
               flexDirection: "row",
               alignItems: "center",
-              gap: 12,
-              backgroundColor: danger[50],
-              borderRadius: 14,
-              paddingVertical: 14,
-              paddingHorizontal: 14,
+              gap: 10,
+              backgroundColor: brand[50],
+              borderRadius: 11,
+              paddingHorizontal: 11,
             }}
           >
-            <CircleAlert size={20} color={danger[500]} />
-            <AppText
-              variant="caption"
-              color={danger[500]}
-              style={{ flex: 1, fontStyle: "italic" }}
-            >
-              Jarak anda terlalu jauh dari outlet:{" "}
+            <BrandLogo brandId={outlet.brandId} size={24} />
+            <View style={{ flex: 1, gap: 1 }}>
               <AppText
-                variant="caption"
-                color={danger[500]}
-                style={{ fontStyle: "italic", fontFamily: "Urbanist_700Bold" }}
+                numberOfLines={1}
+                style={{ fontSize: 13.5, lineHeight: 18, fontFamily: "Urbanist_700Bold" }}
               >
-                {MAX_ORDER_DISTANCE_KM.toFixed(1)} km
+                {outlet.name}
               </AppText>
-            </AppText>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <AppText
+                  color={ink[500]}
+                  style={{ fontSize: 10, lineHeight: 14, fontFamily: "Urbanist_400Regular" }}
+                >
+                  {outlet.city} •
+                </AppText>
+                <AppText
+                  color={tooFar ? danger[500] : ink[500]}
+                  style={{ fontSize: 10, lineHeight: 14, fontFamily: "Urbanist_700Bold" }}
+                >
+                  {formatDistance(outlet.distanceKm)}
+                </AppText>
+                {tooFar ? <TriangleAlert size={11} color={danger[500]} /> : null}
+              </View>
+            </View>
+            <ChevronRight size={19} color={brand[700]} />
+          </PressableScale>
+
+          {tooFar ? (
+            <View
+              style={{
+                height: 33,
+                marginTop: 9,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 9,
+                backgroundColor: danger[50],
+                borderRadius: 11,
+                paddingHorizontal: 11,
+              }}
+            >
+              <CircleAlert size={16} color={danger[500]} />
+              <AppText
+                color={danger[500]}
+                numberOfLines={1}
+                style={{
+                  flex: 1,
+                  fontSize: 10.5,
+                  lineHeight: 14,
+                  fontStyle: "italic",
+                  fontFamily: "Urbanist_500Medium",
+                }}
+              >
+                Jarak anda terlalu jauh dari outlet:{" "}
+                <AppText
+                  color={danger[500]}
+                  style={{
+                    fontSize: 10.5,
+                    fontStyle: "italic",
+                    fontFamily: "Urbanist_700Bold",
+                  }}
+                >
+                  {MAX_ORDER_DISTANCE_KM.toFixed(1)} km
+                </AppText>
+              </AppText>
+            </View>
+          ) : null}
+
+          <View style={{ marginTop: 9 }}>
+            <ServiceTypeRow
+              value={serviceType}
+              onChange={setServiceType}
+              available={outlet.services}
+            />
           </View>
-        ) : null}
 
-        <ServiceTypeRow
-          value={serviceType}
-          onChange={setServiceType}
-          available={outlet.services}
-        />
-
-        <PressableScale
-          onPress={confirmOutlet}
-          scaleTo={0.98}
-          style={{
-            height: 56,
-            borderRadius: 16,
-            backgroundColor: brand[900],
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: 2,
-          }}
-        >
-          <AppText variant="titleLg" color="#FFFFFF">
-            Konfirmasi Outlet
-          </AppText>
-        </PressableScale>
+          <PressableScale
+            onPress={confirmOutlet}
+            scaleTo={0.98}
+            style={{
+              height: 37,
+              marginTop: 13,
+              borderRadius: 10,
+              backgroundColor: brand[900],
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <AppText
+              color="#FFFFFF"
+              style={{ fontSize: 13, lineHeight: 18, fontFamily: "Urbanist_600SemiBold" }}
+            >
+              Konfirmasi Outlet
+            </AppText>
+          </PressableScale>
+        </Animated.View>
       </View>
-    </BottomSheet>
+    </View>
   );
 }

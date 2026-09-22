@@ -25,16 +25,16 @@ export function OptionRow({ icon, title, description, selected, onPress }: Optio
       style={{
         flexDirection: "row",
         alignItems: "center",
-        gap: 16,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        borderRadius: 14,
+        gap: 14,
+        paddingHorizontal: 14,
+        paddingVertical: 11,
+        borderRadius: 12,
         borderWidth: selected ? 1.5 : 0,
         borderColor: brand[600],
         backgroundColor: selected ? brand[50] : "transparent",
       }}
     >
-      <View style={{ width: 26, alignItems: "center" }}>{icon}</View>
+      <View style={{ width: 24, alignItems: "center" }}>{icon}</View>
       <View style={{ flex: 1, gap: 2 }}>
         <AppText variant="titleLg" color={selected ? brand[700] : ink[900]}>
           {title}
@@ -45,7 +45,7 @@ export function OptionRow({ icon, title, description, selected, onPress }: Optio
           </AppText>
         ) : null}
       </View>
-      {selected ? <CircleCheck size={24} color={brand[700]} fill={brand[700]} stroke="#FFFFFF" /> : null}
+      {selected ? <CircleCheck size={20} color={brand[700]} fill={brand[700]} stroke="#FFFFFF" /> : null}
     </PressableScale>
   );
 }

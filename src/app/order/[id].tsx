@@ -27,8 +27,8 @@ function Card({ children }: { children: React.ReactNode }) {
     <View
       style={{
         backgroundColor: "#FFFFFF",
-        borderRadius: 18,
-        padding: 16,
+        borderRadius: 15,
+        padding: 14,
         ...(shadow.xs as object),
       }}
     >
@@ -50,7 +50,7 @@ function InfoRow({
   return (
     <View style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 5 }}>
       {/* Fixed, non-shrinking label column so every colon lines up. */}
-      <AppText variant="body" color={ink[600]} style={{ width: 118, flexShrink: 0 }}>
+      <AppText variant="body" color={ink[600]} style={{ width: 125, flexShrink: 0 }}>
         {label}
       </AppText>
       <AppText variant="body" color={ink[600]} style={{ flexShrink: 0 }}>
@@ -75,9 +75,9 @@ function CopyButton({ onPress }: { onPress: () => void }) {
         setTimeout(() => setCopied(false), 1400);
       }}
       style={{
-        width: 24,
-        height: 24,
-        borderRadius: 7,
+        width: 21,
+        height: 21,
+        borderRadius: 6,
         marginLeft: 8,
         backgroundColor: brand[900],
         alignItems: "center",
@@ -85,9 +85,9 @@ function CopyButton({ onPress }: { onPress: () => void }) {
       }}
     >
       {copied ? (
-        <Check size={13} color="#FFFFFF" strokeWidth={3} />
+        <Check size={12} color="#FFFFFF" strokeWidth={3} />
       ) : (
-        <Copy size={13} color="#FFFFFF" />
+        <Copy size={12} color="#FFFFFF" />
       )}
     </PressableScale>
   );
@@ -104,7 +104,7 @@ function AmountRow({
   bold?: boolean;
   emphasis?: boolean;
 }) {
-  const size = emphasis ? 19 : 15.5;
+  const size = emphasis ? 16 : 13;
   const family = bold || emphasis ? "Urbanist_700Bold" : "Urbanist_400Regular";
   const color = emphasis ? brand[800] : ink[800];
   return (
@@ -153,7 +153,7 @@ export default function OrderDetailScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 36, gap: 14 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32, gap: 12 }}
       >
         <Card>
           <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
@@ -233,7 +233,7 @@ export default function OrderDetailScreen() {
           <View style={{ gap: 12 }}>
             {order.lines.map((line) => (
               <View key={line.id} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                <ImagePlaceholder radius={10} iconSize={18} style={{ width: 54, height: 54 }} />
+                <ImagePlaceholder radius={10} iconSize={18} style={{ width: 46, height: 46 }} />
                 <View style={{ flex: 1 }}>
                   <AppText variant="titleLg" numberOfLines={2}>
                     {line.name}

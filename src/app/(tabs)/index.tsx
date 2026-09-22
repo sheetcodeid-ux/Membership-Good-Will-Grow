@@ -135,9 +135,9 @@ export default function HomeScreen() {
                 key={f}
                 onPress={() => setFilter(f)}
                 style={{
-                  height: 27,
-                  paddingHorizontal: 12,
-                  borderRadius: 14,
+                  height: 24,
+                  paddingHorizontal: 11,
+                  borderRadius: 12,
                   alignItems: "center",
                   justifyContent: "center",
                   backgroundColor: active ? brand[900] : ink[100],
@@ -145,7 +145,7 @@ export default function HomeScreen() {
               >
                 <AppText
                   color={active ? "#FFFFFF" : ink[600]}
-                  style={{ fontSize: 12, lineHeight: 16, fontFamily: "Urbanist_600SemiBold" }}
+                  style={{ fontSize: 11, lineHeight: 15, fontFamily: "Urbanist_600SemiBold" }}
                 >
                   {f}
                 </AppText>
@@ -181,24 +181,24 @@ export default function HomeScreen() {
         >
           <View
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
+              width: 28,
+              height: 28,
+              borderRadius: 9,
               backgroundColor: gold[50],
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Gift size={17} color={gold[600]} />
+            <Gift size={15} color={gold[600]} />
           </View>
           <AppText
             color={brand[700]}
-            style={{ flex: 1, fontSize: 13.5, lineHeight: 19, fontFamily: "Urbanist_600SemiBold" }}
+            style={{ flex: 1, fontSize: 11.5, lineHeight: 16, fontFamily: "Urbanist_600SemiBold" }}
           >
             Lengkapi profil anda, dapatkan reward menarik
           </AppText>
           <PressableScale onPress={() => setShowProfileBanner(false)} hitSlop={12}>
-            <X size={19} color={ink[400]} />
+            <X size={16} color={ink[400]} />
           </PressableScale>
         </PressableScale>
       ) : null}

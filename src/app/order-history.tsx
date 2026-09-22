@@ -17,7 +17,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { PressableScale } from "../components/ui/PressableScale";
 import { BrandLogo } from "../components/BrandLogo";
 import { OptionRow } from "../components/OptionRow";
-import { InfinityIcon, channelMeta, statusMeta, StatusBadgeIcon } from "../components/OrderIcons";
+import { InfinityIcon, channelMeta, statusMeta, StatusIcon } from "../components/OrderIcons";
 import { brand, ink, surface } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { formatRupiah } from "../utils/format";
@@ -52,10 +52,10 @@ function FilterPill({
       style={{
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        height: 42,
-        paddingHorizontal: 16,
-        borderRadius: 21,
+        gap: 7,
+        height: 34,
+        paddingHorizontal: 13,
+        borderRadius: 17,
         borderWidth: 1.5,
         borderColor: ink[200],
         backgroundColor: "#FFFFFF",
@@ -65,7 +65,7 @@ function FilterPill({
       <AppText variant="bodyMedium" color={ink[800]}>
         {label}
       </AppText>
-      <ChevronDown size={17} color={ink[500]} />
+      <ChevronDown size={14} color={ink[500]} />
     </PressableScale>
   );
 }
@@ -109,23 +109,23 @@ export default function OrderHistoryScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16, gap: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 13, gap: 10 }}
         // Explicit height: a horizontal list inside a column flex parent
         // otherwise measures as zero on web and the cards ride over it.
-        style={{ flexGrow: 0, height: 74 }}
+        style={{ flexGrow: 0, height: 60 }}
       >
         <FilterPill
-          icon={<InfinityIcon size={18} color={ink[600]} />}
+          icon={<InfinityIcon size={16} color={ink[600]} />}
           label={channelLabel}
           onPress={() => setSheet("channel")}
         />
         <FilterPill
-          icon={<CreditCard size={18} color={ink[600]} />}
+          icon={<CreditCard size={16} color={ink[600]} />}
           label={statusLabel}
           onPress={() => setSheet("status")}
         />
         <FilterPill
-          icon={<Store size={18} color={ink[600]} />}
+          icon={<Store size={16} color={ink[600]} />}
           label={outletLabel}
           onPress={() => setSheet("outlet")}
         />
@@ -133,7 +133,7 @@ export default function OrderHistoryScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 30, gap: 14, flexGrow: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 26, gap: 12, flexGrow: 1 }}
       >
         {visible.length === 0 ? (
           <EmptyState
@@ -153,20 +153,20 @@ export default function OrderHistoryScreen() {
               scaleTo={0.99}
               style={{
                 backgroundColor: "#FFFFFF",
-                borderRadius: 18,
-                padding: 16,
-                gap: 10,
+                borderRadius: 15,
+                padding: 14,
+                gap: 8,
                 ...(shadow.xs as object),
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View
                   style={{
-                    borderWidth: 1.5,
+                    borderWidth: 1.4,
                     borderColor: meta.tint,
-                    borderRadius: 18,
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
+                    borderRadius: 15,
+                    paddingHorizontal: 12,
+                    paddingVertical: 5,
                   }}
                 >
                   <AppText variant="bodySemibold" color={meta.tint}>
@@ -180,28 +180,28 @@ export default function OrderHistoryScreen() {
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <BrandLogo brandId={o.brandId} size={22} />
+                <BrandLogo brandId={o.brandId} size={19} />
                 <AppText variant="h3" numberOfLines={1} style={{ flex: 1 }}>
                   {o.outletName}
                 </AppText>
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <ReceiptText size={17} color={ink[400]} />
+                <ReceiptText size={15} color={ink[400]} />
                 <AppText variant="body" color={ink[400]} numberOfLines={1} style={{ flex: 1 }}>
                   {o.nota}
                 </AppText>
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Hash size={17} color={ink[400]} />
+                <Hash size={15} color={ink[400]} />
                 <AppText variant="body" color={ink[400]}>
                   Kode Pesanan : {o.orderCode}
                 </AppText>
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <ShoppingBag size={17} color={ink[400]} />
+                <ShoppingBag size={15} color={ink[400]} />
                 <AppText variant="body" color={ink[500]} style={{ flex: 1 }}>
                   {o.lines.reduce((n, l) => n + l.qty, 0)} item
                 </AppText>
@@ -214,9 +214,9 @@ export default function OrderHistoryScreen() {
                 <View
                   style={{
                     backgroundColor: ink[50],
-                    borderRadius: 9,
-                    paddingHorizontal: 11,
-                    paddingVertical: 6,
+                    borderRadius: 8,
+                    paddingHorizontal: 9,
+                    paddingVertical: 5,
                   }}
                 >
                   <AppText variant="caption" color={ink[600]}>
@@ -226,9 +226,9 @@ export default function OrderHistoryScreen() {
                 <View
                   style={{
                     backgroundColor: brand[50],
-                    borderRadius: 9,
-                    paddingHorizontal: 11,
-                    paddingVertical: 6,
+                    borderRadius: 8,
+                    paddingHorizontal: 9,
+                    paddingVertical: 5,
                   }}
                 >
                   <AppText variant="caption" color={brand[700]}>
@@ -297,7 +297,7 @@ export default function OrderHistoryScreen() {
             {statusOrder.map((key) => (
               <OptionRow
                 key={key}
-                icon={<StatusBadgeIcon status={key} size={24} />}
+                icon={<StatusIcon status={key} size={22} />}
                 title={statusMeta[key].label}
                 description={statusMeta[key].description}
                 selected={filters.status === key}

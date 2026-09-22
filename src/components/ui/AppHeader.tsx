@@ -31,24 +31,24 @@ export function AppHeader({
     <View
       style={{
         backgroundColor: "#FFFFFF",
-        borderBottomLeftRadius: 22,
-        borderBottomRightRadius: 22,
+        borderBottomLeftRadius: 18,
+        borderBottomRightRadius: 18,
       }}
     >
       <SafeAreaView edges={["top"]}>
         <View
           style={{
-            height: 56,
+            height: 50,
             flexDirection: "row",
             alignItems: "center",
-            gap: 14,
-            paddingHorizontal: 20,
+            gap: 12,
+            paddingHorizontal: 16,
           }}
         >
           {showBack ? (
             <PressableScale onPress={onBack ?? (() => router.back())} hitSlop={12}>
               <LeftIcon
-                size={leftIcon === "close" ? 24 : 26}
+                size={leftIcon === "close" ? 21 : 23}
                 color={brand[700]}
                 strokeWidth={leftIcon === "close" ? 2.4 : 2}
               />

@@ -218,12 +218,13 @@ export const outlets: Outlet[] = [
 
 export const categories: MenuCategory[] = [
   { id: "coffee", name: "Coffee", icon: "coffee" },
-  { id: "non-coffee", name: "Non Coffee", icon: "cup" },
-  { id: "food", name: "Food", icon: "drumstick" },
-  { id: "snack", name: "Snack", icon: "cookie" },
-  { id: "pastry", name: "Pastry", icon: "cake" },
-  { id: "merch", name: "Merchandise", icon: "gift" },
-  { id: "promo", name: "Promo", icon: "ticket" },
+  { id: "non-coffee", name: "Non Coffee", icon: "non-coffee" },
+  { id: "dimsum", name: "Dimsum", icon: "dimsum" },
+  { id: "snack", name: "Snack", icon: "snack" },
+  { id: "food", name: "Food", icon: "food" },
+  { id: "merch", name: "Merchandise", icon: "merch" },
+  { id: "promo", name: "Promo", icon: "promo" },
+  { id: "kue", name: "Kue", icon: "cake" },
 ];
 
 export const toppingPool = [
@@ -323,7 +324,7 @@ export const menuItems: MenuItem[] = [
   {
     id: "croissant-butter",
     brandId: "lesung-pipi",
-    categoryId: "pastry",
+    categoryId: "kue",
     name: "Croissant Butter",
     description: "Croissant mentega berlapis, renyah di luar",
     price: 22000,
@@ -332,7 +333,7 @@ export const menuItems: MenuItem[] = [
   {
     id: "sourdough-classic",
     brandId: "lesung-pipi",
-    categoryId: "pastry",
+    categoryId: "kue",
     name: "Sourdough Classic",
     description: "Roti sourdough fermentasi alami",
     price: 32000,
@@ -344,6 +345,31 @@ export const menuItems: MenuItem[] = [
     name: "Kentang Goreng Saus Sambal",
     description: "Kentang goreng renyah + saus sambal rumahan",
     price: 18000,
+  },
+  {
+    id: "dimsum-ayam",
+    brandId: "lesung-pipi",
+    categoryId: "dimsum",
+    name: "Dimsum Ayam Kukus",
+    description: "4 pcs siomay ayam + saus sambal",
+    price: 20000,
+    isBestSeller: true,
+  },
+  {
+    id: "dimsum-udang",
+    brandId: "lesung-pipi",
+    categoryId: "dimsum",
+    name: "Dimsum Udang",
+    description: "4 pcs siomay udang + saus",
+    price: 24000,
+  },
+  {
+    id: "kue-lapis",
+    brandId: "lesung-pipi",
+    categoryId: "kue",
+    name: "Kue Lapis Legit",
+    description: "Lapis legit klasik, potong tebal",
+    price: 28000,
   },
   {
     id: "tumbler-cw",

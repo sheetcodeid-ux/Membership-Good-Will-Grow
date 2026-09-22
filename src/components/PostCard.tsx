@@ -57,7 +57,7 @@ export function PostCard({ post }: { post: FeedPost }) {
   return (
     <View style={{ flexDirection: "row", gap: 13, paddingHorizontal: 16 }}>
       <PressableScale onPress={openProfile}>
-        <Avatar name={post.authorName} size={34} />
+        <Avatar name={post.authorName} size={30} />
       </PressableScale>
 
       <View style={{ flex: 1 }}>
@@ -65,10 +65,10 @@ export function PostCard({ post }: { post: FeedPost }) {
           <PressableScale onPress={openProfile}>
             <AppText variant="titleLg">{post.authorName}</AppText>
           </PressableScale>
-          <BadgeCheck size={15} color={ink[300]} />
+          <BadgeCheck size={13} color={ink[300]} />
           <View style={{ flex: 1 }} />
           <PressableScale hitSlop={10}>
-            <MoreHorizontal size={19} color={ink[300]} />
+            <MoreHorizontal size={17} color={ink[300]} />
           </PressableScale>
         </View>
 
@@ -86,7 +86,7 @@ export function PostCard({ post }: { post: FeedPost }) {
             label="Foto Post"
             radius={14}
             iconSize={32}
-            style={{ marginTop: 12, height: 300 }}
+            style={{ marginTop: 10, height: 258 }}
           />
         </PressableScale>
 
@@ -101,7 +101,7 @@ export function PostCard({ post }: { post: FeedPost }) {
             hitSlop={8}
           >
             <Heart
-              size={19}
+              size={17}
               color={post.liked ? danger[500] : ink[400]}
               fill={post.liked ? danger[500] : "transparent"}
             />
@@ -115,7 +115,7 @@ export function PostCard({ post }: { post: FeedPost }) {
             style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
             hitSlop={8}
           >
-            <MessageCircle size={19} color={brand[700]} fill={brand[700]} />
+            <MessageCircle size={17} color={brand[700]} fill={brand[700]} />
             <AppText variant="captionMedium" color={ink[500]}>
               {post.comments}
             </AppText>
@@ -125,7 +125,7 @@ export function PostCard({ post }: { post: FeedPost }) {
 
           <PressableScale onPress={() => toggleBookmark(post.id)} hitSlop={10}>
             <Bookmark
-              size={19}
+              size={17}
               color={bookmarked ? brand[700] : ink[400]}
               fill={bookmarked ? brand[700] : "transparent"}
             />

@@ -19,10 +19,11 @@ interface ServiceTypeRowProps {
   available?: ServiceType[];
 }
 
-/** Dine In / Take Away / Delivery pills with a radio dot on the right. */
+/** Dine In / Take Away / Delivery pills with a radio dot on the right.
+ *  Sized off the reference: 32pt tall, 7pt apart, 11pt label. */
 export function ServiceTypeRow({ value, onChange, available }: ServiceTypeRowProps) {
   return (
-    <View style={{ flexDirection: "row", gap: 10 }}>
+    <View style={{ flexDirection: "row", gap: 7 }}>
       {options.map(({ key, label, icon: Icon }) => {
         const enabled = !available || available.includes(key);
         const active = value === key;
@@ -37,10 +38,10 @@ export function ServiceTypeRow({ value, onChange, available }: ServiceTypeRowPro
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              gap: 3,
-              height: 40,
-              paddingHorizontal: 3,
-              borderRadius: 20,
+              gap: 4,
+              height: 32,
+              paddingHorizontal: 4,
+              borderRadius: 16,
               backgroundColor: active ? brand[50] : ink[50],
             }}
           >
@@ -48,16 +49,16 @@ export function ServiceTypeRow({ value, onChange, available }: ServiceTypeRowPro
             <AppText
               numberOfLines={1}
               color={active ? brand[800] : ink[600]}
-              style={{ fontSize: 12, lineHeight: 16, fontFamily: "Urbanist_600SemiBold" }}
+              style={{ fontSize: 11, lineHeight: 15, fontFamily: "Urbanist_500Medium" }}
             >
               {label}
             </AppText>
             <View
               style={{
-                width: 14,
-                height: 14,
-                borderRadius: 7,
-                borderWidth: 1.6,
+                width: 15,
+                height: 15,
+                borderRadius: 8,
+                borderWidth: 1.5,
                 borderColor: active ? brand[700] : ink[300],
                 backgroundColor: active ? brand[700] : "transparent",
                 alignItems: "center",
@@ -66,7 +67,7 @@ export function ServiceTypeRow({ value, onChange, available }: ServiceTypeRowPro
             >
               {active ? (
                 <View
-                  style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FFFFFF" }}
+                  style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: "#FFFFFF" }}
                 />
               ) : null}
             </View>
