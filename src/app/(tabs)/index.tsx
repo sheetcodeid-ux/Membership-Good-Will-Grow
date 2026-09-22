@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import { ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MoreHorizontal, Gift, X } from "lucide-react-native";
@@ -25,7 +26,9 @@ export default function HomeScreen() {
   const posts = useFeedStore((s) => s.posts);
   const name = useAuthStore((s) => s.name);
 
-  const bannerHeight = Math.min(310, Math.max(215, height * 0.3));
+  // Measured off the reference: the banner covers ~31.5% of the screen and the
+  // header pill straddles its bottom edge, which is what the blur picks up.
+  const bannerHeight = Math.min(320, Math.max(220, height * 0.315));
 
   const visiblePosts = posts.filter((p) => {
     if (filter === "Post") return p.type === "post";
@@ -51,7 +54,8 @@ export default function HomeScreen() {
           <View
             style={{
               position: "absolute",
-              bottom: 12,
+              // Clears the header pill, which overlaps the banner's bottom edge.
+              bottom: 34,
               alignSelf: "center",
               flexDirection: "row",
               gap: 6,
@@ -63,44 +67,57 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: 16, marginTop: 6 }}>
+        <View
+          style={{
+            marginHorizontal: 16,
+            marginTop: -22,
+            height: 50,
+            borderRadius: 20,
+            overflow: "hidden",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.55)",
+            ...(shadow.xs as object),
+          }}
+        >
+          <BlurView intensity={45} tint="light" style={StyleSheet.absoluteFill} />
           <LinearGradient
-            colors={["rgba(219,230,255,0.95)", "rgba(255,255,255,0.95)", "rgba(226,232,255,0.95)"]}
+            colors={["rgba(210,224,255,0.45)", "rgba(255,255,255,0.35)", "rgba(219,230,255,0.45)"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View
             style={{
-              height: 46,
-              borderRadius: 20,
+              flex: 1,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              paddingHorizontal: 8,
-              ...(shadow.xs as object),
+              paddingHorizontal: 9,
             }}
           >
-            <Avatar name={name} size={30} />
+            <Avatar name={name} size={26} />
             {/* Brand lockup supplied later. */}
-            <ImagePlaceholder radius={7} iconSize={14} style={{ width: 104, height: 24 }} />
+            <ImagePlaceholder radius={6} iconSize={13} style={{ width: 96, height: 21 }} />
             <PressableScale
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: 11,
-                backgroundColor: brand[100],
+                width: 30,
+                height: 30,
+                borderRadius: 10,
+                backgroundColor: "rgba(155,185,255,0.55)",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <MoreHorizontal size={18} color={brand[700]} />
+              <MoreHorizontal size={17} color={brand[800]} />
             </PressableScale>
-          </LinearGradient>
+          </View>
         </View>
 
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-          style={{ marginTop: 18, flexGrow: 0 }}
+          style={{ marginTop: 12, flexGrow: 0 }}
         >
           {filters.map((f) => {
             const active = filter === f;
@@ -109,15 +126,18 @@ export default function HomeScreen() {
                 key={f}
                 onPress={() => setFilter(f)}
                 style={{
-                  height: 34,
-                  paddingHorizontal: 18,
-                  borderRadius: 17,
+                  height: 27,
+                  paddingHorizontal: 12,
+                  borderRadius: 14,
                   alignItems: "center",
                   justifyContent: "center",
                   backgroundColor: active ? brand[900] : ink[100],
                 }}
               >
-                <AppText variant="bodySemibold" color={active ? "#FFFFFF" : ink[600]}>
+                <AppText
+                  color={active ? "#FFFFFF" : ink[600]}
+                  style={{ fontSize: 12, lineHeight: 16, fontFamily: "Urbanist_600SemiBold" }}
+                >
                   {f}
                 </AppText>
               </PressableScale>
@@ -125,7 +145,7 @@ export default function HomeScreen() {
           })}
         </ScrollView>
 
-        <View style={{ marginTop: 24, gap: 28 }}>
+        <View style={{ marginTop: 20, gap: 28 }}>
           {visiblePosts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
@@ -137,36 +157,39 @@ export default function HomeScreen() {
           onPress={() => router.push("/edit-profile")}
           style={{
             position: "absolute",
-            left: 11,
-            right: 11,
-            bottom: insets.bottom + 82,
+            left: 12,
+            right: 12,
+            bottom: insets.bottom + 80,
             flexDirection: "row",
             alignItems: "center",
-            gap: 12,
+            gap: 11,
             backgroundColor: "#FFFFFF",
-            borderRadius: 18,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
+            borderRadius: 16,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
             ...(shadow.md as object),
           }}
         >
           <View
             style={{
-              width: 34,
-              height: 34,
-              borderRadius: 11,
+              width: 32,
+              height: 32,
+              borderRadius: 10,
               backgroundColor: gold[50],
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Gift size={18} color={gold[600]} />
+            <Gift size={17} color={gold[600]} />
           </View>
-          <AppText variant="bodySemibold" color={brand[700]} style={{ flex: 1 }}>
+          <AppText
+            color={brand[700]}
+            style={{ flex: 1, fontSize: 13.5, lineHeight: 19, fontFamily: "Urbanist_600SemiBold" }}
+          >
             Lengkapi profil anda, dapatkan reward menarik
           </AppText>
           <PressableScale onPress={() => setShowProfileBanner(false)} hitSlop={12}>
-            <X size={20} color={ink[400]} />
+            <X size={19} color={ink[400]} />
           </PressableScale>
         </PressableScale>
       ) : null}

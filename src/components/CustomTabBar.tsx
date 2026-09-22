@@ -19,8 +19,8 @@ import { AppText } from "./ui/AppText";
 import { brand, ink } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 
-const BAR_HEIGHT = 58;
-const FAB_SIZE = 54;
+const BAR_HEIGHT = 54;
+const FAB_SIZE = 55;
 
 const tabs: Record<string, { icon: LucideIcon; label: string }> = {
   index: { icon: House, label: "Home" },
@@ -53,7 +53,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         bottom: 0,
         flexDirection: "row",
         alignItems: "center",
-        gap: 10,
+        gap: 6,
         paddingHorizontal: 12,
         paddingBottom: insets.bottom + 10,
       }}
@@ -99,7 +99,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
                 backgroundColor: focused ? brand[50] : "transparent",
               }}
             >
-              <Icon size={21} color={tint} strokeWidth={focused ? 2.3 : 1.9} />
+              <Icon size={19} color={tint} strokeWidth={focused ? 2.3 : 1.9} />
               <AppText variant="micro" color={tint}>
                 {tab.label}
               </AppText>
