@@ -46,21 +46,21 @@ export function PinDots({
 const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
 
 /**
- * Flat navy backspace key with a thin white cross. Every corner is curved,
- * including the left tip, so the key reads as soft rather than spiky.
+ * Flat navy backspace key with a white cross: a wide rounded body, a shallow
+ * left tip, and every corner curved.
  */
 const BACKSPACE_BODY =
-  "M3.7 10.3 L7.3 6.7 Q9 5 11.4 5 L18.5 5 Q22 5 22 8.5 L22 15.5 Q22 19 18.5 19 " +
-  "L11.4 19 Q9 19 7.3 17.3 L3.7 13.7 Q2 12 3.7 10.3 Z";
+  "M0.93 8.46 L4.66 2.23 Q6 0 8.6 0 L22.8 0 Q26 0 26 3.2 L26 16.8 Q26 20 22.8 20 " +
+  "L8.6 20 Q6 20 4.66 17.77 L0.93 11.54 Q0 10 0.93 8.46 Z";
 
-function BackspaceIcon({ size = 46 }: { size?: number }) {
+function BackspaceIcon({ width = 46 }: { width?: number }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Svg width={width} height={(width * 20) / 26} viewBox="0 0 26 20">
       <Path d={BACKSPACE_BODY} fill={brand[900]} />
       <Path
-        d="M18 9 12 15M12 9l6 6"
+        d="M11 5 21 15M21 5 11 15"
         stroke="#FFFFFF"
-        strokeWidth={2}
+        strokeWidth={2.2}
         strokeLinecap="round"
       />
     </Svg>
@@ -102,7 +102,7 @@ export function PinKeypad({ length = 6, value, onChange }: PinKeypadProps) {
               onPress={() => press(k)}
               style={{ width: key, height: key, alignItems: "center", justifyContent: "center" }}
             >
-              <BackspaceIcon size={Math.round(key * 0.52)} />
+              <BackspaceIcon width={Math.round(key * 0.58)} />
             </PressableScale>
           );
         }
