@@ -1,12 +1,11 @@
 import React from "react";
-import { View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { AppText, Button } from "../components/ui";
+import { Button } from "../components/ui";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
-import { brand } from "../theme/colors";
+import { ink } from "../theme/colors";
 import { useAuthStore } from "../store/authStore";
 
 export default function WelcomeScreen() {
@@ -18,49 +17,39 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#04102F" }}>
+    <View style={{ flex: 1, backgroundColor: ink[200] }}>
+      {/* Artwork is expected to be dark, as in the reference. */}
       <StatusBar style="light" />
-      <LinearGradient
-        colors={["#04102F", "#0B2B73", brand[600]]}
-        locations={[0, 0.6, 1]}
-        style={{ flex: 1 }}
-      >
-        <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
-          <View style={{ flex: 1, width: "100%", maxWidth: 520, alignSelf: "center" }}>
-            <View style={{ alignItems: "center", paddingTop: 20, gap: 10 }}>
-              <ImagePlaceholder
-                label="Logo"
-                style={{ width: 188, height: 116 }}
-                radius={22}
-              />
-              <AppText variant="captionMedium" color={brand[300]} style={{ letterSpacing: 2 }}>
-                good • will • grow
-              </AppText>
-            </View>
 
-            <View style={{ paddingHorizontal: 24, paddingTop: 28 }}>
-              <AppText variant="display" color="#FFFFFF" center>
-                Untuk kamu yang{"\n"}
-                <AppText variant="display" color={brand[300]}>
-                  terus bertumbuh
-                </AppText>
-                {"\n"}dan berbagi cerita
-              </AppText>
-            </View>
+      {/* Full-screen artwork slot. Swap for:
+          <Image source={...} style={StyleSheet.absoluteFill} resizeMode="cover" /> */}
+      <ImagePlaceholder
+        label="Desain Background (full screen)"
+        radius={0}
+        iconSize={44}
+        style={StyleSheet.absoluteFill}
+      />
 
-            <ImagePlaceholder
-              label="Foto Hero"
-              iconSize={40}
-              radius={0}
-              style={{ flex: 1, marginTop: 28 }}
-            />
-
-            <View style={{ paddingHorizontal: 24, paddingTop: 22, paddingBottom: 10 }}>
-              <Button label="Masuk / Daftar" variant="light" size="lg" fullWidth onPress={openLogin} />
-            </View>
-          </View>
-        </SafeAreaView>
-      </LinearGradient>
+      <SafeAreaView edges={["bottom"]} style={{ marginTop: "auto" }}>
+        <View
+          style={{
+            width: "100%",
+            maxWidth: 520,
+            alignSelf: "center",
+            paddingHorizontal: 26,
+            paddingBottom: 22,
+          }}
+        >
+          <Button
+            label="Masuk / Daftar"
+            variant="light"
+            size="lg"
+            fullWidth
+            onPress={openLogin}
+            style={{ height: 58 }}
+          />
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
