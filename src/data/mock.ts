@@ -1,4 +1,5 @@
 import type {
+  Member,
   Brand,
   Outlet,
   MenuCategory,
@@ -304,11 +305,58 @@ export const promos: Promo[] = [
   },
 ];
 
+export const members: Member[] = [
+  {
+    id: "m-amalia",
+    name: "Amalia",
+    username: "amaliaputri",
+    bio: "Kopi pagi, cerita sore ☕",
+    verified: true,
+    postsCount: 12,
+    followersCount: 48,
+    followingCount: 26,
+  },
+  {
+    id: "m-rizky",
+    name: "Rizky Pratama",
+    username: "rizkyp",
+    bio: "ig: @rizkyp",
+    verified: true,
+    postsCount: 16,
+    followersCount: 5,
+    followingCount: 1,
+  },
+  {
+    id: "m-dinda",
+    name: "Dinda Ayu",
+    username: "dindaa",
+    bio: "Pastry hunter 🥐",
+    postsCount: 8,
+    followersCount: 31,
+    followingCount: 40,
+  },
+  {
+    id: "m-fajar",
+    name: "Fajar Nugraha",
+    username: "fajarn",
+    postsCount: 4,
+    followersCount: 12,
+    followingCount: 19,
+  },
+  { id: "m-maria", name: "mariawati", username: "mariawati", postsCount: 2, followersCount: 9, followingCount: 14 },
+  { id: "m-tokepin", name: "Tokepin", username: "tokepin", postsCount: 6, followersCount: 21, followingCount: 8 },
+  { id: "m-nuri", name: "nuri", username: "nuriboik", postsCount: 1, followersCount: 4, followingCount: 11 },
+  { id: "m-belajar", name: "belajar", username: "belajar", postsCount: 0, followersCount: 2, followingCount: 5 },
+  { id: "m-siska", name: "Siska Miranda", username: "mrddd", postsCount: 9, followersCount: 37, followingCount: 22 },
+  { id: "m-vincent", name: "Vincent Valerian", username: "vinvlrn", postsCount: 3, followersCount: 15, followingCount: 17 },
+  { id: "m-einar", name: "einar", username: "einarest", postsCount: 5, followersCount: 18, followingCount: 9 },
+];
+
 export const feedPosts: FeedPost[] = [
   {
     id: "post-1",
-    authorName: "Amalia",
-    authorHandle: "@amal",
+    authorName: "Dinda Ayu",
+    authorHandle: "@dindaa",
     time: "5 menit lalu",
     caption: "Geprek chili padi selalu jadi comfort food terbaik ✨",
     type: "checkin",
@@ -330,8 +378,8 @@ export const feedPosts: FeedPost[] = [
   },
   {
     id: "post-3",
-    authorName: "Dinda Ayu",
-    authorHandle: "@dindaa",
+    authorName: "Siska Miranda",
+    authorHandle: "@mrddd",
     time: "1 jam lalu",
     caption: "Croissant butter Lesung Pipi masih hangat, wangi mentega-nya juara!",
     type: "checkin",

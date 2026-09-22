@@ -1,137 +1,90 @@
-import React, { useState } from "react";
-import { View, ScrollView, TextInput } from "react-native";
+import React from "react";
+import { View } from "react-native";
 import { router } from "expo-router";
-import { MapPin, ImagePlus, X } from "lucide-react-native";
-import { Screen, ScreenHeader, AppText, Button } from "../components/ui";
-import { Avatar } from "../components/ui/Avatar";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { PenLine, MapPin, ChevronRight } from "lucide-react-native";
+import { AppText } from "../components/ui";
+import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
-import { MediaTile } from "../components/ui/MediaTile";
-import { brand, ink } from "../theme/colors";
-import { outlets, getBrand } from "../data/mock";
-import { useAuthStore } from "../store/authStore";
-import { useFeedStore } from "../store/feedStore";
-import { fontFamilies } from "../theme/typography";
+import { brand, ink, surface } from "../theme/colors";
+import { shadow } from "../theme/shadows";
 
-export default function CreatePostScreen() {
-  const name = useAuthStore((s) => s.name);
-  const addPost = useFeedStore((s) => s.addPost);
-  const [caption, setCaption] = useState("");
-  const [outletId, setOutletId] = useState<string | undefined>();
-  const [addPhoto, setAddPhoto] = useState(false);
+const options = [
+  {
+    key: "post",
+    icon: PenLine,
+    title: "Buat Post",
+    subtitle: "Bagikan pemikiran, foto, atau update kamu",
+  },
+  {
+    key: "checkin",
+    icon: MapPin,
+    title: "Check In",
+    subtitle: "Bagikan lokasi dan pengalaman di outlet terdekat",
+  },
+];
 
-  const outlet = outlets.find((o) => o.id === outletId);
-  const brandInfo = getBrand(outlet?.brandId);
-
-  const submit = () => {
-    if (!caption.trim()) return;
-    addPost(caption.trim(), outlet?.name, outlet?.brandId);
-    router.back();
-  };
-
+export default function CreatePostChooser() {
   return (
-    <Screen>
-      <ScreenHeader
-        title="Buat Post"
-        right={
-          <Button label="Posting" size="sm" disabled={!caption.trim()} onPress={submit} />
-        }
-      />
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }} keyboardShouldPersistTaps="handled">
-        <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-          <Avatar name={name} size={44} />
-          <AppText variant="titleLg">{name}</AppText>
-        </View>
+    <View style={{ flex: 1, backgroundColor: surface }}>
+      <StatusBar style="dark" />
+      <AppHeader title="Buat Post" leftIcon="close" />
 
-        <TextInput
-          multiline
-          placeholder="Apa yang sedang kamu nikmati hari ini?"
-          placeholderTextColor={ink[400]}
-          value={caption}
-          onChangeText={setCaption}
-          style={{
-            minHeight: 120,
-            fontFamily: fontFamilies.medium,
-            fontSize: 16,
-            color: ink[900],
-            textAlignVertical: "top",
-          }}
-        />
-
-        {addPhoto ? (
-          <View>
-            <MediaTile
-              colors={brandInfo?.gradient ?? [brand[600], brand[400]]}
-              icon="coffee"
-              radius={18}
-              iconSize={40}
-              style={{ height: 180, width: "100%" }}
-            />
-            <PressableScale
-              onPress={() => setAddPhoto(false)}
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                width: 30,
-                height: 30,
-                borderRadius: 10,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+      <SafeAreaView edges={["bottom"]} style={{ flex: 1 }}>
+        <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 20, gap: 30 }}>
+          <View style={{ gap: 8 }}>
+            <AppText
+              center
+              color={ink[950]}
+              style={{ fontSize: 24, lineHeight: 31, fontFamily: "Urbanist_700Bold" }}
             >
-              <X size={16} color="#FFFFFF" />
-            </PressableScale>
+              Apa yang ingin kamu bagikan?
+            </AppText>
+            <AppText variant="body" color={ink[400]} center style={{ fontSize: 15 }}>
+              Pilih jenis post yang ingin kamu buat
+            </AppText>
           </View>
-        ) : null}
 
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <PressableScale
-            onPress={() => setAddPhoto(true)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-              backgroundColor: ink[50],
-              paddingHorizontal: 14,
-              paddingVertical: 10,
-              borderRadius: 14,
-            }}
-          >
-            <ImagePlus size={16} color={brand[600]} />
-            <AppText variant="captionMedium" color={brand[600]}>Foto</AppText>
-          </PressableScale>
-        </View>
-
-        <View style={{ gap: 10 }}>
-          <AppText variant="titleLg">Check-in di outlet? (opsional)</AppText>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-            {outlets.map((o) => {
-              const active = outletId === o.id;
-              return (
-                <PressableScale
-                  key={o.id}
-                  onPress={() => setOutletId(active ? undefined : o.id)}
+          <View style={{ gap: 18 }}>
+            {options.map(({ key, icon: Icon, title, subtitle }) => (
+              <PressableScale
+                key={key}
+                onPress={() => router.push(`/post-editor?type=${key}`)}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 16,
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 20,
+                  padding: 16,
+                  ...(shadow.sm as object),
+                }}
+              >
+                <View
                   style={{
-                    flexDirection: "row",
+                    width: 58,
+                    height: 58,
+                    borderRadius: 18,
+                    backgroundColor: brand[50],
                     alignItems: "center",
-                    gap: 6,
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    borderRadius: 14,
-                    backgroundColor: active ? brand[600] : ink[50],
+                    justifyContent: "center",
                   }}
                 >
-                  <MapPin size={13} color={active ? "#FFFFFF" : ink[500]} />
-                  <AppText variant="captionMedium" color={active ? "#FFFFFF" : ink[600]} numberOfLines={1}>
-                    {o.name}
+                  <Icon size={26} color={brand[800]} strokeWidth={2.2} />
+                </View>
+                <View style={{ flex: 1, gap: 3 }}>
+                  <AppText variant="h3">{title}</AppText>
+                  <AppText variant="body" color={ink[400]}>
+                    {subtitle}
                   </AppText>
-                </PressableScale>
-              );
-            })}
-          </ScrollView>
+                </View>
+                <ChevronRight size={20} color={ink[300]} />
+              </PressableScale>
+            ))}
+          </View>
         </View>
-      </ScrollView>
-    </Screen>
+      </SafeAreaView>
+    </View>
   );
 }

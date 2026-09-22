@@ -1,25 +1,70 @@
 import React from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
-import { Heart, MessageCircle, MoreHorizontal, MapPin, BadgeCheck } from "lucide-react-native";
+import {
+  Heart,
+  MessageCircle,
+  MoreHorizontal,
+  Bookmark,
+  BadgeCheck,
+  ChevronRight,
+} from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { Avatar } from "./ui/Avatar";
 import { ImagePlaceholder } from "./ui/ImagePlaceholder";
 import { PressableScale } from "./ui/PressableScale";
-import { ink, danger } from "../theme/colors";
+import { brand, ink, danger } from "../theme/colors";
 import { useFeedStore } from "../store/feedStore";
+import { useSocialStore } from "../store/socialStore";
 import type { FeedPost } from "../data/types";
+
+function CheckInCard({ outletName }: { outletName: string }) {
+  return (
+    <PressableScale
+      scaleTo={0.99}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        marginTop: 12,
+        backgroundColor: brand[50],
+        borderRadius: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+      }}
+    >
+      <ImagePlaceholder radius={8} iconSize={14} style={{ width: 54, height: 30 }} />
+      <View style={{ flex: 1 }}>
+        <AppText variant="caption" color={ink[400]}>
+          Check In :
+        </AppText>
+        <AppText variant="bodySemibold" color={brand[800]} numberOfLines={1}>
+          {outletName}
+        </AppText>
+      </View>
+      <ChevronRight size={18} color={brand[700]} />
+    </PressableScale>
+  );
+}
 
 export function PostCard({ post }: { post: FeedPost }) {
   const toggleLike = useFeedStore((s) => s.toggleLike);
+  const toggleBookmark = useSocialStore((s) => s.toggleBookmark);
+  const bookmarked = useSocialStore((s) => s.isBookmarked(post.id));
+
+  const openProfile = () => router.push(`/profile/${post.authorHandle.replace("@", "")}`);
 
   return (
     <View style={{ flexDirection: "row", gap: 13, paddingHorizontal: 16 }}>
-      <Avatar name={post.authorName} size={34} />
+      <PressableScale onPress={openProfile}>
+        <Avatar name={post.authorName} size={34} />
+      </PressableScale>
 
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <AppText variant="titleLg">{post.authorName}</AppText>
+          <PressableScale onPress={openProfile}>
+            <AppText variant="titleLg">{post.authorName}</AppText>
+          </PressableScale>
           <BadgeCheck size={15} color={ink[300]} />
           <View style={{ flex: 1 }} />
           <PressableScale hitSlop={10}>
@@ -27,18 +72,16 @@ export function PostCard({ post }: { post: FeedPost }) {
           </PressableScale>
         </View>
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          {post.type === "checkin" ? <MapPin size={11} color={ink[400]} /> : null}
-          <AppText variant="caption" color={ink[400]} numberOfLines={1} style={{ flex: 1 }}>
-            {post.type === "checkin" ? `${post.outletName} · ${post.time}` : post.time}
-          </AppText>
-        </View>
+        <AppText variant="caption" color={ink[400]}>
+          {post.time}
+        </AppText>
 
         <AppText variant="body" color={ink[900]} style={{ marginTop: 10 }}>
+          {post.type === "checkin" && post.outletName ? `📍 ${post.outletName}\n` : ""}
           {post.caption}
         </AppText>
 
-        <PressableScale onPress={() => router.push(`/post/${post.id}`)} scaleTo={0.99}>
+        <PressableScale onPress={() => router.push(`/comments/${post.id}`)} scaleTo={0.99}>
           <ImagePlaceholder
             label="Foto Post"
             radius={14}
@@ -46,6 +89,10 @@ export function PostCard({ post }: { post: FeedPost }) {
             style={{ marginTop: 12, height: 300 }}
           />
         </PressableScale>
+
+        {post.type === "checkin" && post.outletName ? (
+          <CheckInCard outletName={post.outletName} />
+        ) : null}
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 20, marginTop: 12 }}>
           <PressableScale
@@ -64,14 +111,24 @@ export function PostCard({ post }: { post: FeedPost }) {
           </PressableScale>
 
           <PressableScale
-            onPress={() => router.push(`/post/${post.id}`)}
+            onPress={() => router.push(`/comments/${post.id}`)}
             style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
             hitSlop={8}
           >
-            <MessageCircle size={19} color={ink[400]} />
+            <MessageCircle size={19} color={brand[700]} fill={brand[700]} />
             <AppText variant="captionMedium" color={ink[500]}>
               {post.comments}
             </AppText>
+          </PressableScale>
+
+          <View style={{ flex: 1 }} />
+
+          <PressableScale onPress={() => toggleBookmark(post.id)} hitSlop={10}>
+            <Bookmark
+              size={19}
+              color={bookmarked ? brand[700] : ink[400]}
+              fill={bookmarked ? brand[700] : "transparent"}
+            />
           </PressableScale>
         </View>
       </View>

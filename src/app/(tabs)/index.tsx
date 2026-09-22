@@ -28,6 +28,7 @@ export default function HomeScreen() {
   const [scrollY, setScrollY] = useState(0);
   const posts = useFeedStore((s) => s.posts);
   const name = useAuthStore((s) => s.name);
+  const username = useAuthStore((s) => s.username);
 
   // Measured off the reference: the banner covers ~31.5% of the screen and the
   // header pill straddles its bottom edge, which is what the blur picks up.
@@ -100,7 +101,9 @@ export default function HomeScreen() {
               paddingHorizontal: 9,
             }}
           >
-            <Avatar name={name} size={26} />
+            <PressableScale onPress={() => router.push(`/profile/${username}` as never)}>
+              <Avatar name={name} size={26} />
+            </PressableScale>
             {/* Brand lockup supplied later. */}
             <ImagePlaceholder radius={6} iconSize={13} style={{ width: 96, height: 21 }} />
             <PressableScale

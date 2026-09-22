@@ -64,6 +64,10 @@ export default function RootLayout() {
             name="cart"
             options={{ presentation: "modal", animation: "slide_from_bottom" }}
           />
+          <Stack.Screen
+            name="comments/[postId]"
+            options={{ presentation: "transparentModal", animation: "fade" }}
+          />
         </Stack>
         {/* Above the navigator so the poster dims the tab bar too. */}
         {promoOpen ? <PromoPopup onClose={closePromo} /> : null}

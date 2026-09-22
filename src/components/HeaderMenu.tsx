@@ -8,9 +8,9 @@ import { PressableScale } from "./ui/PressableScale";
 import { brand, ink } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 
-const items: { icon: LucideIcon; label: string; href?: string }[] = [
-  { icon: Search, label: "Cari" },
-  { icon: Bookmark, label: "Bookmark" },
+const items: { icon: LucideIcon; label: string; href: string }[] = [
+  { icon: Search, label: "Cari", href: "/search-member" },
+  { icon: Bookmark, label: "Bookmark", href: "/bookmark" },
   { icon: Bell, label: "Notifikasi", href: "/notifications" },
 ];
 
@@ -38,7 +38,7 @@ export function HeaderMenu({ top, onClose }: { top: number; onClose: () => void 
             key={label}
             onPress={() => {
               onClose();
-              if (href) router.push(href as never);
+              router.push(href as never);
             }}
             style={{
               height: 37,

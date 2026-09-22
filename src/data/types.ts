@@ -65,6 +65,8 @@ export interface Promo {
   discountLabel: string;
 }
 
+export type PostVisibility = "publik" | "hanya-saya" | "followers" | "teman";
+
 export interface FeedPost {
   id: string;
   authorName: string;
@@ -77,7 +79,32 @@ export interface FeedPost {
   likes: number;
   comments: number;
   liked?: boolean;
+  bookmarked?: boolean;
+  visibility?: PostVisibility;
 }
+
+export interface Member {
+  id: string;
+  name: string;
+  /** Without the leading "@". */
+  username: string;
+  bio?: string;
+  verified?: boolean;
+  postsCount: number;
+  followersCount: number;
+  followingCount: number;
+}
+
+export type NotificationCategory =
+  | "all"
+  | "disukai"
+  | "postingan-disukai"
+  | "komentar-disukai"
+  | "komentar"
+  | "mention"
+  | "pengikut"
+  | "info"
+  | "lainnya";
 
 export interface FeedComment {
   id: string;

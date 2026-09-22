@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, X } from "lucide-react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PressableScale } from "./PressableScale";
@@ -12,10 +12,21 @@ interface AppHeaderProps {
   showBack?: boolean;
   onBack?: () => void;
   right?: React.ReactNode;
+  /** Screens opened as a sheet use a close cross instead of a back chevron. */
+  leftIcon?: "back" | "close";
+  children?: React.ReactNode;
 }
 
 /** White bar with rounded bottom corners, used on every inner screen. */
-export function AppHeader({ title, showBack = true, onBack, right }: AppHeaderProps) {
+export function AppHeader({
+  title,
+  showBack = true,
+  onBack,
+  right,
+  leftIcon = "back",
+  children,
+}: AppHeaderProps) {
+  const LeftIcon = leftIcon === "close" ? X : ChevronLeft;
   return (
     <View
       style={{
@@ -36,7 +47,11 @@ export function AppHeader({ title, showBack = true, onBack, right }: AppHeaderPr
         >
           {showBack ? (
             <PressableScale onPress={onBack ?? (() => router.back())} hitSlop={12}>
-              <ChevronLeft size={26} color={brand[700]} strokeWidth={2} />
+              <LeftIcon
+                size={leftIcon === "close" ? 24 : 26}
+                color={brand[700]}
+                strokeWidth={leftIcon === "close" ? 2.4 : 2}
+              />
             </PressableScale>
           ) : null}
           {title ? (
@@ -48,6 +63,7 @@ export function AppHeader({ title, showBack = true, onBack, right }: AppHeaderPr
           )}
           {right}
         </View>
+        {children}
       </SafeAreaView>
     </View>
   );

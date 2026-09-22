@@ -6,6 +6,8 @@ interface AuthState {
   hasPin: boolean;
   phone: string;
   name: string;
+  username: string;
+  bio: string;
   completeOnboarding: () => void;
   setPhone: (phone: string) => void;
   loginSuccess: () => void;
@@ -21,6 +23,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   hasPin: false,
   phone: "",
   name: "Amalia Putri",
+  username: "amaliaputri",
+  bio: "",
   completeOnboarding: () => set({ hasOnboarded: true }),
   setPhone: (phone) => set({ phone }),
   loginSuccess: () => set({ isLoggedIn: true }),
