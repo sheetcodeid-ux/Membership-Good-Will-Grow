@@ -11,6 +11,7 @@ import { Avatar } from "../../components/ui/Avatar";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { PostCard } from "../../components/PostCard";
+import { HeaderMenu } from "../../components/HeaderMenu";
 import { brand, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
 import { useFeedStore } from "../../store/feedStore";
@@ -23,6 +24,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState(filters[0]);
   const [showProfileBanner, setShowProfileBanner] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const posts = useFeedStore((s) => s.posts);
   const name = useAuthStore((s) => s.name);
 
@@ -43,6 +46,8 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 170 }}
+        scrollEventThrottle={16}
+        onScroll={(e) => setScrollY(e.nativeEvent.contentOffset.y)}
       >
         <View>
           <ImagePlaceholder
@@ -99,6 +104,7 @@ export default function HomeScreen() {
             {/* Brand lockup supplied later. */}
             <ImagePlaceholder radius={6} iconSize={13} style={{ width: 96, height: 21 }} />
             <PressableScale
+              onPress={() => setMenuOpen((v) => !v)}
               style={{
                 width: 30,
                 height: 30,
@@ -192,6 +198,14 @@ export default function HomeScreen() {
             <X size={19} color={ink[400]} />
           </PressableScale>
         </PressableScale>
+      ) : null}
+
+      {menuOpen ? (
+        <HeaderMenu
+          // Bottom edge of the header pill, following the scroll position.
+          top={bannerHeight - 22 + 50 + 3 - scrollY}
+          onClose={() => setMenuOpen(false)}
+        />
       ) : null}
     </View>
   );

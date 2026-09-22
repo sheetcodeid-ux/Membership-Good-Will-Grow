@@ -9,10 +9,12 @@ import { PressableScale } from "../components/ui/PressableScale";
 import { PinDots, PinKeypad } from "../components/PinPad";
 import { ink, surface } from "../theme/colors";
 import { useAuthStore } from "../store/authStore";
+import { useUiStore } from "../store/uiStore";
 
 export default function AccessPinScreen() {
   const [pin, setPin] = useState("");
   const unlock = useAuthStore((s) => s.unlock);
+  const openPromo = useUiStore((s) => s.openPromo);
 
   const onChange = (next: string) => {
     setPin(next);
@@ -20,6 +22,7 @@ export default function AccessPinScreen() {
       setTimeout(() => {
         unlock();
         router.replace("/(tabs)");
+        openPromo();
       }, 180);
     }
   };

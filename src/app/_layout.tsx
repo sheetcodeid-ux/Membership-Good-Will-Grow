@@ -7,6 +7,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
+import { PromoPopup } from "../components/PromoPopup";
+import { useUiStore } from "../store/uiStore";
 import {
   useFonts,
   Urbanist_400Regular,
@@ -20,6 +22,8 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 SystemUI.setBackgroundColorAsync("#FFFFFF").catch(() => {});
 
 export default function RootLayout() {
+  const promoOpen = useUiStore((s) => s.promoOpen);
+  const closePromo = useUiStore((s) => s.closePromo);
   const [fontsLoaded] = useFonts({
     Urbanist_400Regular,
     Urbanist_500Medium,
@@ -61,6 +65,8 @@ export default function RootLayout() {
             options={{ presentation: "modal", animation: "slide_from_bottom" }}
           />
         </Stack>
+        {/* Above the navigator so the poster dims the tab bar too. */}
+        {promoOpen ? <PromoPopup onClose={closePromo} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
