@@ -66,7 +66,7 @@ function TabButton({
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      ["rgba(255,255,255,0)", "rgba(255,255,255,0.78)"]
+      ["rgba(255,255,255,0)", "rgba(255,255,255,0.42)"]
     ),
     transform: [{ scale: 0.94 + progress.value * 0.06 }],
   }));

@@ -44,10 +44,11 @@ const filters: FeedFilterOption[] = [
 const PILL_HEIGHT = 52;
 /**
  * The bar's corner at rest. Deliberately tighter than the cards below it: on
- * a 52pt bar the card radius turns the ends into half-circles, which reads as
- * a pill floating on the banner rather than as a bar resting against it.
+ * a 52pt bar a card-sized radius turns the ends into half-circles, which
+ * reads as a pill floating on the banner rather than a bar resting against
+ * it. Small enough to be a chamfer, not a curve.
  */
-const BAR_RADIUS = 13;
+const BAR_RADIUS = 8;
 
 /** Round control inside the glass bar, with an optional unread dot. */
 function GlassButton({
@@ -203,6 +204,23 @@ export default function HomeScreen() {
     height: interpolate(stuck.value, [0, 1], [0, insets.top], "clamp"),
   }));
 
+  const bannerHeight = Math.min(300, Math.max(210, r.height * 0.3));
+
+  /**
+   * The banner hands the screen over as the bar climbs: it drifts up at a
+   * third of the scroll speed and fades out over its own height. Without it
+   * the artwork stays pin-sharp right up to the moment it slides under the
+   * bar, and the bar looks like it is cutting the page rather than taking it
+   * over.
+   */
+  const bannerStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, bannerHeight * 0.8], [1, 0], "clamp"),
+    transform: [
+      { translateY: interpolate(scrollY.value, [0, bannerHeight], [0, bannerHeight * 0.32], "clamp") },
+      { scale: interpolate(scrollY.value, [0, bannerHeight], [1, 1.04], "clamp") },
+    ],
+  }));
+
   const onPillLayout = useCallback(
     (e: LayoutChangeEvent) => {
       pillRestY.value = e.nativeEvent.layout.y;
@@ -234,11 +252,9 @@ export default function HomeScreen() {
         }}
       >
         <View style={{ width: r.contentWidth }}>
-          <PromoCarousel
-            slides={promoBanners}
-            width={r.contentWidth}
-            height={Math.min(300, Math.max(210, r.height * 0.3))}
-          />
+          <Animated.View style={bannerStyle}>
+            <PromoCarousel slides={promoBanners} width={r.contentWidth} height={bannerHeight} />
+          </Animated.View>
 
           {/* Reserves the bar's slot in the flow; the bar itself is drawn in
               the overlay below so it can climb without the page reflowing. */}
@@ -281,7 +297,7 @@ export default function HomeScreen() {
       >
         <View style={{ width: "100%", maxWidth: Math.max(r.contentWidth, 520), alignSelf: "center" }} pointerEvents="box-none">
         <Animated.View
-          style={[shellStyle, shadow.glass as object]}
+          style={shellStyle}
           pointerEvents="box-none"
         >
         <Animated.View style={clipStyle} pointerEvents="box-none">

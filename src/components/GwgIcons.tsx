@@ -22,32 +22,25 @@ export interface GlyphProps {
 }
 
 /**
- * House with an overhanging roof and a doorway.
+ * House with an arched doorway.
  *
- * The roof runs past the walls on both sides rather than meeting them flush;
- * that overhang is the whole difference between a house and a pentagon, and
- * it is what survives at tab-bar size.
+ * Drawn as one closed path. The previous version drew the roof as an open
+ * stroke over a separate body, so the two never joined at the apex and left
+ * a notch there that read as a hole in the roof. A single outline has no
+ * seam to open up, at any size or stroke weight.
  */
 export function HomeGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M2.2 10.4 11.1 3.2a1.45 1.45 0 0 1 1.8 0l8.9 7.2"
-        fill="none"
-        stroke={color}
-        strokeWidth={1.9}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M4.5 9.1v9.6a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5V9.1"
+        d="M11.02 2.86a1.56 1.56 0 0 1 1.96 0l7.72 6.16c.37.3.58.75.58 1.22v8.26a2.5 2.5 0 0 1-2.5 2.5H5.22a2.5 2.5 0 0 1-2.5-2.5v-8.26c0-.47.21-.92.58-1.22Z"
         fill={active ? color : "none"}
         stroke={color}
         strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
       <Path
-        d="M9.6 21.2v-4.6a2.4 2.4 0 0 1 4.8 0v4.6"
+        d="M9.7 21V16.7a2.3 2.3 0 0 1 4.6 0V21"
         fill={active ? "#FFFFFF" : "none"}
         stroke={active ? "#FFFFFF" : color}
         strokeWidth={active ? 0 : 1.9}

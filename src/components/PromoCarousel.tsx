@@ -55,11 +55,12 @@ export function PromoCarousel({
     <View
       style={{
         height,
-        // Lifts the banner off the page, so the bar that overlaps its lower
-        // edge has something to sit against. The shadow lives out here
-        // because the clipping that rounds the corners would otherwise
-        // crop it away.
-        ...(shadow.md as object),
+        // The banner is what casts the shadow on this screen, not the bar
+        // riding over it. Hanging it on the bar drew a dark line across the
+        // filter row underneath; hanging it here puts the depth where the
+        // eye expects it — under the artwork. It lives on this view rather
+        // than the clipping one because clipping would crop it away.
+        ...(shadow.glass as object),
         backgroundColor: ink[100],
         borderBottomLeftRadius: radius.xl,
         borderBottomRightRadius: radius.xl,
