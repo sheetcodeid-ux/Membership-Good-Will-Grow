@@ -19,6 +19,7 @@ import Animated, {
 import { AppText } from "../../components/ui/AppText";
 import { Avatar } from "../../components/ui/Avatar";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
+import { LinearGradient } from "expo-linear-gradient";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { AppIcon } from "../../components/ui/AppIcon";
 import { LiquidGlass } from "../../components/ui/LiquidGlass";
@@ -140,6 +141,18 @@ export default function HomeScreen() {
               ))}
             </AnimatedScrollView>
 
+            <LinearGradient
+              colors={["transparent", "rgba(8,30,80,0.45)"]}
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: bannerHeight * 0.4,
+              }}
+              pointerEvents="none"
+            />
+
             <View
               style={{
                 position: "absolute",
@@ -225,7 +238,7 @@ export default function HomeScreen() {
             />
           </UiHost>
 
-          <View style={{ marginTop: r.s(20), gap: r.s(28) }}>
+          <View style={{ marginTop: r.s(16), gap: r.s(14) }}>
             {visiblePosts.map((post, i) => (
               <Animated.View
                 // Keying on the filter replays the stagger when the list changes.
