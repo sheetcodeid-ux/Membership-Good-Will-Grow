@@ -1,9 +1,9 @@
 import React, { useState } from "react";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { Activity, ChevronRight, Lock, ShoppingBasket } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PointsCardGlyph, ReceiptGlyph } from "../../components/MemberGlyphs";
@@ -179,7 +179,7 @@ export default function MemberScreen() {
                           gap: 8,
                         }}
                       >
-                        <Lock size={15} color={ink[600]} />
+                        <AppIcon name="lock" size={15} color={ink[600]} />
                         <AppText variant="titleLg" color={ink[600]}>
                           Level ini terkunci
                         </AppText>
@@ -194,7 +194,7 @@ export default function MemberScreen() {
           {unlocked ? (
             <View style={{ width: cardWidth, alignSelf: "center", gap: 12 }}>
               <ProgressRow
-                icon={<ShoppingBasket size={15} color={brand[700]} fill={brand[700]} strokeWidth={1.6} />}
+                icon={<AppIcon name="cart" size={15} color={brand[700]} />}
                 label="Total Belanja"
                 ratio={spendProgress}
               />
@@ -243,7 +243,7 @@ export default function MemberScreen() {
               Poinmu
             </AppText>
             <AppText variant="h3">{points.toLocaleString("id-ID")}</AppText>
-            <ChevronRight size={19} color={ink[500]} />
+            <AppIcon name="chevronRight" size={19} color={ink[500]} />
           </PressableScale>
 
           <View
@@ -257,7 +257,7 @@ export default function MemberScreen() {
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <GlyphTile background={brand[900]}>
-                <Activity size={13} color="#FFFFFF" strokeWidth={2.6} />
+                <AppIcon name="activity" size={13} color="#FFFFFF" />
               </GlyphTile>
               <AppText variant="h3">{tier.name} Benefit</AppText>
             </View>

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Info } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -65,7 +65,7 @@ export default function DeleteAccountScreen() {
             paddingVertical: 13,
           }}
         >
-          <Info size={19} color={warning[500]} strokeWidth={2} />
+          <AppIcon name="info" size={19} color={warning[500]} />
           <AppText color={ink[700]} style={{ flex: 1, fontSize: 13, lineHeight: 18 }}>
             Akun tidak dapat dipulihkan setelah dihapus
           </AppText>

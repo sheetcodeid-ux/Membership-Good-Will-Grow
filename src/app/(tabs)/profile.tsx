@@ -1,11 +1,11 @@
 import React, { useState } from "react";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
-import { Check, ChevronRight, Copy, Mail, User } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -69,7 +69,7 @@ function MenuCard({
       <AppText variant="bodyMedium" color={tone} numberOfLines={1} style={{ flex: 1 }}>
         {label}
       </AppText>
-      <ChevronRight size={16} color={chevronColor} strokeWidth={2.4} />
+      <AppIcon name="chevronRight" size={16} color={chevronColor} />
     </PressableScale>
   );
 }
@@ -108,7 +108,7 @@ function HelpCard({
           {value}
         </AppText>
       </View>
-      <ChevronRight size={16} color={brand[700]} strokeWidth={2.4} />
+      <AppIcon name="chevronRight" size={16} color={brand[700]} />
     </PressableScale>
   );
 }
@@ -180,7 +180,7 @@ export default function AccountScreen() {
                   justifyContent: "center",
                 }}
               >
-                <User size={22} color="#FFFFFF" fill="#FFFFFF" strokeWidth={1.6} />
+                <AppIcon name="profile" size={22} color="#FFFFFF" emphasis />
               </View>
               <View style={{ flex: 1, gap: 1 }}>
                 <AppText
@@ -194,7 +194,7 @@ export default function AccountScreen() {
                   {localPhone(phone)}
                 </AppText>
               </View>
-              <ChevronRight size={18} color="rgba(255,255,255,0.9)" strokeWidth={2.2} />
+              <AppIcon name="chevronRight" size={18} color="rgba(255,255,255,0.9)" />
             </View>
 
             <PressableScale
@@ -222,9 +222,9 @@ export default function AccountScreen() {
                 {referralCode}
               </AppText>
               {copied ? (
-                <Check size={16} color={brand[600]} strokeWidth={2.6} />
+                <AppIcon name="check" size={16} color={brand[600]} />
               ) : (
-                <Copy size={16} color={brand[800]} strokeWidth={2} />
+                <AppIcon name="copy" size={16} color={brand[800]} />
               )}
             </PressableScale>
           </LinearGradient>
@@ -265,7 +265,7 @@ export default function AccountScreen() {
           >
             Lengkapi profil anda, dapatkan reward menarik
           </AppText>
-          <ChevronRight size={16} color={brand[700]} strokeWidth={2.4} />
+          <AppIcon name="chevronRight" size={16} color={brand[700]} />
         </PressableScale>
 
         <View style={{ marginTop: GROUP_GAP, gap: ROW_GAP }}>
@@ -365,7 +365,7 @@ export default function AccountScreen() {
           <HelpCard
             icon={
               <View style={{ width: 40, alignItems: "center" }}>
-                <Mail size={27} color={brand[800]} strokeWidth={1.8} />
+                <AppIcon name="mail" size={27} color={brand[800]} />
               </View>
             }
             value={CONTACT.emailLabel}

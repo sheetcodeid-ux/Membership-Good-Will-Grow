@@ -1,9 +1,9 @@
 import React, { useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CreditCard, FilePlus2, Pencil, ShoppingCart, Trash2 } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -48,7 +48,7 @@ export default function CartScreen() {
 
       {empty ? (
         <EmptyState
-          icon={<ShoppingCart size={50} color={ink[300]} strokeWidth={1.7} />}
+          icon={<AppIcon name="cart" size={50} color={ink[300]} />}
           title="Keranjang masih kosong"
           subtitle="Tambahkan menu favoritmu dulu."
           style={{ paddingTop: 80 }}
@@ -90,7 +90,7 @@ export default function CartScreen() {
                         paddingVertical: 4,
                       }}
                     >
-                      <Pencil size={11} color={brand[700]} />
+                      <AppIcon name="compose" size={11} color={brand[700]} />
                       <AppText variant="caption" color={brand[700]}>
                         Edit
                       </AppText>
@@ -107,7 +107,7 @@ export default function CartScreen() {
                         paddingVertical: 4,
                       }}
                     >
-                      <Trash2 size={11} color={danger[500]} />
+                      <AppIcon name="trash" size={11} color={danger[500]} />
                       <AppText variant="caption" color={danger[500]}>
                         Hapus
                       </AppText>
@@ -135,7 +135,7 @@ export default function CartScreen() {
                     paddingHorizontal: 10,
                   }}
                 >
-                  <FilePlus2 size={13} color={ink[400]} />
+                  <AppIcon name="postAdd" size={13} color={ink[400]} />
                   <TextInput
                     value={line.note ?? ""}
                     onChangeText={(v) => setLineNote(line.lineId, v)}
@@ -228,7 +228,7 @@ export default function CartScreen() {
                 <AppText variant="titleLg" color="#FFFFFF">
                   Checkout ({itemCount})
                 </AppText>
-                <CreditCard size={17} color="#FFFFFF" />
+                <AppIcon name="member" size={17} color="#FFFFFF" />
               </PressableScale>
             </View>
           </SafeAreaView>
@@ -237,7 +237,7 @@ export default function CartScreen() {
 
       {deleting ? (
         <ConfirmDialog
-          icon={<Trash2 size={21} color={danger[500]} />}
+          icon={<AppIcon name="trash" size={21} color={danger[500]} />}
           title="Hapus Item"
           message={`Apakah Anda yakin ingin menghapus "${deleting.menuItem.name}" dari keranjang?`}
           cancelLabel="Batal"

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import { AppIcon, type AppIconName } from "../components/ui/AppIcon";
 import { ScrollView, Share, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as Clipboard from "expo-clipboard";
-import { Check, Copy, Gift, Share2, TicketPercent, UserPlus } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -10,19 +10,19 @@ import { brand, ink, surface } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { useAuthStore } from "../store/authStore";
 
-const steps = [
+const steps: { icon: AppIconName; title: string; body: string }[] = [
   {
-    icon: Share2,
+    icon: "share",
     title: "Bagikan Kode",
     body: "Ajak teman untuk bergabung dengan membagikan kode referal Anda",
   },
   {
-    icon: UserPlus,
+    icon: "userPlus",
     title: "Teman Mendaftar",
     body: "Teman menggunakan kode referal saat mendaftar di Good Will Grow",
   },
   {
-    icon: Gift,
+    icon: "gift",
     title: "Dapatkan Reward",
     body: "Anda akan mendapatkan reward berupa kupon ketika teman Anda berhasil mendaftar & melakukan transaksi pertama",
   },
@@ -79,7 +79,7 @@ export default function ReferralScreen() {
               justifyContent: "center",
             }}
           >
-            <Gift size={54} color={brand[900]} strokeWidth={1.9} />
+            <AppIcon name="gift" size={54} color={brand[900]} />
           </View>
         </View>
 
@@ -125,7 +125,7 @@ export default function ReferralScreen() {
               gap: 12,
             }}
           >
-            <TicketPercent size={21} color={brand[900]} strokeWidth={1.9} />
+            <AppIcon name="ticketPercent" size={21} color={brand[900]} />
             <AppText
               color={brand[900]}
               style={{
@@ -156,9 +156,9 @@ export default function ReferralScreen() {
               }}
             >
               {copied ? (
-                <Check size={17} color={brand[900]} strokeWidth={2.4} />
+                <AppIcon name="check" size={17} color={brand[900]} />
               ) : (
-                <Copy size={17} color={brand[900]} strokeWidth={2} />
+                <AppIcon name="copy" size={17} color={brand[900]} />
               )}
               <AppText color={brand[900]} style={{ fontSize: 14.5, lineHeight: 20 }}>
                 {copied ? "Tersalin" : "Salin"}
@@ -179,7 +179,7 @@ export default function ReferralScreen() {
                 gap: 9,
               }}
             >
-              <Share2 size={17} color="#FFFFFF" strokeWidth={2} />
+              <AppIcon name="share" size={17} color="#FFFFFF" />
               <AppText color="#FFFFFF" style={{ fontSize: 14.5, lineHeight: 20 }}>
                 Bagikan
               </AppText>
@@ -199,7 +199,7 @@ export default function ReferralScreen() {
 
           <View style={{ marginTop: 16, gap: 18 }}>
             {steps.map((step, i) => {
-              const Icon = step.icon;
+              const icon = step.icon;
               return (
                 <View key={step.title} style={{ flexDirection: "row", gap: 14 }}>
                   <View
@@ -221,7 +221,7 @@ export default function ReferralScreen() {
                   </View>
                   <View style={{ flex: 1, gap: 4 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}>
-                      <Icon size={18} color={brand[900]} strokeWidth={1.9} />
+                      <AppIcon name={icon} size={18} color={brand[900]} />
                       <AppText
                         color={ink[900]}
                         style={{

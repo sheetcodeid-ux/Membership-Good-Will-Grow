@@ -1,7 +1,7 @@
 import React from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { View } from "react-native";
 import { router } from "expo-router";
-import { QrCode, Ticket, Coins } from "lucide-react-native";
 import { Screen, ScreenHeader, AppText, Card, Button, Divider } from "../components/ui";
 import { PressableScale } from "../components/ui/PressableScale";
 import { brand, ink, gold } from "../theme/colors";
@@ -31,7 +31,7 @@ export default function PaymentScreen() {
               justifyContent: "center",
             }}
           >
-            <QrCode size={22} color={ink[700]} />
+            <AppIcon name="qr" size={22} color={ink[700]} />
           </View>
           <View style={{ flex: 1 }}>
             <AppText variant="bodySemibold">QRIS</AppText>
@@ -45,7 +45,7 @@ export default function PaymentScreen() {
         <View style={{ gap: 12 }}>
           <AppText variant="h3">Potongan Biaya Produk</AppText>
           <Card style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Ticket size={18} color={ink[500]} />
+            <AppIcon name="ticket" size={18} color={ink[500]} />
             <AppText variant="bodyMedium" style={{ flex: 1 }}>
               Kupon
             </AppText>
@@ -81,7 +81,7 @@ export default function PaymentScreen() {
             padding: 14,
           }}
         >
-          <Coins size={18} color={gold[600]} />
+          <AppIcon name="coins" size={18} color={gold[600]} />
           <AppText variant="bodyMedium" style={{ flex: 1 }} color={gold[700]}>
             {points.toLocaleString("id-ID")} Poin · Gunakan Poin
           </AppText>

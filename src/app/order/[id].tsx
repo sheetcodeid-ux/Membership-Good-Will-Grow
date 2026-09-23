@@ -1,9 +1,9 @@
 import React, { useState } from "react";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Clipboard from "expo-clipboard";
-import { Check, Copy, ReceiptText } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { AppHeader } from "../../components/ui/AppHeader";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -90,9 +90,9 @@ function CopyButton({ onPress }: { onPress: () => void }) {
       }}
     >
       {copied ? (
-        <Check size={12} color="#FFFFFF" strokeWidth={3} />
+        <AppIcon name="check" size={12} color="#FFFFFF" />
       ) : (
-        <Copy size={12} color="#FFFFFF" />
+        <AppIcon name="copy" size={12} color="#FFFFFF" />
       )}
     </PressableScale>
   );
@@ -137,7 +137,7 @@ export default function OrderDetailScreen() {
       <View style={{ flex: 1, backgroundColor: surface }}>
         <AppHeader title="Detail Pesanan" />
         <EmptyState
-          icon={<ReceiptText size={54} color={ink[300]} strokeWidth={1.7} />}
+          icon={<AppIcon name="receipt" size={54} color={ink[300]} />}
           title="Pesanan tidak ditemukan"
           style={{ paddingTop: 80 }}
         />

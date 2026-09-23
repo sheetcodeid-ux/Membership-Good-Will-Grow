@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,7 +12,6 @@ import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import Animated, { SlideInDown } from "react-native-reanimated";
-import { Check, X } from "lucide-react-native";
 import { AppText, Button } from "../components/ui";
 import { PressableScale } from "../components/ui/PressableScale";
 import { brand, ink } from "../theme/colors";
@@ -133,7 +133,7 @@ export default function LoginSheet() {
                   />
                   {phone.length > 0 ? (
                     <PressableScale onPress={() => setPhone("")} hitSlop={10}>
-                      <X size={20} color={ink[400]} />
+                      <AppIcon name="close" size={20} color={ink[400]} />
                     </PressableScale>
                   ) : null}
                 </View>
@@ -156,7 +156,7 @@ export default function LoginSheet() {
                     justifyContent: "center",
                   }}
                 >
-                  {agree ? <Check size={14} color="#FFFFFF" strokeWidth={3} /> : null}
+                  {agree ? <AppIcon name="check" size={14} color="#FFFFFF" /> : null}
                 </View>
                 <AppText variant="caption" color={ink[600]} style={{ flex: 1, lineHeight: 18 }}>
                   Dengan melanjutkan ke aplikasi Good Will Grow, kamu menyetujui segala{" "}

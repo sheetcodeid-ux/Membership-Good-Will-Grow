@@ -1,8 +1,8 @@
 import React from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Plus, User } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -53,7 +53,7 @@ function AddLink({ label, onPress }: { label: string; onPress: () => void }) {
       <AppText color={brand[700]} style={{ fontSize: 14, lineHeight: 19 }}>
         {label}
       </AppText>
-      <Plus size={15} color={brand[700]} strokeWidth={2.4} />
+      <AppIcon name="plus" size={15} color={brand[700]} />
     </PressableScale>
   );
 }
@@ -92,7 +92,7 @@ export default function ProfileDetailScreen() {
               overflow: "hidden",
             }}
           >
-            <User size={54} color={ink[50]} fill={ink[50]} strokeWidth={1.4} />
+            <AppIcon name="profile" size={54} color={ink[50]} />
           </View>
           <AppText
             color={ink[900]}

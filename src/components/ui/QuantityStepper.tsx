@@ -1,6 +1,6 @@
 import React from "react";
+import { AppIcon } from "./AppIcon";
 import { View } from "react-native";
-import { Minus, Plus } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { PressableScale } from "./PressableScale";
 import { brand, ink } from "../../theme/colors";
@@ -37,7 +37,7 @@ export function QuantityStepper({
           backgroundColor: canDecrease ? brand[200] : ink[100],
         }}
       >
-        <Minus size={size * 0.5} color={canDecrease ? brand[800] : ink[300]} strokeWidth={2.6} />
+        <AppIcon name="minus" size={size * 0.5} color={canDecrease ? brand[800] : ink[300]} />
       </PressableScale>
       <AppText
         style={{
@@ -62,7 +62,7 @@ export function QuantityStepper({
           backgroundColor: canIncrease ? brand[900] : ink[200],
         }}
       >
-        <Plus size={size * 0.5} color="#FFFFFF" strokeWidth={2.6} />
+        <AppIcon name="plus" size={size * 0.5} color="#FFFFFF" />
       </PressableScale>
     </View>
   );

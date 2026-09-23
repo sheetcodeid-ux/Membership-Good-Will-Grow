@@ -1,16 +1,8 @@
 import React, { useMemo, useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import {
-  ChevronDown,
-  CreditCard,
-  Hash,
-  ReceiptText,
-  Search,
-  ShoppingBag,
-  Store,
-} from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { BottomSheet } from "../components/ui/BottomSheet";
@@ -66,7 +58,7 @@ function FilterPill({
       <AppText variant="bodyMedium" color={ink[800]}>
         {label}
       </AppText>
-      <ChevronDown size={14} color={ink[500]} />
+      <AppIcon name="chevronRight" rotate={90} size={14} color={ink[500]} />
     </PressableScale>
   );
 }
@@ -121,12 +113,12 @@ export default function OrderHistoryScreen() {
           onPress={() => setSheet("channel")}
         />
         <FilterPill
-          icon={<CreditCard size={16} color={ink[600]} />}
+          icon={<AppIcon name="member" size={16} color={ink[600]} />}
           label={statusLabel}
           onPress={() => setSheet("status")}
         />
         <FilterPill
-          icon={<Store size={16} color={ink[600]} />}
+          icon={<AppIcon name="store" size={16} color={ink[600]} />}
           label={outletLabel}
           onPress={() => setSheet("outlet")}
         />
@@ -138,7 +130,7 @@ export default function OrderHistoryScreen() {
       >
         {visible.length === 0 ? (
           <EmptyState
-            icon={<ReceiptText size={54} color={ink[300]} strokeWidth={1.7} />}
+            icon={<AppIcon name="receipt" size={54} color={ink[300]} />}
             title="Belum ada pesanan"
             subtitle="Pesanan yang cocok dengan filter ini belum ada."
             style={{ paddingTop: 60 }}
@@ -188,21 +180,21 @@ export default function OrderHistoryScreen() {
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <ReceiptText size={15} color={ink[400]} />
+                <AppIcon name="receipt" size={15} color={ink[400]} />
                 <AppText variant="body" color={ink[400]} numberOfLines={1} style={{ flex: 1 }}>
                   {o.nota}
                 </AppText>
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Hash size={15} color={ink[400]} />
+                <AppIcon name="hash" size={15} color={ink[400]} />
                 <AppText variant="body" color={ink[400]}>
                   Kode Pesanan : {o.orderCode}
                 </AppText>
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <ShoppingBag size={15} color={ink[400]} />
+                <AppIcon name="order" size={15} color={ink[400]} />
                 <AppText variant="body" color={ink[500]} style={{ flex: 1 }}>
                   {o.lines.reduce((n, l) => n + l.qty, 0)} item
                 </AppText>
@@ -259,12 +251,12 @@ export default function OrderHistoryScreen() {
               }}
             />
             {channelOrder.map((key) => {
-              const { label, description, icon: Icon } = channelMeta[key];
+              const { label, description, icon } = channelMeta[key];
               const selected = filters.channel === key;
               return (
                 <OptionRow
                   key={key}
-                  icon={<Icon size={24} color={selected ? brand[700] : ink[600]} />}
+                  icon={<AppIcon name={icon} size={24} color={selected ? brand[700] : ink[600]} />}
                   title={label}
                   description={description}
                   selected={selected}
@@ -326,7 +318,7 @@ export default function OrderHistoryScreen() {
                 height: 50,
               }}
             >
-              <Search size={18} color={ink[400]} />
+              <AppIcon name="search" size={18} color={ink[400]} />
               <TextInput
                 value={outletQuery}
                 onChangeText={setOutletQuery}

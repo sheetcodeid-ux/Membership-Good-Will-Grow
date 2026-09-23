@@ -1,6 +1,6 @@
 import React from "react";
+import { AppIcon } from "./ui/AppIcon";
 import { ScrollView, View } from "react-native";
-import { CircleCheck, CircleX, Clock, MapPin } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { BottomSheet } from "./ui/BottomSheet";
 import { brand, danger, ink, success, surface } from "../theme/colors";
@@ -36,14 +36,14 @@ export function OutletInfoSheet({ outlet, onClose }: { outlet: Outlet; onClose: 
         <AppText variant="h2">{outlet.name}</AppText>
 
         <View style={{ flexDirection: "row", gap: 12, marginTop: 22 }}>
-          <MapPin size={20} color={danger[500]} fill={danger[500]} stroke="#FFFFFF" />
+          <AppIcon name="pin" size={20} color={danger[500]} />
           <AppText variant="body" color={ink[500]} style={{ flex: 1, lineHeight: 23 }}>
             {outlet.addressFull}
           </AppText>
         </View>
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12 }}>
-          <Clock size={20} color={ink[400]} />
+          <AppIcon name="clock" size={20} color={ink[400]} />
           <AppText variant="body" color={ink[500]}>
             Hari ini: {outlet.weeklyHours[TODAY]}
           </AppText>
@@ -62,9 +62,9 @@ export function OutletInfoSheet({ outlet, onClose }: { outlet: Outlet; onClose: 
           }}
         >
           {outlet.isOpen ? (
-            <CircleCheck size={24} color={success[500]} fill={success[500]} stroke="#FFFFFF" />
+            <AppIcon name="checkCircle" size={24} color={success[500]} />
           ) : (
-            <CircleX size={24} color={danger[500]} fill={danger[500]} stroke="#FFFFFF" />
+            <AppIcon name="closeCircle" size={24} color={danger[500]} />
           )}
           <AppText variant="bodySemibold" color={outlet.isOpen ? success[600] : danger[500]}>
             {outlet.isOpen ? "Buka sekarang" : `Tutup, buka pukul ${outlet.opensAt}`}
@@ -84,9 +84,9 @@ export function OutletInfoSheet({ outlet, onClose }: { outlet: Outlet; onClose: 
           }}
         >
           {outlet.appOrderAvailable ? (
-            <CircleCheck size={24} color={success[500]} fill={success[500]} stroke="#FFFFFF" />
+            <AppIcon name="checkCircle" size={24} color={success[500]} />
           ) : (
-            <CircleX size={24} color={ink[400]} fill={ink[400]} stroke="#FFFFFF" />
+            <AppIcon name="closeCircle" size={24} color={ink[400]} />
           )}
           <AppText
             variant="bodySemibold"

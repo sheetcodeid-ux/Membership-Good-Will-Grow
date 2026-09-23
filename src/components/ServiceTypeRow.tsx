@@ -1,15 +1,15 @@
 import React from "react";
+import { AppIcon, type AppIconName } from "./ui/AppIcon";
 import { View } from "react-native";
-import { Coffee, Scooter, ShoppingBag } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { PressableScale } from "./ui/PressableScale";
 import { brand, ink } from "../theme/colors";
 import type { ServiceType } from "../data/types";
 
-const options: { key: ServiceType; label: string; icon: typeof Coffee }[] = [
-  { key: "dine_in", label: "Dine In", icon: Coffee },
-  { key: "takeaway", label: "Take Away", icon: ShoppingBag },
-  { key: "delivery", label: "Delivery", icon: Scooter },
+const options: { key: ServiceType; label: string; icon: AppIconName }[] = [
+  { key: "dine_in", label: "Dine In", icon: "coffee" },
+  { key: "takeaway", label: "Take Away", icon: "order" },
+  { key: "delivery", label: "Delivery", icon: "scooter" },
 ];
 
 interface ServiceTypeRowProps {
@@ -24,7 +24,7 @@ interface ServiceTypeRowProps {
 export function ServiceTypeRow({ value, onChange, available }: ServiceTypeRowProps) {
   return (
     <View style={{ flexDirection: "row", gap: 7 }}>
-      {options.map(({ key, label, icon: Icon }) => {
+      {options.map(({ key, label, icon }) => {
         const enabled = !available || available.includes(key);
         const active = value === key;
         return (
@@ -45,7 +45,7 @@ export function ServiceTypeRow({ value, onChange, available }: ServiceTypeRowPro
               backgroundColor: active ? brand[50] : ink[50],
             }}
           >
-            <Icon size={12} color={active ? brand[700] : ink[500]} />
+            <AppIcon name={icon} size={12} color={active ? brand[700] : ink[500]} />
             <AppText
               numberOfLines={1}
               color={active ? brand[800] : ink[600]}

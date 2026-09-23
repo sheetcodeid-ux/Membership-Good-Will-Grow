@@ -1,8 +1,8 @@
 import React from "react";
+import { AppIcon } from "./ui/AppIcon";
 import { Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
-import { SlidersHorizontal } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { PressableScale } from "./ui/PressableScale";
 import { ShortcutIcon } from "./ShortcutIcon";
@@ -64,7 +64,7 @@ export function ShortcutMenu({ onClose }: { onClose: () => void }) {
               onPress={() => go("/shortcuts")}
               hitSlop={10}
             >
-              <SlidersHorizontal size={17} color={brand[800]} />
+              <AppIcon name="sliders" size={17} color={brand[800]} />
             </PressableScale>
           </View>
 

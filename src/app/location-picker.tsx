@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Check, ChevronRight, Search } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -68,7 +68,7 @@ export default function LocationPickerScreen() {
             const active = i === step;
             return (
               <View key={label} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                {i > 0 ? <ChevronRight size={13} color={ink[300]} strokeWidth={2.2} /> : null}
+                {i > 0 ? <AppIcon name="chevronRight" size={13} color={ink[300]} /> : null}
                 <PressableScale
                   hitSlop={6}
                   disabled={!done && !active}
@@ -101,7 +101,7 @@ export default function LocationPickerScreen() {
             ...(shadow.xs as object),
           }}
         >
-          <Search size={17} color={ink[400]} strokeWidth={2} />
+          <AppIcon name="search" size={17} color={ink[400]} />
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -159,9 +159,9 @@ export default function LocationPickerScreen() {
                       {option}
                     </AppText>
                     {selected ? (
-                      <Check size={17} color={brand[600]} strokeWidth={2.6} />
+                      <AppIcon name="check" size={17} color={brand[600]} />
                     ) : (
-                      <ChevronRight size={16} color={ink[300]} strokeWidth={2.2} />
+                      <AppIcon name="chevronRight" size={16} color={ink[300]} />
                     )}
                   </PressableScale>
                 </View>

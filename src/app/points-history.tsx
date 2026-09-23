@@ -1,8 +1,8 @@
 import React from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
-import { HandCoins, TrendingDown, TrendingUp } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -52,7 +52,7 @@ export default function PointsHistoryScreen() {
               justifyContent: "center",
             }}
           >
-            <HandCoins size={24} color="#FFFFFF" />
+            <AppIcon name="handCoins" size={24} color="#FFFFFF" />
           </View>
           <View>
             <AppText variant="body" color="rgba(255,255,255,0.85)">
@@ -73,7 +73,7 @@ export default function PointsHistoryScreen() {
 
         {history.length === 0 ? (
           <EmptyState
-            icon={<HandCoins size={50} color={ink[300]} strokeWidth={1.7} />}
+            icon={<AppIcon name="handCoins" size={50} color={ink[300]} />}
             title="Belum ada riwayat poin"
             subtitle="Poin dari transaksimu akan tercatat di sini."
             style={{ paddingTop: 50 }}
@@ -107,9 +107,9 @@ export default function PointsHistoryScreen() {
                   }}
                 >
                   {earned ? (
-                    <TrendingUp size={18} color={success[600]} />
+                    <AppIcon name="trendUp" size={18} color={success[600]} />
                   ) : (
-                    <TrendingDown size={18} color={danger[500]} />
+                    <AppIcon name="trendDown" size={18} color={danger[500]} />
                   )}
                 </View>
 

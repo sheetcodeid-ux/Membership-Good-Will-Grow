@@ -1,6 +1,6 @@
 import React from "react";
+import { AppIcon } from "./ui/AppIcon";
 import { View } from "react-native";
-import { CircleCheck } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { PressableScale } from "./ui/PressableScale";
 import { brand, ink } from "../theme/colors";
@@ -45,7 +45,7 @@ export function OptionRow({ icon, title, description, selected, onPress }: Optio
           </AppText>
         ) : null}
       </View>
-      {selected ? <CircleCheck size={20} color={brand[700]} fill={brand[700]} stroke="#FFFFFF" /> : null}
+      {selected ? <AppIcon name="checkCircle" size={20} color={brand[700]} /> : null}
     </PressableScale>
   );
 }

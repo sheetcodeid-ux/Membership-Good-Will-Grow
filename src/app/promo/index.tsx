@@ -1,9 +1,9 @@
 import React from "react";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { View, FlatList } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { Sparkles, Check } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { Badge } from "../../components/ui/Badge";
 import { PressableScale } from "../../components/ui/PressableScale";
@@ -51,10 +51,10 @@ export default function PromoScreen() {
                   }}
                 />
                 <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Badge label={item.discountLabel} tone="gold" icon={<Sparkles size={12} color="#946A20" />} />
+                  <Badge label={item.discountLabel} tone="gold" icon={<AppIcon name="sparkles" size={12} color="#946A20" />} />
                   {claimed ? (
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "rgba(255,255,255,0.15)", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 }}>
-                      <Check size={12} color="#FFFFFF" />
+                      <AppIcon name="check" size={12} color="#FFFFFF" />
                       <AppText variant="micro" color="#FFFFFF">Diklaim</AppText>
                     </View>
                   ) : null}

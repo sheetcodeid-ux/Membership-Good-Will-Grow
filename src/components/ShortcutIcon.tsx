@@ -1,41 +1,24 @@
 import React from "react";
-import {
-  Ban,
-  Bell,
-  Bookmark,
-  Gift,
-  Lock,
-  Pencil,
-  Search,
-  Settings,
-  Share2,
-  Star,
-  Ticket,
-  TicketCheck,
-  User,
-  UserPlus,
-  Users,
-  type LucideIcon,
-} from "lucide-react-native";
+import { AppIcon, type AppIconName } from "./ui/AppIcon";
 import { brand } from "../theme/colors";
 import { ReceiptGlyph } from "./MemberGlyphs";
 
-const icons: Record<string, LucideIcon> = {
-  ticket: Ticket,
-  "ticket-check": TicketCheck,
-  star: Star,
-  gift: Gift,
-  bell: Bell,
-  bookmark: Bookmark,
-  search: Search,
-  users: Users,
-  "user-plus": UserPlus,
-  ban: Ban,
-  user: User,
-  pencil: Pencil,
-  lock: Lock,
-  settings: Settings,
-  share: Share2,
+const icons: Record<string, AppIconName> = {
+  ticket: "ticket",
+  "ticket-check": "ticketCheck",
+  star: "star",
+  gift: "gift",
+  bell: "bell",
+  bookmark: "bookmark",
+  search: "search",
+  users: "users",
+  "user-plus": "userPlus",
+  ban: "ban",
+  user: "profile",
+  pencil: "compose",
+  lock: "lock",
+  settings: "settings",
+  share: "share",
 };
 
 /**
@@ -53,6 +36,6 @@ export function ShortcutIcon({
 }) {
   // The receipt needs its ruled lines knocked out, so it has its own drawing.
   if (name === "receipt") return <ReceiptGlyph size={size} color={color} />;
-  const Icon = icons[name] ?? Star;
-  return <Icon size={size} color={color} fill={color} strokeWidth={1.6} />;
+  const icon = icons[name] ?? "star";
+  return <AppIcon name={icon} size={size} color={color} emphasis />;
 }

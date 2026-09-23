@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronDown, ChevronRight, Plus, Search, TriangleAlert, X } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
@@ -103,7 +103,7 @@ export default function OrderScreen() {
               >
                 Riwayat Pesanan
               </AppText>
-              <ChevronRight size={15} color={brand[700]} />
+              <AppIcon name="chevronRight" size={15} color={brand[700]} />
             </PressableScale>
           </View>
 
@@ -142,10 +142,10 @@ export default function OrderScreen() {
                   >
                     {outlet ? `${(outlet.distanceKm * 1000).toFixed(2)} m` : ""}
                   </AppText>
-                  {tooFar ? <TriangleAlert size={11} color={danger[500]} /> : null}
+                  {tooFar ? <AppIcon name="alertTriangle" size={11} color={danger[500]} /> : null}
                 </View>
               </View>
-              <ChevronDown size={19} color={brand[700]} />
+              <AppIcon name="chevronRight" rotate={90} size={19} color={brand[700]} />
             </PressableScale>
 
             <ServiceTypeRow
@@ -273,7 +273,7 @@ export default function OrderScreen() {
                 Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
               ]}
             />
-            <Search size={15} color={brand[700]} />
+            <AppIcon name="search" size={15} color={brand[700]} />
           </View>
 
           <AppText
@@ -354,7 +354,7 @@ export default function OrderScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Plus size={11} color="#FFFFFF" strokeWidth={3} />
+                    <AppIcon name="plus" size={11} color="#FFFFFF" />
                   </PressableScale>
                 </View>
               </View>
@@ -389,7 +389,7 @@ export default function OrderScreen() {
               ...(shadow.sm as object),
             }}
           >
-            <X size={11} color={ink[500]} strokeWidth={2.6} />
+            <AppIcon name="close" size={11} color={ink[500]} />
           </PressableScale>
         </View>
       ) : null}

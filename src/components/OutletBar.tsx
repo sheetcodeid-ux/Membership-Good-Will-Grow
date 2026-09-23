@@ -1,22 +1,22 @@
 import React from "react";
+import { AppIcon, type AppIconName } from "./ui/AppIcon";
 import { View } from "react-native";
-import { Bike, Coffee, ShoppingBag } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { BrandLogo } from "./BrandLogo";
 import { brand, ink } from "../theme/colors";
 import { outletFullName } from "../data/mock";
 import type { Outlet, ServiceType } from "../data/types";
 
-const serviceMeta: Record<ServiceType, { label: string; icon: typeof Coffee }> = {
-  dine_in: { label: "Dine In", icon: Coffee },
-  takeaway: { label: "Take Away", icon: ShoppingBag },
-  delivery: { label: "Delivery", icon: Bike },
+const serviceMeta: Record<ServiceType, { label: string; icon: AppIconName }> = {
+  dine_in: { label: "Dine In", icon: "coffee" },
+  takeaway: { label: "Take Away", icon: "order" },
+  delivery: { label: "Delivery", icon: "bike" },
 };
 
 /** Outlet strip that sits under the header on Keranjang and Checkout. */
 export function OutletBar({ outlet, serviceType }: { outlet?: Outlet; serviceType: ServiceType }) {
   if (!outlet) return null;
-  const { label, icon: Icon } = serviceMeta[serviceType];
+  const { label, icon } = serviceMeta[serviceType];
   return (
     <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
       <View
@@ -50,7 +50,7 @@ export function OutletBar({ outlet, serviceType }: { outlet?: Outlet; serviceTyp
             paddingHorizontal: 13,
           }}
         >
-          <Icon size={14} color="#FFFFFF" />
+          <AppIcon name={icon} size={14} color="#FFFFFF" />
           <AppText variant="bodySemibold" color="#FFFFFF">
             {label}
           </AppText>

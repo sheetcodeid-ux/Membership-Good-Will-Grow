@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { AtSign, Calendar, Camera, ChevronRight, MapPin, User } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -119,7 +119,7 @@ export default function EditProfileScreen() {
                 overflow: "hidden",
               }}
             >
-              <User size={80} color={ink[50]} fill={ink[50]} strokeWidth={1.4} />
+              <AppIcon name="profile" size={80} color={ink[50]} />
             </View>
             <PressableScale
               style={{
@@ -134,13 +134,13 @@ export default function EditProfileScreen() {
                 justifyContent: "center",
               }}
             >
-              <Camera size={19} color="#FFFFFF" strokeWidth={2} />
+              <AppIcon name="camera" size={19} color="#FFFFFF" />
             </PressableScale>
           </View>
         </View>
 
         <View style={{ marginTop: 28, gap: 16 }}>
-          <FieldRow icon={<User size={21} color={ink[500]} strokeWidth={1.9} />}>
+          <FieldRow icon={<AppIcon name="profile" size={21} color={ink[500]} />}>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -150,7 +150,7 @@ export default function EditProfileScreen() {
             />
           </FieldRow>
 
-          <FieldRow icon={<AtSign size={21} color={ink[500]} strokeWidth={1.9} />}>
+          <FieldRow icon={<AppIcon name="atSign" size={21} color={ink[500]} />}>
             <TextInput
               value={username}
               onChangeText={setUsername}
@@ -161,7 +161,7 @@ export default function EditProfileScreen() {
             />
           </FieldRow>
 
-          <FieldRow icon={<Calendar size={21} color={ink[500]} strokeWidth={1.9} />}>
+          <FieldRow icon={<AppIcon name="calendar" size={21} color={ink[500]} />}>
             <TextInput
               value={birthDate}
               onChangeText={setBirthDate}
@@ -198,7 +198,7 @@ export default function EditProfileScreen() {
             },
           ]}
         >
-          <MapPin size={21} color={ink[500]} strokeWidth={1.9} />
+          <AppIcon name="pin" size={21} color={ink[500]} />
           <AppText
             numberOfLines={1}
             color={location ? ink[900] : ink[400]}
@@ -206,7 +206,7 @@ export default function EditProfileScreen() {
           >
             {location || "Pilih Lokasi"}
           </AppText>
-          <ChevronRight size={19} color={ink[400]} strokeWidth={2.1} />
+          <AppIcon name="chevronRight" size={19} color={ink[400]} />
         </PressableScale>
 
         <TextInput

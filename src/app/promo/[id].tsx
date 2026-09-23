@@ -1,8 +1,8 @@
 import React from "react";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { View } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { Sparkles, Check, Copy, ChevronLeft } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppText, Button, Screen, Divider, ScreenHeader } from "../../components/ui";
 import { PressableScale } from "../../components/ui/PressableScale";
@@ -43,12 +43,12 @@ export default function PromoDetailScreen() {
                 justifyContent: "center",
               }}
             >
-              <ChevronLeft size={22} color="#FFFFFF" />
+              <AppIcon name="chevronRight" rotate={180} size={22} color="#FFFFFF" />
             </PressableScale>
           </View>
         </SafeAreaView>
         <View style={{ paddingHorizontal: 24, paddingTop: 16, gap: 12 }}>
-          <Badge label={promo.discountLabel} tone="gold" icon={<Sparkles size={12} color="#946A20" />} />
+          <Badge label={promo.discountLabel} tone="gold" icon={<AppIcon name="sparkles" size={12} color="#946A20" />} />
           <AppText variant="h1" color="#FFFFFF">{promo.title}</AppText>
           <AppText variant="body" color="rgba(255,255,255,0.8)">{promo.tag}</AppText>
         </View>
@@ -61,7 +61,7 @@ export default function PromoDetailScreen() {
             <AppText variant="h3">{promo.code}</AppText>
           </View>
           <PressableScale style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFFFFF", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 }}>
-            <Copy size={14} color={ink[700]} />
+            <AppIcon name="copy" size={14} color={ink[700]} />
             <AppText variant="captionMedium">Salin</AppText>
           </PressableScale>
         </View>
@@ -90,7 +90,7 @@ export default function PromoDetailScreen() {
           size="lg"
           fullWidth
           disabled={claimed}
-          icon={claimed ? <Check size={18} color={ink[400]} /> : undefined}
+          icon={claimed ? <AppIcon name="check" size={18} color={ink[400]} /> : undefined}
           onPress={() => claim(promo.id)}
           style={{ marginBottom: 8 }}
         />

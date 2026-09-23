@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { SlideInDown } from "react-native-reanimated";
-import { ChefHat, ShoppingCart } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
@@ -172,7 +172,7 @@ export default function ProductSheet() {
                       group={variantGroup}
                       qty={selections[option.id] ?? 0}
                       onChange={(n) => setOption(variantGroup, option, n)}
-                      leadingIcon={<ChefHat size={16} color={brand[700]} />}
+                      leadingIcon={<AppIcon name="chefHat" size={16} color={brand[700]} />}
                     />
                   ))}
                 </View>
@@ -249,7 +249,7 @@ export default function ProductSheet() {
                   <AppText variant="titleLg" color="#FFFFFF">
                     {editing ? "Simpan Perubahan" : "Tambah ke Keranjang"}
                   </AppText>
-                  <ShoppingCart size={17} color="#FFFFFF" />
+                  <AppIcon name="cart" size={17} color="#FFFFFF" />
                 </PressableScale>
               </View>
             </SafeAreaView>

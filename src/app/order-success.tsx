@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { View } from "react-native";
 import { router } from "expo-router";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
-import { Check } from "lucide-react-native";
 import { AppText, Button, Screen } from "../components/ui";
 import { success, ink, brand } from "../theme/colors";
 import { useCartStore } from "../store/cartStore";
@@ -57,7 +57,7 @@ export default function OrderSuccessScreen() {
               justifyContent: "center",
             }}
           >
-            <Check size={34} color="#FFFFFF" strokeWidth={3} />
+            <AppIcon name="check" size={34} color="#FFFFFF" />
           </View>
         </Animated.View>
 

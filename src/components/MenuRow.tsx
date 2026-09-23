@@ -1,6 +1,6 @@
 import React from "react";
+import { AppIcon } from "./ui/AppIcon";
 import { View } from "react-native";
-import { ChevronRight } from "lucide-react-native";
 import { PressableScale } from "./ui/PressableScale";
 import { AppText } from "./ui/AppText";
 import { brand, ink } from "../theme/colors";
@@ -47,7 +47,7 @@ export function MenuRow({ icon, label, subtitle, onPress, danger, right }: MenuR
           </AppText>
         ) : null}
       </View>
-      {right ?? (onPress ? <ChevronRight size={18} color={ink[300]} /> : null)}
+      {right ?? (onPress ? <AppIcon name="chevronRight" size={18} color={ink[300]} /> : null)}
     </PressableScale>
   );
 }

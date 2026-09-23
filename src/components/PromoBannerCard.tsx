@@ -1,8 +1,8 @@
 import React from "react";
+import { AppIcon } from "./ui/AppIcon";
 import { View, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Sparkles } from "lucide-react-native";
 import { PressableScale } from "./ui/PressableScale";
 import { AppText } from "./ui/AppText";
 import { Badge } from "./ui/Badge";
@@ -38,7 +38,7 @@ export function PromoBannerCard({ promo }: { promo: Promo }) {
           }}
         />
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <Badge label={promo.discountLabel} tone="gold" icon={<Sparkles size={12} color="#946A20" />} />
+          <Badge label={promo.discountLabel} tone="gold" icon={<AppIcon name="sparkles" size={12} color="#946A20" />} />
         </View>
         <View style={{ gap: 4 }}>
           <AppText variant="titleLg" color="#FFFFFF" numberOfLines={2}>

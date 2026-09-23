@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { LayoutAnimation, Platform, ScrollView, UIManager, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ChevronDown, ChevronRight, ChevronUp } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
@@ -26,7 +26,6 @@ function Item({
   open: boolean;
   onToggle: () => void;
 }) {
-  const Chevron = open ? ChevronUp : ChevronDown;
   return (
     <View>
       <PressableScale
@@ -45,7 +44,7 @@ function Item({
         >
           {entry.question}
         </AppText>
-        <Chevron size={19} color={brand[800]} strokeWidth={2.2} style={{ marginTop: 1 }} />
+        <AppIcon name="chevronRight" rotate={open ? 270 : 90} size={19} color={brand[800]} />
       </PressableScale>
 
       {open ? (
@@ -78,7 +77,7 @@ function Item({
               <AppText variant="bodySemibold" color={brand[700]}>
                 {entry.linkLabel}
               </AppText>
-              <ChevronRight size={15} color={brand[700]} strokeWidth={2.4} />
+              <AppIcon name="chevronRight" size={15} color={brand[700]} />
             </PressableScale>
           ) : null}
         </View>

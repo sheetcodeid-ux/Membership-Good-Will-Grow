@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Download, RefreshCw } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
@@ -121,7 +121,7 @@ export default function QrisScreen() {
               backgroundColor: brand[900],
             }}
           >
-            <Download size={16} color="#FFFFFF" />
+            <AppIcon name="download" size={16} color="#FFFFFF" />
             <AppText variant="titleLg" color="#FFFFFF">
               Download QR Code
             </AppText>
@@ -140,7 +140,7 @@ export default function QrisScreen() {
               borderColor: brand[700],
             }}
           >
-            <RefreshCw size={15} color={brand[700]} />
+            <AppIcon name="refresh" size={15} color={brand[700]} />
             <AppText variant="titleLg" color={brand[700]}>
               Check Status
             </AppText>

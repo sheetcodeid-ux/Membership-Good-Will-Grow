@@ -1,17 +1,7 @@
 import React from "react";
+import { AppIcon, type AppIconName } from "./AppIcon";
 import { type ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  Coffee,
-  CupSoda,
-  Drumstick,
-  Cake,
-  Soup,
-  Gift,
-  Ticket,
-  Cookie,
-  type LucideIcon,
-} from "lucide-react-native";
 
 export type TileIcon =
   | "coffee"
@@ -23,15 +13,15 @@ export type TileIcon =
   | "ticket"
   | "cookie";
 
-const iconMap: Record<TileIcon, LucideIcon> = {
-  coffee: Coffee,
-  cup: CupSoda,
-  drumstick: Drumstick,
-  cake: Cake,
-  soup: Soup,
-  gift: Gift,
-  ticket: Ticket,
-  cookie: Cookie,
+const iconMap: Record<TileIcon, AppIconName> = {
+  coffee: "coffee",
+  cup: "coldCup",
+  drumstick: "drumstick",
+  cake: "cake",
+  soup: "soup",
+  gift: "gift",
+  ticket: "ticket",
+  cookie: "cookie",
 };
 
 interface MediaTileProps {
@@ -51,7 +41,6 @@ export function MediaTile({
   iconSize,
   style,
 }: MediaTileProps) {
-  const Icon = iconMap[icon];
   return (
     <LinearGradient
       colors={colors}
@@ -68,7 +57,7 @@ export function MediaTile({
         style,
       ]}
     >
-      <Icon size={iconSize ?? size * 0.42} color="rgba(255,255,255,0.92)" strokeWidth={1.8} />
+      <AppIcon name={iconMap[icon]} size={iconSize ?? size * 0.42} color="rgba(255,255,255,0.92)" />
     </LinearGradient>
   );
 }

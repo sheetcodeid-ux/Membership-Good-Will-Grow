@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { AppIcon, type AppIconName } from "../components/ui/AppIcon";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,19 +13,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
-import {
-  ImagePlus,
-  Eye,
-  Globe,
-  Lock,
-  Users,
-  UserCheck,
-  CheckCircle2,
-  Camera,
-  Images,
-  MapPin,
-  X,
-} from "lucide-react-native";
 import { AppText } from "../components/ui";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
@@ -37,16 +25,16 @@ import type { PostVisibility } from "../data/types";
 
 const visibilityOptions: {
   key: PostVisibility;
-  icon: typeof Globe;
+  icon: AppIconName;
   title: string;
   subtitle: string;
 }[] = [
-  { key: "publik", icon: Globe, title: "Publik", subtitle: "Semua orang bisa melihat post ini" },
-  { key: "hanya-saya", icon: Lock, title: "Hanya Saya", subtitle: "Hanya kamu yang bisa melihat post ini" },
-  { key: "followers", icon: Users, title: "Pengikut", subtitle: "Hanya pengikut yang bisa melihat" },
+  { key: "publik", icon: "globe", title: "Publik", subtitle: "Semua orang bisa melihat post ini" },
+  { key: "hanya-saya", icon: "lock", title: "Hanya Saya", subtitle: "Hanya kamu yang bisa melihat post ini" },
+  { key: "followers", icon: "users", title: "Pengikut", subtitle: "Hanya pengikut yang bisa melihat" },
   {
     key: "teman",
-    icon: UserCheck,
+    icon: "userCheck",
     title: "Teman Saling Mengikuti",
     subtitle: "Hanya teman yang saling mengikuti yang bisa melihat",
   },
@@ -134,7 +122,7 @@ export default function PostEditorScreen() {
           {isCheckIn ? (
             <View style={{ backgroundColor: "#FFFFFF", borderRadius: 18, padding: 16, gap: 12 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <MapPin size={19} color={brand[700]} />
+                <AppIcon name="pin" size={19} color={brand[700]} />
                 <AppText variant="titleLg">Outlet terdekat</AppText>
               </View>
               {outlets.slice(0, 3).map((outlet) => {
@@ -162,7 +150,7 @@ export default function PostEditorScreen() {
                         {outlet.city} · ~{outlet.distanceKm} km
                       </AppText>
                     </View>
-                    {active ? <CheckCircle2 size={20} color={brand[800]} /> : null}
+                    {active ? <AppIcon name="checkCircle" size={20} color={brand[800]} /> : null}
                   </PressableScale>
                 );
               })}
@@ -187,7 +175,7 @@ export default function PostEditorScreen() {
                   justifyContent: "center",
                 }}
               >
-                <X size={16} color="#FFFFFF" />
+                <AppIcon name="close" size={16} color="#FFFFFF" />
               </PressableScale>
             </View>
           ) : (
@@ -203,7 +191,7 @@ export default function PostEditorScreen() {
                 paddingHorizontal: 16,
               }}
             >
-              <ImagePlus size={24} color={brand[800]} strokeWidth={2} />
+              <AppIcon name="imagePlus" size={24} color={brand[800]} />
               <AppText variant="h3" color={brand[800]}>
                 Tambah Foto
               </AppText>
@@ -212,11 +200,11 @@ export default function PostEditorScreen() {
 
           <View style={{ backgroundColor: "#FFFFFF", borderRadius: 18, padding: 16, gap: 12 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Eye size={20} color={brand[700]} />
+              <AppIcon name="eye" size={20} color={brand[700]} />
               <AppText variant="h3">Siapa yang bisa melihat?</AppText>
             </View>
 
-            {visibilityOptions.map(({ key, icon: Icon, title, subtitle }) => {
+            {visibilityOptions.map(({ key, icon, title, subtitle }) => {
               const active = visibility === key;
               return (
                 <PressableScale
@@ -243,7 +231,7 @@ export default function PostEditorScreen() {
                       backgroundColor: active ? brand[800] : ink[200],
                     }}
                   >
-                    <Icon size={19} color="#FFFFFF" strokeWidth={2.1} />
+                    <AppIcon name={icon} size={19} color="#FFFFFF" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <AppText variant="titleLg" color={active ? brand[800] : ink[900]}>
@@ -253,7 +241,7 @@ export default function PostEditorScreen() {
                       {subtitle}
                     </AppText>
                   </View>
-                  {active ? <CheckCircle2 size={22} color={brand[800]} /> : null}
+                  {active ? <AppIcon name="checkCircle" size={22} color={brand[800]} /> : null}
                 </PressableScale>
               );
             })}
@@ -286,10 +274,10 @@ export default function PostEditorScreen() {
                 </AppText>
 
                 <View style={{ flexDirection: "row", gap: 14, padding: 20, paddingBottom: 26 }}>
-                  {[
-                    { icon: Camera, label: "Kamera" },
-                    { icon: Images, label: "Galeri" },
-                  ].map(({ icon: Icon, label }) => (
+                  {([
+                    { icon: "camera", label: "Kamera" },
+                    { icon: "images", label: "Galeri" },
+                  ] as { icon: AppIconName; label: string }[]).map(({ icon, label }) => (
                     <PressableScale
                       key={label}
                       onPress={() => {
@@ -308,7 +296,7 @@ export default function PostEditorScreen() {
                         borderColor: brand[100],
                       }}
                     >
-                      <Icon size={26} color={brand[800]} strokeWidth={2.1} />
+                      <AppIcon name={icon} size={26} color={brand[800]} />
                       <AppText variant="bodyMedium" color={brand[800]}>
                         {label}
                       </AppText>

@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Building2, Clock, Info, MapPin, Search, ShoppingCart, Store } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -86,7 +86,7 @@ export default function OutletPickerScreen() {
               height: 44,
             }}
           >
-            <Store size={17} color={brand[600]} />
+            <AppIcon name="store" size={17} color={brand[600]} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -104,7 +104,7 @@ export default function OutletPickerScreen() {
                 Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
               ]}
             />
-            <Search size={18} color={brand[700]} />
+            <AppIcon name="search" size={18} color={brand[700]} />
           </View>
         </View>
       </AppHeader>
@@ -184,7 +184,7 @@ export default function OutletPickerScreen() {
         >
           {visible.length === 0 ? (
             <EmptyState
-              icon={<Store size={50} color={ink[300]} strokeWidth={1.7} />}
+              icon={<AppIcon name="store" size={50} color={ink[300]} />}
               title="Outlet tidak ditemukan"
               subtitle="Coba kata kunci lain."
               style={{ paddingTop: 50 }}
@@ -246,14 +246,14 @@ export default function OutletPickerScreen() {
                 </View>
 
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <ShoppingCart size={12} color={ink[400]} />
+                  <AppIcon name="cart" size={12} color={ink[400]} />
                   <AppText variant="caption" color={ink[600]} numberOfLines={1}>
                     {o.services.map((s) => serviceLabels[s]).join(", ")}
                   </AppText>
                 </View>
 
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <MapPin size={12} color={ink[400]} />
+                  <AppIcon name="pin" size={12} color={ink[400]} />
                   <AppText
                     variant="caption"
                     color={ink[600]}
@@ -278,13 +278,13 @@ export default function OutletPickerScreen() {
                 <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
                   <View style={{ flex: 1, gap: 8 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <Building2 size={12} color={ink[400]} />
+                      <AppIcon name="building" size={12} color={ink[400]} />
                       <AppText variant="caption" color={ink[600]}>
                         {o.city}
                       </AppText>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <Clock size={12} color={ink[400]} />
+                      <AppIcon name="clock" size={12} color={ink[400]} />
                       <AppText variant="caption" color={ink[600]}>
                         {o.hours}
                       </AppText>
@@ -302,7 +302,7 @@ export default function OutletPickerScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Info size={12} color="#FFFFFF" />
+                    <AppIcon name="info" size={12} color="#FFFFFF" />
                   </PressableScale>
                 </View>
               </PressableScale>

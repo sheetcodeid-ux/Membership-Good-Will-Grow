@@ -1,9 +1,9 @@
 import React, { useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CircleCheck } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -76,7 +76,7 @@ export default function DeactivateAccountScreen() {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <CircleCheck size={21} color={success[600]} strokeWidth={2} />
+            <AppIcon name="checkCircle" size={21} color={success[600]} />
             <AppText
               color={success[600]}
               style={{ fontSize: 16, lineHeight: 22, fontFamily: "Urbanist_700Bold" }}

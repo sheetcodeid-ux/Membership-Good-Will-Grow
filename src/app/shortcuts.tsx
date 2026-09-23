@@ -1,7 +1,7 @@
 import React from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { Minus, Plus } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -90,9 +90,9 @@ function RoundButton({
       }}
     >
       {remove ? (
-        <Minus size={16} color={ink[700]} strokeWidth={2.6} />
+        <AppIcon name="minus" size={16} color={ink[700]} />
       ) : (
-        <Plus size={16} color="#FFFFFF" strokeWidth={2.6} />
+        <AppIcon name="plus" size={16} color="#FFFFFF" />
       )}
     </PressableScale>
   );

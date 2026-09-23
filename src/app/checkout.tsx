@@ -1,17 +1,9 @@
 import React, { useState } from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Armchair,
-  CircleAlert,
-  Coins,
-  Footprints,
-  Pencil,
-  QrCode,
-  TriangleAlert,
-} from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -136,7 +128,7 @@ export default function CheckoutScreen() {
               padding: 12,
             }}
           >
-            <Footprints size={22} color={brand[700]} />
+            <AppIcon name="footprints" size={22} color={brand[700]} />
             <View style={{ flex: 1 }}>
               <AppText variant="titleLg">Ambil Sendiri</AppText>
               <AppText variant="caption" color={ink[500]}>
@@ -151,7 +143,7 @@ export default function CheckoutScreen() {
             style={{ backgroundColor: brand[50], borderRadius: 12, padding: 12, gap: 10 }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <Armchair size={22} color={brand[700]} />
+              <AppIcon name="armchair" size={22} color={brand[700]} />
               <View style={{ flex: 1 }}>
                 <AppText variant="titleLg">Antar ke Meja</AppText>
                 <AppText variant="caption" color={ink[500]}>
@@ -192,7 +184,7 @@ export default function CheckoutScreen() {
                       Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
                     ]}
                   />
-                  <Pencil size={14} color={ink[500]} />
+                  <AppIcon name="compose" size={14} color={ink[500]} />
                 </View>
                 <View
                   style={{
@@ -205,7 +197,7 @@ export default function CheckoutScreen() {
                     paddingHorizontal: 10,
                   }}
                 >
-                  <CircleAlert size={14} color={danger[500]} />
+                  <AppIcon name="alertCircle" size={14} color={danger[500]} />
                   <AppText
                     variant="caption"
                     color={danger[500]}
@@ -277,7 +269,7 @@ export default function CheckoutScreen() {
             </AppText>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
-            <CircleAlert size={13} color={warning[600]} />
+            <AppIcon name="alertCircle" size={13} color={warning[600]} />
             <AppText variant="caption" color={warning[600]}>
               Catatan akan disertakan dalam pesanan Anda
             </AppText>
@@ -305,7 +297,7 @@ export default function CheckoutScreen() {
                 justifyContent: "center",
               }}
             >
-              <QrCode size={22} color={ink[900]} />
+              <AppIcon name="qr" size={22} color={ink[900]} />
             </View>
             <View style={{ flex: 1, gap: 2 }}>
               <AppText variant="titleLg">QRIS</AppText>
@@ -390,7 +382,7 @@ export default function CheckoutScreen() {
                 paddingHorizontal: 14,
               }}
             >
-              <Coins size={17} color="#D9A441" />
+              <AppIcon name="coins" size={17} color="#D9A441" />
               <AppText variant="titleLg" style={{ flex: 1 }}>
                 {points.toLocaleString("id-ID")} Poin
               </AppText>
@@ -487,7 +479,7 @@ export default function CheckoutScreen() {
                     >
                       {outlet.distanceKm.toFixed(1)} km
                     </AppText>
-                    {tooFar ? <TriangleAlert size={11} color={danger[500]} /> : null}
+                    {tooFar ? <AppIcon name="alertTriangle" size={11} color={danger[500]} /> : null}
                   </View>
                 </View>
               </View>
@@ -530,7 +522,7 @@ export default function CheckoutScreen() {
                   padding: 11,
                 }}
               >
-                <CircleAlert size={15} color={danger[500]} />
+                <AppIcon name="alertCircle" size={15} color={danger[500]} />
                 <AppText
                   variant="caption"
                   color={danger[500]}
@@ -557,7 +549,7 @@ export default function CheckoutScreen() {
                 padding: 11,
               }}
             >
-              <CircleAlert size={15} color={warning[600]} />
+              <AppIcon name="alertCircle" size={15} color={warning[600]} />
               <AppText
                 variant="caption"
                 color={warning[600]}

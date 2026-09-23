@@ -1,8 +1,8 @@
 import React from "react";
+import { AppIcon } from "../components/ui/AppIcon";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ChevronRight } from "lucide-react-native";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -32,7 +32,7 @@ function Row({
       <AppText color={color} style={{ flex: 1, fontSize: 15, lineHeight: 20 }}>
         {label}
       </AppText>
-      <ChevronRight size={18} color={color} strokeWidth={2.3} />
+      <AppIcon name="chevronRight" size={18} color={color} />
     </PressableScale>
   );
 }

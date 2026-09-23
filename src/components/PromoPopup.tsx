@@ -1,7 +1,7 @@
 import React from "react";
+import { AppIcon } from "./ui/AppIcon";
 import { Pressable, StyleSheet, View, useWindowDimensions } from "react-native";
 import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
-import { X } from "lucide-react-native";
 import { ImagePlaceholder } from "./ui/ImagePlaceholder";
 import { PressableScale } from "./ui/PressableScale";
 
@@ -46,7 +46,7 @@ export function PromoPopup({ onClose }: { onClose: () => void }) {
             justifyContent: "center",
           }}
         >
-          <X size={18} color="#FFFFFF" strokeWidth={2.2} />
+          <AppIcon name="close" size={18} color="#FFFFFF" />
         </PressableScale>
       </View>
     </Animated.View>

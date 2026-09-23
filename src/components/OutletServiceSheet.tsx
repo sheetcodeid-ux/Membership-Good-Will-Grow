@@ -1,8 +1,8 @@
 import React from "react";
+import { AppIcon } from "./ui/AppIcon";
 import { Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
-import { ChevronRight, CircleAlert, TriangleAlert } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { PressableScale } from "./ui/PressableScale";
 import { BrandLogo } from "./BrandLogo";
@@ -97,10 +97,10 @@ export function OutletServiceSheet() {
                 >
                   {formatDistance(outlet.distanceKm)}
                 </AppText>
-                {tooFar ? <TriangleAlert size={11} color={danger[500]} /> : null}
+                {tooFar ? <AppIcon name="alertTriangle" size={11} color={danger[500]} /> : null}
               </View>
             </View>
-            <ChevronRight size={19} color={brand[700]} />
+            <AppIcon name="chevronRight" size={19} color={brand[700]} />
           </PressableScale>
 
           {tooFar ? (
@@ -116,7 +116,7 @@ export function OutletServiceSheet() {
                 paddingHorizontal: 11,
               }}
             >
-              <CircleAlert size={16} color={danger[500]} />
+              <AppIcon name="alertCircle" size={16} color={danger[500]} />
               <AppText
                 color={danger[500]}
                 numberOfLines={1}
