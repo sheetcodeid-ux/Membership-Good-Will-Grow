@@ -162,22 +162,33 @@ function NotificationCard({
           </UiText>
         </View>
 
-        {/* The unread dot and the chevron share one column on the card's
-            centre line. Leaving the dot up in the title row put the two
-            marks on different lines at different heights, which read as
-            scattered rather than as a pair. */}
+        {/*
+          One column on the right edge, full card height, so both marks sit on
+          the same vertical line — that shared line is what makes them read as
+          deliberate. Within it they answer to different things: the dot
+          belongs to the title, so it sits on the title's first line, and the
+          chevron belongs to the whole card, so it centres on the card.
+        */}
         {unread || item.href ? (
-          <View
-            style={{
-              alignSelf: "center",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 18,
-              gap: space.xs,
-            }}
-          >
-            {unread ? <SignalDot size={8} ringSize={14} inline /> : null}
-            {item.href ? <AppIcon name="chevronRight" size={17} color={ink[300]} /> : null}
+          <View style={{ width: 18, alignSelf: "stretch", alignItems: "center" }}>
+            {unread ? (
+              // The title's line box, so the dot lands level with its text.
+              <View style={{ height: 22, justifyContent: "center" }}>
+                <SignalDot size={8} ringSize={14} inline />
+              </View>
+            ) : null}
+            {item.href ? (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  bottom: 0,
+                  justifyContent: "center",
+                }}
+              >
+                <AppIcon name="chevronRight" size={17} color={ink[300]} />
+              </View>
+            ) : null}
           </View>
         ) : null}
       </PressableScale>
