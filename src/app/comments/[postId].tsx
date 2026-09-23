@@ -12,7 +12,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { SlideInDown } from "react-native-reanimated";
-import { MessageSquare, Send, X } from "lucide-react-native";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -91,7 +91,7 @@ export default function CommentsSheet() {
                 justifyContent: "center",
               }}
             >
-              <X size={24} color={ink[500]} strokeWidth={2.2} />
+              <AppIcon name="close" size={24} color={ink[500]} />
             </PressableScale>
           </View>
 
@@ -125,7 +125,7 @@ export default function CommentsSheet() {
             )}
             ListEmptyComponent={
               <EmptyState
-                icon={<MessageSquare size={62} color={ink[300]} strokeWidth={1.6} />}
+                icon={<AppIcon name="comment" size={62} color={ink[300]} />}
                 title="Belum ada komentar"
                 subtitle="Jadilah yang pertama berkomentar!"
                 style={{ paddingTop: 40 }}
@@ -185,7 +185,7 @@ export default function CommentsSheet() {
                   backgroundColor: text.trim() ? brand[900] : ink[200],
                 }}
               >
-                <Send size={21} color="#FFFFFF" />
+                <AppIcon name="send" size={21} color="#FFFFFF" emphasis />
               </PressableScale>
             </View>
           </SafeAreaView>

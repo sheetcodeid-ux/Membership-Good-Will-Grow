@@ -1,9 +1,9 @@
 import React from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
+import { AppIcon } from "../components/ui/AppIcon";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PenLine, MapPin, ChevronRight } from "lucide-react-native";
 import { AppText } from "../components/ui";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
@@ -13,13 +13,13 @@ import { shadow } from "../theme/shadows";
 const options = [
   {
     key: "post",
-    icon: PenLine,
+    icon: "compose" as const,
     title: "Buat Post",
     subtitle: "Bagikan pemikiran, foto, atau update kamu",
   },
   {
     key: "checkin",
-    icon: MapPin,
+    icon: "pin" as const,
     title: "Check In",
     subtitle: "Bagikan lokasi dan pengalaman di outlet terdekat",
   },
@@ -47,7 +47,7 @@ export default function CreatePostChooser() {
           </View>
 
           <View style={{ gap: 18 }}>
-            {options.map(({ key, icon: Icon, title, subtitle }) => (
+            {options.map(({ key, icon, title, subtitle }) => (
               <PressableScale
                 key={key}
                 onPress={() => router.push(`/post-editor?type=${key}`)}
@@ -71,7 +71,7 @@ export default function CreatePostChooser() {
                     justifyContent: "center",
                   }}
                 >
-                  <Icon size={26} color={brand[800]} strokeWidth={2.2} />
+                  <AppIcon name={icon} size={26} color={brand[800]} />
                 </View>
                 <View style={{ flex: 1, gap: 3 }}>
                   <AppText variant="h3">{title}</AppText>
@@ -79,7 +79,7 @@ export default function CreatePostChooser() {
                     {subtitle}
                   </AppText>
                 </View>
-                <ChevronRight size={20} color={ink[300]} />
+                <AppIcon name="chevronRight" size={20} color={ink[300]} />
               </PressableScale>
             ))}
           </View>

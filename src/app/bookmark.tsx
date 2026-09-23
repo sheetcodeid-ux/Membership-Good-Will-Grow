@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { FlatList, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { Bookmark as BookmarkIcon, Plus, FolderOpen } from "lucide-react-native";
 import { Button } from "../components/ui";
+import { AppIcon } from "../components/ui/AppIcon";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -58,7 +58,7 @@ export default function BookmarkScreen() {
           renderItem={({ item }) => <PostCard post={item} />}
           ListEmptyComponent={
             <EmptyState
-              icon={<BookmarkIcon size={54} color={ink[300]} strokeWidth={1.7} />}
+              icon={<AppIcon name="bookmark" size={54} color={ink[300]} />}
               title="Belum ada post yang dibookmark"
               subtitle="Mulai bookmark post favorit Anda!"
             />
@@ -75,7 +75,7 @@ export default function BookmarkScreen() {
               label="Buat Koleksi Baru"
               size="lg"
               fullWidth
-              icon={<Plus size={19} color="#FFFFFF" />}
+              icon={<AppIcon name="plus" size={19} color="#FFFFFF" />}
               onPress={() => setDialogOpen(true)}
               style={{ backgroundColor: brand[900], borderRadius: 14, marginBottom: 8 }}
             />
@@ -101,7 +101,7 @@ export default function BookmarkScreen() {
                   justifyContent: "center",
                 }}
               >
-                <FolderOpen size={20} color={brand[700]} />
+                <AppIcon name="folder" size={20} color={brand[700]} />
               </View>
               <View style={{ flex: 1 }}>
                 <UiText token="titleLg">{item.name}</UiText>
@@ -113,7 +113,7 @@ export default function BookmarkScreen() {
           )}
           ListEmptyComponent={
             <EmptyState
-              icon={<BookmarkIcon size={54} color={ink[300]} strokeWidth={1.7} />}
+              icon={<AppIcon name="bookmark" size={54} color={ink[300]} />}
               title="Belum ada koleksi bookmark"
               subtitle="Buat koleksi untuk mengorganisir bookmark Anda"
               style={{ paddingTop: 90 }}

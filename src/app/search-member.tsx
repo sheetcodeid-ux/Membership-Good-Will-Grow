@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FlatList, Platform, TextInput, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { Search, UserX } from "lucide-react-native";
+import { AppIcon } from "../components/ui/AppIcon";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { MemberRow } from "../components/MemberRow";
@@ -46,7 +46,7 @@ export default function SearchMemberScreen() {
               marginBottom: 6,
             }}
           >
-            <Search size={20} color={ink[400]} />
+            <AppIcon name="search" size={20} color={ink[400]} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -69,7 +69,7 @@ export default function SearchMemberScreen() {
         renderItem={({ item }) => <MemberRow member={item} actionLabel={undefined} />}
         ListEmptyComponent={
           <EmptyState
-            icon={<UserX size={54} color={ink[300]} strokeWidth={1.8} />}
+            icon={<AppIcon name="userOff" size={54} color={ink[300]} />}
             title="Member tidak ditemukan"
             subtitle="Coba kata kunci lain."
             style={{ paddingTop: 60 }}

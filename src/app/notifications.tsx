@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { BellOff, Gift, ShoppingBag, Crown, Info } from "lucide-react-native";
+import { AppIcon, type AppIconName } from "../components/ui/AppIcon";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -24,11 +24,11 @@ const categories = [
   { key: "lainnya", label: "Lainnya" },
 ];
 
-const iconFor: Record<NotificationItem["kind"], typeof Gift> = {
-  promo: Gift,
-  order: ShoppingBag,
-  member: Crown,
-  system: Info,
+const iconFor: Record<NotificationItem["kind"], AppIconName> = {
+  promo: "gift",
+  order: "order",
+  member: "crown",
+  system: "info",
 };
 
 const bgFor: Record<NotificationItem["kind"], string> = {
@@ -81,7 +81,7 @@ export default function NotificationsScreen() {
         contentContainerStyle={{ padding: space.lg, gap: space.md, flexGrow: 1, paddingBottom: space.xxxl }}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
-          const Icon = iconFor[item.kind];
+          const iconName = iconFor[item.kind];
           return (
             <PressableScale
               onPress={() => markRead(item.id)}
@@ -106,7 +106,7 @@ export default function NotificationsScreen() {
                   justifyContent: "center",
                 }}
               >
-                <Icon size={22} color={tintFor[item.kind]} strokeWidth={1.9} />
+                <AppIcon name={iconName} size={22} color={tintFor[item.kind]} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -131,7 +131,7 @@ export default function NotificationsScreen() {
         }}
         ListEmptyComponent={
           <EmptyState
-            icon={<BellOff size={64} color={ink[300]} strokeWidth={1.6} />}
+            icon={<AppIcon name="bellOff" size={64} color={ink[300]} />}
             title="Belum ada notifikasi"
             subtitle="Notifikasi yang masuk akan muncul di sini."
           />

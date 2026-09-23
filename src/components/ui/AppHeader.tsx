@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronLeft, X } from "lucide-react-native";
+import { AppIcon } from "./AppIcon";
 import { PressableScale } from "./PressableScale";
 import { UiText } from "./Text";
 import { brand } from "../../theme/colors";
@@ -32,7 +32,6 @@ export function AppHeader({
   leftIcon = "back",
   children,
 }: AppHeaderProps) {
-  const LeftIcon = leftIcon === "close" ? X : ChevronLeft;
   return (
     <View
       style={{
@@ -63,10 +62,11 @@ export function AppHeader({
                 justifyContent: "center",
               }}
             >
-              <LeftIcon
+              <AppIcon
+                name={leftIcon === "close" ? "close" : "chevronRight"}
+                rotate={leftIcon === "close" ? 0 : 180}
                 size={leftIcon === "close" ? 23 : 26}
                 color={brand[800]}
-                strokeWidth={leftIcon === "close" ? 2.4 : 2.1}
               />
             </PressableScale>
           ) : (

@@ -1,9 +1,9 @@
 import React from "react";
 import { View } from "react-native";
-import { ChevronLeft } from "lucide-react-native";
 import { router } from "expo-router";
 import { PressableScale } from "./PressableScale";
 import { AppText } from "./AppText";
+import { AppIcon } from "./AppIcon";
 import { ink } from "../../theme/colors";
 
 interface ScreenHeaderProps {
@@ -43,7 +43,7 @@ export function ScreenHeader({
             justifyContent: "center",
           }}
         >
-          <ChevronLeft size={22} color={ink[900]} />
+          <AppIcon name="chevronRight" rotate={180} size={22} color={ink[900]} />
         </PressableScale>
       ) : null}
       <View style={{ flex: 1 }}>

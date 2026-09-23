@@ -465,3 +465,211 @@ export function VerifiedGlyph({ size = 16, color = "#000" }: GlyphProps) {
     </Svg>
   );
 }
+
+/** Crown with three points and a banded base — points and tier rewards. */
+export function CrownGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M2.6 7.4a1.2 1.2 0 0 1 1.9-.3l3 2.7 3.5-5.3a1.2 1.2 0 0 1 2 0l3.5 5.3 3-2.7a1.2 1.2 0 0 1 1.98 1.15l-1.86 8.3H4.48L2.62 8.25Z"
+        fill={active ? color : "none"}
+        stroke={color}
+        strokeWidth={active ? 0 : 1.9}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M5.4 19.8h13.2"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+/** Bell with a slash — notifications that are switched off, or an empty list. */
+export function BellOffGlyph({ size = 24, color = "#000" }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M8.1 4.9A5.8 5.8 0 0 1 17.8 9.2c0 3.3.7 5.2 1.6 6.4H8.4m-2.6 0c.6-.9 1.1-2.2 1.3-4.1"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M10.3 19.1a2 2 0 0 0 3.4 0"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M3.4 3.4 20.6 20.6"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+/** Circled "i" — advisory rows. */
+export function InfoGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Circle
+        cx={12}
+        cy={12}
+        r={9.3}
+        fill={active ? color : "none"}
+        stroke={color}
+        strokeWidth={active ? 0 : 1.9}
+      />
+      <Path
+        d="M12 11v5.4"
+        stroke={active ? "#FFFFFF" : color}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <Circle cx={12} cy={7.7} r={1.2} fill={active ? "#FFFFFF" : color} />
+    </Svg>
+  );
+}
+
+/** Plus with rounded ends — add, in the places a label cannot fit. */
+export function PlusGlyph({ size = 24, color = "#000" }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M12 4.6v14.8M4.6 12h14.8"
+        stroke={color}
+        strokeWidth={2.1}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+/**
+ * Folder with its front panel lifted.
+ *
+ * The tab at the back and the offset front are what make it a folder and not
+ * a rectangle, so the two are drawn at different heights rather than nested.
+ */
+export function FolderGlyph({ size = 24, color = "#000" }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M2.7 18.4V6.6a2 2 0 0 1 2-2h4.06a2 2 0 0 1 1.6.8l1.04 1.4h6.9a2 2 0 0 1 2 2v1.6"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M4.9 19.4h13.3a2 2 0 0 0 1.94-1.51l1.3-5.2a1.4 1.4 0 0 0-1.36-1.74H6.6a2 2 0 0 0-1.94 1.51l-1.3 5.2A1.4 1.4 0 0 0 4.72 19.4Z"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+/** Two figures, the second set back — followers and following. */
+export function UsersGlyph({ size = 24, color = "#000" }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Circle cx={9.2} cy={8.2} r={3.5} fill="none" stroke={color} strokeWidth={1.9} />
+      <Path
+        d="M2.9 19.6c0-3.6 2.8-5.9 6.3-5.9s6.3 2.3 6.3 5.9"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M16.3 5.1a3.5 3.5 0 0 1 0 6.5M18 14.2c2.1.6 3.5 2.5 3.5 5"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+/** Figure with a slash — a member who cannot be found, or is blocked. */
+export function UserOffGlyph({ size = 24, color = "#000" }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Circle cx={12} cy={8.1} r={3.6} fill="none" stroke={color} strokeWidth={1.9} />
+      <Path
+        d="M5.2 19.9c0-3.7 3-6.1 6.8-6.1 1.3 0 2.6.3 3.7.9"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+      <Path d="M3.9 3.9 20.1 20.1" stroke={color} strokeWidth={2} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+/**
+ * Paper plane, cut along its fold.
+ *
+ * The notch on the trailing edge is what reads as a fold; without it the
+ * shape is just a triangle pointing the wrong way at small sizes.
+ */
+export function SendGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M21.3 3.1 2.9 10.4c-.8.3-.76 1.46.06 1.71l7.2 2.2 2.2 7.2c.25.82 1.41.86 1.71.06L21.3 3.1Z"
+        fill={active ? color : "none"}
+        stroke={color}
+        strokeWidth={active ? 0 : 1.9}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="m10.16 14.31 5.1-5.1"
+        stroke={active ? "#FFFFFF" : color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+/** Sheet with a plus — start a new post. */
+export function PostAddGlyph({ size = 24, color = "#000" }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M13.4 2.8H6.9a2.4 2.4 0 0 0-2.4 2.4v13.6a2.4 2.4 0 0 0 2.4 2.4h10.2a2.4 2.4 0 0 0 2.4-2.4V8.6Z"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M13.4 2.8v4.4a1.4 1.4 0 0 0 1.4 1.4h4.7"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M12 11.9v5.4M9.3 14.6h5.4"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}

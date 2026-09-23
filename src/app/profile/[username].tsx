@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { FlatList, TextInput, View, Platform } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Pencil, FilePlus2, Users } from "lucide-react-native";
 import { UiText } from "../../components/ui/Text";
 import { AppHeader } from "../../components/ui/AppHeader";
 import { Avatar } from "../../components/ui/Avatar";
@@ -76,7 +75,7 @@ export default function MemberProfileScreen() {
         right={
           isMe ? (
             <PressableScale onPress={() => router.push("/edit-profile")} hitSlop={10}>
-              <Pencil size={22} color={brand[700]} />
+              <AppIcon name="compose" size={22} color={brand[700]} />
             </PressableScale>
           ) : undefined
         }
@@ -179,7 +178,7 @@ export default function MemberProfileScreen() {
           renderItem={({ item }) => <PostCard post={item} />}
           ListEmptyComponent={
             <EmptyState
-              icon={<FilePlus2 size={64} color={brand[300]} strokeWidth={1.7} />}
+              icon={<AppIcon name="postAdd" size={64} color={brand[300]} />}
               title="Belum ada post"
               subtitle={isMe ? "Mulai bagikan momenmu!" : "Member ini belum membagikan apa pun."}
               style={{ paddingTop: 80 }}
@@ -234,7 +233,7 @@ export default function MemberProfileScreen() {
           )}
           ListEmptyComponent={
             <EmptyState
-              icon={<Users size={64} color={ink[300]} strokeWidth={1.7} />}
+              icon={<AppIcon name="users" size={64} color={ink[300]} />}
               title={tab === "followers" ? "Belum ada pengikut" : "Belum mengikuti siapa pun"}
               style={{ paddingTop: 60 }}
             />

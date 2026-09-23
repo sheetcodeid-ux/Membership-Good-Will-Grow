@@ -2,9 +2,9 @@ import React from "react";
 import { Pressable, StyleSheet, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { SlideInDown } from "react-native-reanimated";
-import { X } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { PressableScale } from "./PressableScale";
+import { AppIcon } from "./AppIcon";
 import { ink } from "../../theme/colors";
 
 interface BottomSheetProps {
@@ -70,7 +70,7 @@ export function BottomSheet({
               </AppText>
               {showClose ? (
                 <PressableScale onPress={onClose} hitSlop={12}>
-                  <X size={24} color={ink[600]} strokeWidth={2.2} />
+                  <AppIcon name="close" size={24} color={ink[600]} />
                 </PressableScale>
               ) : null}
             </View>
