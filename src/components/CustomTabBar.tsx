@@ -205,7 +205,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             <Animated.View style={fabStyle}>
-              <AppIcon name={fab.icon} size={24} color="#FFFFFF" emphasis />
+              <AppIcon name={fab.icon} size={30} color="#FFFFFF" emphasis />
             </Animated.View>
           </LiquidGlass>
         ) : (
@@ -216,7 +216,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             <Animated.View style={fabStyle}>
-              <AppIcon name={fab.icon} size={24} color="#FFFFFF" emphasis />
+              <AppIcon name={fab.icon} size={30} color="#FFFFFF" emphasis />
             </Animated.View>
           </LinearGradient>
         )}

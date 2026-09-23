@@ -159,17 +159,23 @@ export function ProfileGlyph({ size = 24, color = "#000", active = false }: Glyp
 /**
  * Feather, traced off the reference rather than drawn by eye.
  *
- * Thresholding the reference art and walking its boundary showed two details
- * every earlier attempt missed: a V bitten into the top edge near the tip,
- * and a second, deeper V at the lower left splitting the blade's lobe from
- * the stem. Without those it reads as a plain leaf. Coordinates below come
- * from that trace, normalised to the 24-unit box.
+ * Thresholding the reference art and walking its boundary surfaced two
+ * details no eyeball pass had caught: a V bitten into the top edge beside
+ * the tip, and a deeper V at the lower left splitting the blade's lobe from
+ * the stem. Without them the shape reads as a plain leaf.
+ *
+ * The outline below is generated from that trace — simplified, then fitted
+ * with Catmull-Rom tangents so every edge is a curve. Only two vertices are
+ * held sharp (the lobe tip and the floor of the top notch); the handles
+ * shrink on tight bends so the curve cannot bulge past the silhouette. It
+ * fills 21 of the 24 units, matching the 44% of the disc the reference
+ * feather covers.
  */
 export function ComposeGlyph({ size = 24, color = "#000" }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M18.5 2.9c1.8-.1 3 0 3.4.2.3 1.9.2 3.3.1 4.7-.2 2-.5 3.2-1.1 4.5-.7 1.4-1.2 2.5-1.9 3.4-.5.7-.9 1-1.4 1.4-1.4 1.2-2.8 2.1-4 2.6-.8.3-1.5.4-2.2.4-1.4-.3-2.9-.7-4.2-1l-3.8 2.1c-.8.4-1.7-.2-1.4-1 .2-.5.5-.8 1-1.1 2-1.2 4.1-2.3 5.7-3.3.9-.6 1.8-1.4 2.2-2.1V12.8l-1-.4c-1.4.9-2.9 1.9-4.2 2.8l-.7.1c-.3-1.1-.3-2.1-.2-3.1.2-1.1.8-2.1 1.6-3 .8-1 1.9-2 3.1-2.8 1.1-.8 2.3-1.6 3.4-2.1l.9.2c.2.5.4 1 .7 1.3l1 .5c.6-1 1.2-1.9 1.7-2.7.3-.4.8-.6 1.3-.7Z"
+        d="M18.78 2.36C19.20 2.38 22.26 2.41 22.41 2.62C22.57 2.84 22.56 6.20 22.50 7.46C22.44 8.73 22.26 9.25 22.07 10.06C21.88 10.86 21.85 11.25 21.38 12.22C20.91 13.19 19.90 14.89 19.30 15.76C18.70 16.63 18.44 16.77 17.83 17.31C17.23 17.86 16.46 18.50 15.76 18.96C15.05 19.41 14.43 19.74 13.69 19.99C12.94 20.24 12.50 20.53 11.35 20.43C10.21 20.32 8.03 19.23 6.94 19.39C5.86 19.54 3.54 21.36 2.88 21.64C2.23 21.91 2.17 21.59 2.02 21.46C1.87 21.34 1.54 20.68 1.50 20.51C1.46 20.34 1.53 20.15 1.67 19.99C1.82 19.83 1.93 19.71 2.54 19.39C3.14 19.07 4.19 18.68 5.22 18.09C6.24 17.50 7.63 16.68 8.59 15.93C9.54 15.18 10.56 14.07 10.83 13.69C11.11 13.30 10.88 12.89 10.83 12.73C10.79 12.58 10.63 12.45 10.49 12.39C10.34 12.33 10.05 12.25 9.80 12.30C9.54 12.36 9.59 12.22 8.85 12.73C8.10 13.25 6.05 14.91 5.39 15.33C4.73 15.75 4.61 15.41 4.61 15.41C4.61 15.41 4.38 14.85 4.35 14.29C4.32 13.73 4.26 12.88 4.44 12.13C4.61 11.38 5.11 10.41 5.39 9.88C5.67 9.35 5.40 9.68 6.08 9.02C6.76 8.36 8.19 6.88 9.36 5.99C10.54 5.11 12.42 4.09 12.99 3.83C13.57 3.58 13.68 3.83 13.86 4.01C14.04 4.18 14.43 5.08 14.64 5.39C14.84 5.70 14.92 5.75 15.07 5.82C15.21 5.89 15.67 5.91 15.67 5.91C15.67 5.91 17.09 3.70 17.49 3.14C17.88 2.58 17.82 2.73 18.01 2.62C18.19 2.52 18.58 2.49 18.70 2.45C18.82 2.41 18.37 2.34 18.78 2.36Z"
         fill={color}
       />
     </Svg>

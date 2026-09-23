@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshControl, View, type LayoutChangeEvent } from "react-native";
+import { Image, RefreshControl, View, type LayoutChangeEvent } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,11 +10,11 @@ import Animated, {
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
 } from "react-native-reanimated";
 import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
-import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { AppIcon } from "../../components/ui/AppIcon";
 import { SignalDot } from "../../components/ui/SignalDot";
@@ -23,6 +23,7 @@ import { PostCard } from "../../components/PostCard";
 import { PostCardSkeleton } from "../../components/ui/Skeleton";
 import { HeaderMenu } from "../../components/HeaderMenu";
 import { PromoCarousel } from "../../components/PromoCarousel";
+import { promoBanners } from "../../data/banners";
 import { FeedFilter, type FeedFilterOption } from "../../components/FeedFilter";
 import { brand, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
@@ -39,7 +40,6 @@ const filters: FeedFilterOption[] = [
 ];
 
 /** Banner slots the marketing team fills in later. */
-const banners = ["Banner Promo 1", "Banner Promo 2", "Banner Promo 3"];
 
 const PILL_HEIGHT = 52;
 
@@ -78,7 +78,12 @@ export default function HomeScreen() {
   const [filter, setFilter] = useState("all");
   const [showProfileBanner, setShowProfileBanner] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [pillRestY, setPillRestY] = useState(0);
+  /**
+   * Read inside worklets, so it has to be a shared value. Holding it in React
+   * state meant the animated styles closed over the 0 they were created with
+   * and the bar never actually reached full width when it landed.
+   */
+  const pillRestY = useSharedValue(0);
   const posts = useFeedStore((s) => s.posts);
   const loading = useFeedStore((s) => s.loading);
   const refreshing = useFeedStore((s) => s.refreshing);
@@ -129,7 +134,7 @@ export default function HomeScreen() {
    * positions.
    */
   const liftStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: Math.max(stuckY, pillRestY - scrollY.value) }],
+    transform: [{ translateY: Math.max(stuckY, pillRestY.value - scrollY.value) }],
   }));
 
   /**
@@ -138,36 +143,54 @@ export default function HomeScreen() {
    * top. The glass fades out underneath as a solid white takes over, which is
    * what keeps the status bar area readable once content is passing behind.
    */
-  const stuckProgress = (y: number) =>
-    pillRestY > stuckY ? (pillRestY - y) / (pillRestY - stuckY) : 0;
-
-  const insetStyle = useAnimatedStyle(() => {
-    const y = Math.max(stuckY, pillRestY - scrollY.value);
-    const stuck = stuckProgress(y);
-    return {
-      marginHorizontal: interpolate(stuck, [0, 1], [r.gutter, 0], "clamp"),
-      borderTopLeftRadius: interpolate(stuck, [0, 1], [radius.lg, 0], "clamp"),
-      borderTopRightRadius: interpolate(stuck, [0, 1], [radius.lg, 0], "clamp"),
-      borderBottomLeftRadius: radius.lg,
-      borderBottomRightRadius: radius.lg,
-      overflow: "hidden" as const,
-    };
+  const stuck = useDerivedValue(() => {
+    const rest = pillRestY.value;
+    if (rest <= stuckY) return 0;
+    const y = Math.max(stuckY, rest - scrollY.value);
+    return (rest - y) / (rest - stuckY);
   });
 
-  const solidStyle = useAnimatedStyle(() => {
-    const y = Math.max(stuckY, pillRestY - scrollY.value);
-    return { opacity: interpolate(stuckProgress(y), [0.45, 1], [0, 1], "clamp") };
-  });
+  // marginLeft/marginRight rather than the shorthand: the shorthand is
+  // expanded once at style-resolution time, so every frame Reanimated wrote
+  // afterwards landed on a property nothing reads and the bar stayed inset
+  // by a gutter no matter how far it had climbed.
+  const insetStyle = useAnimatedStyle(() => ({
+    marginLeft: interpolate(stuck.value, [0, 1], [r.gutter, 0], "clamp"),
+    marginRight: interpolate(stuck.value, [0, 1], [r.gutter, 0], "clamp"),
+    borderTopLeftRadius: interpolate(stuck.value, [0, 1], [radius.lg, 0], "clamp"),
+    borderTopRightRadius: interpolate(stuck.value, [0, 1], [radius.lg, 0], "clamp"),
+    // The landed bar keeps a generous curve on its bottom corners; it is the
+    // only edge still meeting content, so it is the edge that has to look
+    // deliberate.
+    borderBottomLeftRadius: interpolate(stuck.value, [0, 1], [radius.lg, radius.xl], "clamp"),
+    borderBottomRightRadius: interpolate(stuck.value, [0, 1], [radius.lg, radius.xl], "clamp"),
+    overflow: "hidden" as const,
+  }));
+
+  const solidStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(stuck.value, [0.45, 1], [0, 1], "clamp"),
+  }));
+
+  /**
+   * The bar's contents travel with its edges. Once it spans the screen the
+   * avatar and the overflow button sit on the page gutter, in line with
+   * everything below them; while it is still a pill they tuck back in.
+   */
+  const rowPadStyle = useAnimatedStyle(() => ({
+    paddingLeft: interpolate(stuck.value, [0, 1], [space.sm + 2, r.gutter], "clamp"),
+    paddingRight: interpolate(stuck.value, [0, 1], [space.sm + 2, r.gutter], "clamp"),
+  }));
 
   /** The landed bar covers the status bar too, so it needs that height back. */
-  const padStyle = useAnimatedStyle(() => {
-    const y = Math.max(stuckY, pillRestY - scrollY.value);
-    return { height: interpolate(stuckProgress(y), [0, 1], [0, insets.top], "clamp") };
-  });
+  const padStyle = useAnimatedStyle(() => ({
+    height: interpolate(stuck.value, [0, 1], [0, insets.top], "clamp"),
+  }));
 
   const onPillLayout = useCallback(
-    (e: LayoutChangeEvent) => setPillRestY(e.nativeEvent.layout.y),
-    []
+    (e: LayoutChangeEvent) => {
+      pillRestY.value = e.nativeEvent.layout.y;
+    },
+    [pillRestY]
   );
 
   return (
@@ -195,7 +218,7 @@ export default function HomeScreen() {
       >
         <View style={{ width: r.contentWidth }}>
           <PromoCarousel
-            slides={banners}
+            slides={promoBanners}
             width={r.contentWidth}
             height={Math.min(300, Math.max(210, r.height * 0.3))}
           />
@@ -251,14 +274,16 @@ export default function HomeScreen() {
             pointerEvents="none"
           />
           <Animated.View style={padStyle} />
-          <View
-            style={{
-              height: PILL_HEIGHT,
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: space.sm + 2,
-              gap: space.sm,
-            }}
+          <Animated.View
+            style={[
+              {
+                height: PILL_HEIGHT,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: space.sm,
+              },
+              rowPadStyle,
+            ]}
           >
             <PressableScale
               onPress={() => router.push(`/profile/${username}` as never)}
@@ -284,10 +309,13 @@ export default function HomeScreen() {
               }}
               pointerEvents="none"
             >
-              <ImagePlaceholder
-                radius={radius.sm}
-                iconSize={16}
-                style={{ width: 104, height: 26 }}
+              <Image
+                source={require("../../../assets/brand/logo-kawan.png")}
+                resizeMode="contain"
+                accessible
+                accessibilityRole="image"
+                accessibilityLabel="Good Will Grow"
+                style={{ width: 104, height: 28 }}
               />
             </View>
 
@@ -299,7 +327,7 @@ export default function HomeScreen() {
                 <AppIcon name="more" size={19} color={brand[800]} />
               </GlassButton>
             </View>
-          </View>
+          </Animated.View>
         </LiquidGlass>
         </Animated.View>
         </View>

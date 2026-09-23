@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Image, ScrollView, View } from "react-native";
 import Animated, {
   type SharedValue,
   interpolate,
@@ -8,11 +8,11 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { ImagePlaceholder } from "./ui/ImagePlaceholder";
 import { PressableScale } from "./ui/PressableScale";
 import { ink } from "../theme/colors";
 import { shadow } from "../theme/shadows";
-import { space } from "../theme/scale";
+import { radius, space } from "../theme/scale";
+import type { PromoBanner } from "../data/banners";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -40,7 +40,7 @@ export function PromoCarousel({
   width,
   height,
 }: {
-  slides: string[];
+  slides: PromoBanner[];
   width: number;
   height: number;
 }) {
@@ -56,11 +56,23 @@ export function PromoCarousel({
       style={{
         height,
         // Lifts the banner off the page, so the bar that overlaps its lower
-        // edge has something to sit against.
+        // edge has something to sit against. The shadow lives out here
+        // because the clipping that rounds the corners would otherwise
+        // crop it away.
         ...(shadow.md as object),
         backgroundColor: ink[100],
+        borderBottomLeftRadius: radius.xl,
+        borderBottomRightRadius: radius.xl,
       }}
     >
+      <View
+        style={{
+          flex: 1,
+          borderBottomLeftRadius: radius.xl,
+          borderBottomRightRadius: radius.xl,
+          overflow: "hidden",
+        }}
+      >
       <AnimatedScrollView
         horizontal
         pagingEnabled
@@ -72,9 +84,18 @@ export function PromoCarousel({
           setPage(Math.round(e.nativeEvent.contentOffset.x / Math.max(1, width)))
         }
       >
-        {slides.map((label) => (
-          <PressableScale key={label} scaleTo={0.995} rippleColor={null}>
-            <ImagePlaceholder label={label} radius={0} iconSize={38} style={{ width, height }} />
+        {slides.map((slide) => (
+          <PressableScale key={slide.id} scaleTo={0.995} rippleColor={null}>
+            <Image
+              source={slide.source}
+              // The art is authored at the same 3:2 the box uses, so "cover"
+              // only ever absorbs rounding rather than cropping the subject.
+              resizeMode="cover"
+              accessible
+              accessibilityRole="image"
+              accessibilityLabel={slide.label}
+              style={{ width, height }}
+            />
           </PressableScale>
         ))}
       </AnimatedScrollView>
@@ -92,9 +113,10 @@ export function PromoCarousel({
         }}
         pointerEvents="none"
       >
-        {slides.map((label, i) => (
-          <Dot key={label} index={i} progress={progress} />
+        {slides.map((slide, i) => (
+          <Dot key={slide.id} index={i} progress={progress} />
         ))}
+      </View>
       </View>
     </View>
   );
