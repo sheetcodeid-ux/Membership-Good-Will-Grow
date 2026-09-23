@@ -187,26 +187,62 @@ function PostCardBase({ post }: { post: FeedPost }) {
         backgroundColor: "#FFFFFF",
         borderRadius: radius.xl,
         padding: space.lg,
-        ...(shadow.sm as object),
+        borderWidth: 1,
+        borderColor: "rgba(18,60,163,0.06)",
+        ...(shadow.md as object),
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: space.md }}>
         <PressableScale onPress={openProfile} rippleBorderless>
-          <Avatar name={post.authorName} size={r.s(42)} />
+          {/* A ring, not a bigger avatar: it lifts the face off a white card
+              without stealing width from the name beside it. */}
+          <LinearGradient
+            colors={[brand[300], brand[600]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              width: r.s(46),
+              height: r.s(46),
+              borderRadius: r.s(23),
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <View
+              style={{
+                width: r.s(42),
+                height: r.s(42),
+                borderRadius: r.s(21),
+                backgroundColor: "#FFFFFF",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Avatar name={post.authorName} size={r.s(38)} />
+            </View>
+          </LinearGradient>
         </PressableScale>
 
-        <View style={{ flex: 1, gap: 1 }}>
+        <View style={{ flex: 1, gap: 2 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: r.s(5) }}>
             <PressableScale onPress={openProfile} rippleColor={null}>
-              <UiText token="titleLg" numberOfLines={1}>
+              <UiText token="titleLg" color={brand[900]} numberOfLines={1}>
                 {post.authorName}
               </UiText>
             </PressableScale>
             <AppIcon name="verified" size={r.s(16)} color={brand[500]} />
           </View>
-          <UiText token="caption" color={ink[400]}>
-            {post.time}
-          </UiText>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: r.s(6) }}>
+            <UiText token="caption" color={ink[400]}>
+              {post.time}
+            </UiText>
+            <View
+              style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: ink[300] }}
+            />
+            <UiText token="caption" color={ink[400]}>
+              {post.type === "checkin" ? "Check-In" : "Post"}
+            </UiText>
+          </View>
         </View>
 
         <PressableScale hitSlop={10} rippleBorderless>
@@ -230,8 +266,28 @@ function PostCardBase({ post }: { post: FeedPost }) {
             label="Foto Post"
             radius={radius.lg}
             iconSize={r.s(32)}
-            style={{ height: r.s(240) }}
+            seed={post.id}
+            style={{ height: r.s(252) }}
           />
+
+          {/* A scrim along the bottom so anything laid over the picture —
+              today the check-in chip — has something to sit against whatever
+              the photograph turns out to be. */}
+          <LinearGradient
+            colors={["transparent", "rgba(9,16,38,0.30)"]}
+            start={{ x: 0, y: 0.45 }}
+            end={{ x: 0, y: 1 }}
+            style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: r.s(96) }}
+            pointerEvents="none"
+          />
+
+          {post.type === "checkin" && post.outletName ? (
+            <View
+              style={{ position: "absolute", left: space.md, right: space.md, bottom: space.md }}
+            >
+              <CheckInCard outletName={post.outletName} brandId={post.brandId} s={r.s} />
+            </View>
+          ) : null}
 
           {/* Heart thrown by a double tap, then cleared. */}
           <Animated.View
@@ -254,16 +310,17 @@ function PostCardBase({ post }: { post: FeedPost }) {
         </View>
       </GestureDetector>
 
-      {post.type === "checkin" && post.outletName ? (
-        <CheckInCard outletName={post.outletName} brandId={post.brandId} s={r.s} />
-      ) : null}
-
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
           gap: space.xl,
           marginTop: space.lg,
+          paddingTop: space.md,
+          // A hairline above the actions separates reading from doing. Without
+          // it the counts drift into the caption and the card has no floor.
+          borderTopWidth: 1,
+          borderTopColor: ink[100],
         }}
       >
         <ReactionButton
