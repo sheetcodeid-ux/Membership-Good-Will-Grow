@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   FadeInDown,
   FadeOutDown,
+  SlideInDown,
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -20,8 +21,8 @@ import { LiquidGlass } from "../../components/ui/LiquidGlass";
 import { PostCard } from "../../components/PostCard";
 import { PostCardSkeleton } from "../../components/ui/Skeleton";
 import { HeaderMenu } from "../../components/HeaderMenu";
-import { SectionHeader } from "../../components/SectionHeader";
 import { PromoCarousel } from "../../components/PromoCarousel";
+import { SectionHeader } from "../../components/SectionHeader";
 import { FeedFilter, type FeedFilterOption } from "../../components/FeedFilter";
 import { brand, danger, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
@@ -40,7 +41,50 @@ const filters: FeedFilterOption[] = [
 /** Banner slots the marketing team fills in later. */
 const banners = ["Banner Promo 1", "Banner Promo 2", "Banner Promo 3"];
 
-const PILL_HEIGHT = 56;
+const PILL_HEIGHT = 52;
+
+/** Round control inside the glass bar, with an optional unread dot. */
+function GlassButton({
+  children,
+  onPress,
+  badge,
+}: {
+  children: React.ReactNode;
+  onPress: () => void;
+  badge?: boolean;
+}) {
+  return (
+    <PressableScale
+      onPress={onPress}
+      rippleBorderless
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: "rgba(155,185,255,0.5)",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {children}
+      {badge ? (
+        <View
+          style={{
+            position: "absolute",
+            top: 5,
+            right: 5,
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: danger[500],
+            borderWidth: 1.4,
+            borderColor: "#FFFFFF",
+          }}
+        />
+      ) : null}
+    </PressableScale>
+  );
+}
 
 export default function HomeScreen() {
   const r = useResponsive();
@@ -140,84 +184,24 @@ export default function HomeScreen() {
         }}
       >
         <View style={{ width: r.contentWidth }}>
-          <View style={{ paddingHorizontal: r.gutter }}>
-            <SectionHeader
-              title="Promo Untukmu"
-              subtitle="Penawaran yang sedang berjalan"
-              actionLabel="Lihat semua"
-              onAction={() => router.push("/promo")}
-            />
-          </View>
-
           <PromoCarousel
             slides={banners}
             gutter={r.gutter}
-            height={Math.min(220, Math.max(150, r.height * 0.21))}
+            height={Math.min(300, Math.max(210, r.height * 0.29))}
           />
 
           {/* Reserves the bar's slot in the flow; the bar itself is drawn in
               the overlay below so it can climb without the page reflowing. */}
           <View
             onLayout={onPillLayout}
-            style={{ height: PILL_HEIGHT, marginTop: space.lg }}
+            style={{ height: PILL_HEIGHT, marginTop: -PILL_HEIGHT * 0.42 }}
           />
 
-          <View style={{ paddingHorizontal: r.gutter }}>
+          <View style={{ paddingHorizontal: r.gutter, marginTop: space.md }}>
             <FeedFilter options={options} value={filter} onChange={setFilter} />
           </View>
 
-          {showProfileBanner ? (
-            <Animated.View
-              entering={FadeInDown.duration(320).springify().damping(18)}
-              exiting={FadeOutDown.duration(200)}
-              style={{ paddingHorizontal: r.gutter, marginTop: space.lg }}
-            >
-              <PressableScale
-                onPress={() => router.push("/edit-profile")}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: space.md,
-                  backgroundColor: gold[50],
-                  borderWidth: 1,
-                  borderColor: "#F0DDB4",
-                  borderRadius: radius.lg,
-                  paddingVertical: space.md,
-                  paddingHorizontal: space.lg,
-                }}
-              >
-                <View
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: radius.sm,
-                    backgroundColor: "#FFFFFF",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <AppIcon name="gift" size={22} color={gold[600]} />
-                </View>
-                <View style={{ flex: 1, gap: 1 }}>
-                  <UiText token="bodySemibold" color={brand[900]}>
-                    Lengkapi profil kamu
-                  </UiText>
-                  <UiText token="caption" color={ink[500]}>
-                    Selesaikan datamu dan dapatkan reward menarik
-                  </UiText>
-                </View>
-                <PressableScale
-                  onPress={() => setShowProfileBanner(false)}
-                  hitSlop={14}
-                  rippleBorderless
-                >
-                  <AppIcon name="close" size={20} color={ink[400]} />
-                </PressableScale>
-              </PressableScale>
-            </Animated.View>
-          ) : null}
-
-          <View style={{ paddingHorizontal: r.gutter, marginTop: space.xl }}>
+          <View style={{ paddingHorizontal: r.gutter, marginTop: space.lg }}>
             <SectionHeader
               title="Postingan Terbaru"
               subtitle={loading ? "Memuat…" : `${visiblePosts.length} postingan dari komunitas`}
@@ -252,64 +236,99 @@ export default function HomeScreen() {
         ]}
         pointerEvents="box-none"
       >
-        <Animated.View
-          style={[{ width: r.contentWidth, alignSelf: "center" }, insetStyle]}
-          pointerEvents="box-none"
-        >
-        <LiquidGlass radius={radius.xl} interactive style={{ height: PILL_HEIGHT, ...(shadow.sm as object) }}>
+        <View style={{ width: r.contentWidth, alignSelf: "center" }} pointerEvents="box-none">
+        <Animated.View style={insetStyle} pointerEvents="box-none">
+        <LiquidGlass radius={radius.lg} interactive style={{ height: PILL_HEIGHT, ...(shadow.sm as object) }}>
           <View
             style={{
               flex: 1,
               flexDirection: "row",
               alignItems: "center",
-              paddingHorizontal: space.md,
+              paddingHorizontal: space.sm + 2,
+              gap: space.sm,
             }}
           >
             <PressableScale
               onPress={() => router.push(`/profile/${username}` as never)}
               rippleBorderless
             >
-              <Avatar name={name} size={36} />
+              <Avatar name={name} size={32} />
             </PressableScale>
 
             {/* Brand lockup supplied later. */}
             <View style={{ flex: 1, alignItems: "center" }}>
-              <ImagePlaceholder radius={radius.sm} iconSize={18} style={{ width: 118, height: 30 }} />
+              <ImagePlaceholder radius={radius.sm} iconSize={16} style={{ width: 104, height: 26 }} />
             </View>
 
-            <PressableScale
-              onPress={openMenu}
-              rippleBorderless
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space.xs + 2 }}>
+              <GlassButton onPress={() => router.push("/notifications")} badge={unread}>
+                <AppIcon name="bell" size={19} color={brand[800]} />
+              </GlassButton>
+              <GlassButton onPress={openMenu}>
+                <AppIcon name="more" size={19} color={brand[800]} />
+              </GlassButton>
+            </View>
+          </View>
+        </LiquidGlass>
+        </Animated.View>
+        </View>
+      </Animated.View>
+
+      {showProfileBanner ? (
+        <Animated.View
+          entering={SlideInDown.delay(450).springify().damping(17)}
+          exiting={FadeOutDown.duration(200)}
+          style={{
+            position: "absolute",
+            alignSelf: "center",
+            width: r.contentWidth - space.xxl,
+            bottom: insets.bottom + r.s(86),
+            zIndex: 4,
+          }}
+        >
+          <PressableScale
+            onPress={() => router.push("/edit-profile")}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: space.md,
+              backgroundColor: "#FFFFFF",
+              borderRadius: radius.lg,
+              paddingVertical: space.sm + 2,
+              paddingHorizontal: space.md,
+              ...(shadow.md as object),
+            }}
+          >
+            <View
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: radius.md,
-                backgroundColor: "rgba(155,185,255,0.5)",
+                width: 30,
+                height: 30,
+                borderRadius: radius.sm,
+                backgroundColor: gold[50],
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <AppIcon name="more" size={20} color={brand[800]} />
-              {unread ? (
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 6,
-                    right: 6,
-                    width: 9,
-                    height: 9,
-                    borderRadius: 4.5,
-                    backgroundColor: danger[500],
-                    borderWidth: 1.5,
-                    borderColor: "#FFFFFF",
-                  }}
-                />
-              ) : null}
+              <AppIcon name="gift" size={17} color={gold[600]} />
+            </View>
+            <UiText
+              token="caption"
+              color={brand[700]}
+              numberOfLines={2}
+              style={{ flex: 1, fontFamily: "Urbanist_600SemiBold" }}
+            >
+              Lengkapi profil anda, dapatkan reward menarik
+            </UiText>
+            <PressableScale
+              onPress={() => setShowProfileBanner(false)}
+              hitSlop={14}
+              rippleBorderless
+            >
+              <AppIcon name="close" size={17} color={ink[400]} />
             </PressableScale>
-          </View>
-        </LiquidGlass>
+          </PressableScale>
         </Animated.View>
-      </Animated.View>
+      ) : null}
 
       <HeaderMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </View>

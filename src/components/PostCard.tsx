@@ -189,7 +189,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
                 {post.authorName}
               </UiText>
             </PressableScale>
-            <AppIcon name="member" size={r.s(15)} color={brand[500]} emphasis />
+            <AppIcon name="verified" size={r.s(16)} color={brand[500]} />
           </View>
           <UiText token="caption" color={ink[400]}>
             {post.time}

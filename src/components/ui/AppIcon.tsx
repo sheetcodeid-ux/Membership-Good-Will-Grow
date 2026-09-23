@@ -18,6 +18,7 @@ import {
   PinGlyph,
   ProfileGlyph,
   SearchGlyph,
+  VerifiedGlyph,
   StackGlyph,
   type GlyphProps,
 } from "../GwgIcons";
@@ -52,6 +53,7 @@ const glyphs = {
   pin: PinGlyph,
   stack: StackGlyph,
   photoPost: PhotoPostGlyph,
+  verified: VerifiedGlyph,
 } satisfies Record<string, React.ComponentType<GlyphProps>>;
 
 export type AppIconName = keyof typeof glyphs;
