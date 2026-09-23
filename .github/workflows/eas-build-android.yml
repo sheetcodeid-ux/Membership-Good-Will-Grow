@@ -1,0 +1,53 @@
+name: Build Android (EAS)
+
+# Dijalankan manual dari tab Actions. Simpan token Expo sebagai repository
+# secret bernama EXPO_TOKEN (Settings -> Secrets and variables -> Actions),
+# jangan pernah ditulis di dalam file ini.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "Profil build EAS"
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - development
+          - production
+
+jobs:
+  build:
+    name: EAS Build Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint src --max-warnings=0
+
+      - name: Build
+        run: eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait
+
+      - name: Tautan hasil build
+        run: |
+          echo "Build selesai. Ambil tautan APK di https://expo.dev/accounts -> project good-will-grow -> Builds"
