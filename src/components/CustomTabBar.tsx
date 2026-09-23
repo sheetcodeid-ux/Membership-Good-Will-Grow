@@ -18,6 +18,7 @@ import { PressableScale } from "./ui/PressableScale";
 import { AppText } from "./ui/AppText";
 import { brand, ink } from "../theme/colors";
 import { shadow } from "../theme/shadows";
+import { useUiStore } from "../store/uiStore";
 
 const BAR_HEIGHT = 54;
 const FAB_SIZE = 55;
@@ -29,19 +30,22 @@ const tabs: Record<string, { icon: LucideIcon; label: string }> = {
   profile: { icon: CircleUser, label: "Profile" },
 };
 
-/** The floating action button changes with the tab you are on. */
-const fabActions: Record<string, { icon: LucideIcon; onPress?: () => void }> = {
+/** The floating action button changes with the tab you are on. On Member and
+ *  Profile it opens the quick menu instead of navigating. */
+const fabActions: Record<string, { icon: LucideIcon; onPress?: () => void; opensMenu?: boolean }> = {
   index: { icon: Feather, onPress: () => router.push("/create-post") },
   order: { icon: ShoppingCart, onPress: () => router.push("/cart") },
-  member: { icon: Menu },
-  profile: { icon: Menu },
+  member: { icon: Menu, opensMenu: true },
+  profile: { icon: Menu, opensMenu: true },
 };
 
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const openShortcuts = useUiStore((s) => s.openShortcuts);
   const activeName = state.routes[state.index]?.name ?? "index";
   const fab = fabActions[activeName] ?? fabActions.index;
   const FabIcon = fab.icon;
+  const onFabPress = fab.opensMenu ? openShortcuts : fab.onPress;
 
   return (
     <View
@@ -109,7 +113,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       </View>
 
       <PressableScale
-        onPress={fab.onPress}
+        onPress={onFabPress}
         style={{
           width: FAB_SIZE,
           height: FAB_SIZE,

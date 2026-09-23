@@ -159,6 +159,10 @@ export interface MemberTier {
   minTransactions: number;
   minSpend: number;
   pointRate: string;
+  /** Line printed under the tier name on the card. */
+  tagline: string;
+  /** Region the card artwork celebrates, e.g. "[Pulau Kalimantan]". */
+  island: string;
   perks: string[];
 }
 

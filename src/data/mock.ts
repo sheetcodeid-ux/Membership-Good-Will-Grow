@@ -628,8 +628,25 @@ export const memberTiers: MemberTier[] = [
     name: "Classic",
     minTransactions: 0,
     minSpend: 0,
-    pointRate: "0.5%",
-    perks: ["Poin di setiap transaksi", "Akses promo reguler"],
+    pointRate: "0,5%",
+    tagline: "Awal perjalanan bersama Good Will Grow",
+    island: "[Pulau Kalimantan]",
+    perks: [
+      "Setiap transaksi mendapatkan poin 0,5% dari nominal transaksi (setelah potongan kupon, pajak, dan potongan poin)",
+    ],
+  },
+  {
+    id: "signature",
+    name: "Signature",
+    minTransactions: 8,
+    minSpend: 800000,
+    pointRate: "0,5%",
+    tagline: "Terus Bertumbuh",
+    island: "[Pulau Jawa]",
+    perks: [
+      "Setiap transaksi mendapatkan poin 0,5% dari nominal transaksi (setelah potongan kupon, pajak, dan potongan poin)",
+      "Mendapatkan kupon-kupon menarik untuk digunakan ketika bertransaksi",
+    ],
   },
   {
     id: "elite",
@@ -637,7 +654,13 @@ export const memberTiers: MemberTier[] = [
     minTransactions: 16,
     minSpend: 1600000,
     pointRate: "1%",
-    perks: ["Poin 1% dari nominal transaksi", "Kupon eksklusif berkala", "Benefit dari brand partner"],
+    tagline: "Terhubung Lebih Luas",
+    island: "[Pulau Sumatera]",
+    perks: [
+      "Setiap transaksi mendapatkan poin 1% dari nominal transaksi (setelah potongan kupon, pajak, dan potongan poin)",
+      "Mendapatkan kupon-kupon menarik untuk digunakan ketika bertransaksi",
+      "Mendapatkan benefit dari partner Good Will Grow",
+    ],
   },
   {
     id: "royale",
@@ -645,7 +668,14 @@ export const memberTiers: MemberTier[] = [
     minTransactions: 24,
     minSpend: 2400000,
     pointRate: "2%",
-    perks: ["Poin 2% dari nominal transaksi", "Kupon premium", "Fasilitas prioritas di semua outlet"],
+    tagline: "Indonesia dalam satu koneksi",
+    island: "[Indonesia]",
+    perks: [
+      "Setiap transaksi mendapatkan poin 2% dari nominal transaksi (setelah potongan kupon, pajak, dan potongan poin)",
+      "Mendapatkan kupon-kupon menarik untuk digunakan ketika bertransaksi",
+      "Mendapatkan benefit dari partner Good Will Grow",
+      "Dapat menggunakan fasilitas premium dari Good Will Grow",
+    ],
   },
 ];
 

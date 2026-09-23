@@ -9,6 +9,7 @@ import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { PromoPopup } from "../components/PromoPopup";
 import { OutletServiceSheet } from "../components/OutletServiceSheet";
+import { ShortcutMenu } from "../components/ShortcutMenu";
 import { useUiStore } from "../store/uiStore";
 import { useOrderStore } from "../store/orderStore";
 import {
@@ -28,6 +29,8 @@ export default function RootLayout() {
   const closePromo = useUiStore((s) => s.closePromo);
   const pathname = usePathname();
   const outletConfirmed = useOrderStore((s) => s.outletConfirmed);
+  const shortcutsOpen = useUiStore((s) => s.shortcutsOpen);
+  const closeShortcuts = useUiStore((s) => s.closeShortcuts);
   const [fontsLoaded] = useFonts({
     Urbanist_400Regular,
     Urbanist_500Medium,
@@ -72,6 +75,7 @@ export default function RootLayout() {
         </Stack>
         {/* Both sheets live above the navigator so they dim the tab bar too. */}
         {pathname === "/order" && !outletConfirmed ? <OutletServiceSheet /> : null}
+        {shortcutsOpen ? <ShortcutMenu onClose={closeShortcuts} /> : null}
         {promoOpen ? <PromoPopup onClose={closePromo} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>

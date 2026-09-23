@@ -1,59 +1,145 @@
 import React from "react";
-import { View } from "react-native";
-import { Screen, ScreenHeader, AppText, Divider } from "../components/ui";
-import { ink } from "../theme/colors";
+import { ScrollView, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { AppText } from "../components/ui/AppText";
+import { AppHeader } from "../components/ui/AppHeader";
+import { brand, ink, surface } from "../theme/colors";
+import { memberTiers } from "../data/mock";
+import { TERMS_UPDATED_AT, termsSections, type TermsSection } from "../data/terms";
+import { formatRupiah } from "../utils/format";
 
-const sections = [
-  {
-    title: "1. Pendahuluan",
-    body: "Selamat datang di Good Will Grow ('Aplikasi', 'Kami'). Dengan mengunduh, mengakses, atau menggunakan aplikasi ini, Anda ('Pengguna') dianggap telah membaca, memahami, dan menyetujui Syarat Penggunaan berikut.",
-  },
-  {
-    title: "2. Penerimaan Syarat",
-    body: "Dengan menggunakan aplikasi Good Will Grow, Anda menyetujui untuk terikat dengan syarat dan ketentuan ini. Jika Anda tidak menyetujui salah satu bagian dari syarat ini, harap hentikan penggunaan aplikasi.",
-  },
-  {
-    title: "3. Deskripsi Layanan",
-    body: "Good Will Grow adalah platform komunitas yang memungkinkan pengguna untuk membuat dan membagikan konten, melihat postingan pengguna lain, berinteraksi dengan pengguna lain, serta memesan makanan dan minuman secara online melalui fitur pemesanan dalam aplikasi.",
-  },
-  {
-    title: "4. Keanggotaan & Poin",
-    body: "Poin diperoleh dari setiap transaksi yang memenuhi syarat dan dapat ditukarkan sesuai kebijakan yang berlaku. Level keanggotaan (Classic, Elite, Royale) ditentukan dari akumulasi transaksi dan nominal belanja dalam periode berjalan.",
-  },
-  {
-    title: "5. Konten Pengguna (UGC)",
-    body: "Pengguna bertanggung jawab penuh atas konten yang dibagikan melalui fitur Feeds. Konten yang melanggar hukum, mengandung SARA, atau merugikan pihak lain dapat dihapus tanpa pemberitahuan.",
-  },
-  {
-    title: "6. Penggunaan yang Dilarang",
-    body: "Dilarang menggunakan aplikasi untuk aktivitas ilegal, mengunggah malware atau spam, maupun mengakses sistem tanpa izin.",
-  },
-  {
-    title: "7. Perubahan Ketentuan",
-    body: "Kami berhak mengubah syarat dan ketentuan ini sewaktu-waktu. Perubahan akan diinformasikan melalui aplikasi.",
-  },
-];
+const bodyStyle = { lineHeight: 21, textAlign: "justify" as const };
+
+function Body({ children }: { children: React.ReactNode }) {
+  return (
+    <AppText variant="body" color={brand[800]} style={bodyStyle}>
+      {children}
+    </AppText>
+  );
+}
+
+function Bullets({ items }: { items: string[] }) {
+  return (
+    <View style={{ gap: 7 }}>
+      {items.map((item) => (
+        <View key={item} style={{ flexDirection: "row", gap: 9, paddingLeft: 4 }}>
+          <AppText variant="body" color={brand[800]}>
+            •
+          </AppText>
+          <AppText variant="body" color={brand[800]} style={[bodyStyle, { flex: 1 }]}>
+            {item}
+          </AppText>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function Rule() {
+  return <View style={{ height: 1, backgroundColor: ink[200], marginVertical: 18 }} />;
+}
+
+function Section({ section }: { section: TermsSection }) {
+  return (
+    <View style={{ gap: 12 }}>
+      <AppText variant="h3" color={brand[800]}>
+        {section.heading}
+      </AppText>
+      {section.paragraphs?.map((p) => <Body key={p}>{p}</Body>)}
+      {section.bullets ? <Bullets items={section.bullets} /> : null}
+      {section.footnotes?.map((p) => <Body key={p}>{p}</Body>)}
+    </View>
+  );
+}
+
+/** Clause 7 is generated from the tier data so the two can never drift apart. */
+function LevelingSection() {
+  return (
+    <View style={{ gap: 12 }}>
+      <AppText variant="h3" color={brand[800]}>
+        7. Ketentuan Leveling Membership
+      </AppText>
+      <Body>
+        Good Will Grow memiliki {memberTiers.length} level membership, yaitu:{" "}
+        {memberTiers.map((t) => t.name.toUpperCase()).join(", ")}.
+      </Body>
+      <Body>Setiap levelnya memiliki ketentuan dan benefit yang berbeda, yaitu :</Body>
+
+      {memberTiers.map((tier) => (
+        <View key={tier.id} style={{ gap: 10, marginTop: 6 }}>
+          <AppText variant="bodySemibold" color={brand[800]}>
+            {tier.name.toUpperCase()}
+          </AppText>
+          {tier.minTransactions === 0 ? (
+            <Body>
+              Level ini merupakan level default. Setiap member yang mendaftar akan berada di level
+              ini.
+            </Body>
+          ) : (
+            <>
+              <Body>Untuk naik ke level ini, Anda harus memenuhi kriteria berikut :</Body>
+              <Bullets
+                items={[
+                  `Melakukan ${tier.minTransactions}x transaksi`,
+                  `Belanja minimal ${formatRupiah(tier.minSpend)}`,
+                ]}
+              />
+            </>
+          )}
+          <Body>Benefit :</Body>
+          <Bullets items={tier.perks} />
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export default function TermsScreen() {
+  const before = termsSections.slice(0, 6);
+  const after = termsSections.slice(6);
+
   return (
-    <Screen scroll>
-      <ScreenHeader title="Syarat & Ketentuan" />
-      <View style={{ paddingHorizontal: 20, gap: 4 }}>
-        <AppText variant="h2">Terms & Conditions</AppText>
-        <AppText variant="caption" color={ink[500]}>
-          Syarat dan Ketentuan Good Will Grow · Pembaharuan Terakhir: 22/09/26
+    <View style={{ flex: 1, backgroundColor: surface }}>
+      <StatusBar style="dark" />
+      <AppHeader title="Syarat & Ketentuan" />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40 }}
+      >
+        <AppText
+          center
+          color={brand[800]}
+          style={{ fontSize: 26, lineHeight: 33, fontFamily: "Urbanist_800ExtraBold" }}
+        >
+          Terms & Conditions.
+        </AppText>
+        <AppText variant="body" color={brand[700]} center style={{ marginTop: 8 }}>
+          Syarat dan Ketentuan Good Will Grow
+        </AppText>
+        <AppText variant="body" color={brand[700]} center>
+          Pembaharuan Terakhir : {TERMS_UPDATED_AT}
         </AppText>
 
-        <View style={{ height: 20 }} />
+        <View style={{ height: 28 }} />
 
-        {sections.map((s, i) => (
-          <View key={s.title} style={{ gap: 10, marginBottom: 20 }}>
-            <AppText variant="titleLg" color="#0B2B73">{s.title}</AppText>
-            <AppText variant="body" color={ink[600]}>{s.body}</AppText>
-            {i < sections.length - 1 ? <Divider /> : null}
+        {before.map((section, i) => (
+          <View key={section.heading}>
+            <Section section={section} />
+            {i < before.length - 1 ? <Rule /> : null}
           </View>
         ))}
-      </View>
-    </Screen>
+
+        <Rule />
+        <LevelingSection />
+
+        {after.map((section) => (
+          <View key={section.heading}>
+            <Rule />
+            <Section section={section} />
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
