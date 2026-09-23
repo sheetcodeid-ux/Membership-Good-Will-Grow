@@ -39,12 +39,12 @@ export function ShortcutMenu({ onClose }: { onClose: () => void }) {
         <Animated.View
           entering={ZoomIn.duration(200)}
           style={{
-            width: "76%",
-            maxWidth: 340,
-            marginBottom: 86,
+            width: 269,
+            maxWidth: "92%",
+            marginBottom: 80,
             backgroundColor: "#FFFFFF",
-            borderRadius: 18,
-            paddingVertical: 6,
+            borderRadius: 16,
+            paddingVertical: 4,
             ...(shadow.lg as object),
           }}
         >
@@ -52,9 +52,9 @@ export function ShortcutMenu({ onClose }: { onClose: () => void }) {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              paddingHorizontal: 16,
+              paddingHorizontal: 15,
               paddingTop: 12,
-              paddingBottom: 8,
+              paddingBottom: 6,
             }}
           >
             <AppText variant="h3" style={{ flex: 1 }}>
@@ -64,14 +64,14 @@ export function ShortcutMenu({ onClose }: { onClose: () => void }) {
               onPress={() => go("/shortcuts")}
               hitSlop={10}
             >
-              <SlidersHorizontal size={19} color={brand[800]} />
+              <SlidersHorizontal size={17} color={brand[800]} />
             </PressableScale>
           </View>
 
           {items.map((item, i) => (
             <View key={item.id}>
               {i > 0 ? (
-                <View style={{ height: 1, backgroundColor: ink[100], marginHorizontal: 16 }} />
+                <View style={{ height: 1, backgroundColor: ink[100], marginHorizontal: 15 }} />
               ) : null}
               <PressableScale
                 onPress={() => go(item.href)}
@@ -79,24 +79,26 @@ export function ShortcutMenu({ onClose }: { onClose: () => void }) {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 14,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
+                  gap: 13,
+                  paddingHorizontal: 15,
+                  paddingVertical: 8,
                 }}
               >
+                {/* Circular tiles here, rounded squares on the settings page —
+                    the reference draws the two differently. */}
                 <View
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 11,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
                     backgroundColor: brand[50],
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <ShortcutIcon name={item.icon} />
+                  <ShortcutIcon name={item.icon} size={16} />
                 </View>
-                <AppText variant="titleLg" numberOfLines={1} style={{ flex: 1 }}>
+                <AppText variant="bodyMedium" numberOfLines={1} style={{ flex: 1 }}>
                   {item.label}
                 </AppText>
               </PressableScale>

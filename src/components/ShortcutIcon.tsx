@@ -6,7 +6,6 @@ import {
   Gift,
   Lock,
   Pencil,
-  Receipt,
   Search,
   Settings,
   Share2,
@@ -19,9 +18,9 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 import { brand } from "../theme/colors";
+import { ReceiptGlyph } from "./MemberGlyphs";
 
 const icons: Record<string, LucideIcon> = {
-  receipt: Receipt,
   ticket: Ticket,
   "ticket-check": TicketCheck,
   star: Star,
@@ -39,8 +38,21 @@ const icons: Record<string, LucideIcon> = {
   share: Share2,
 };
 
-/** Resolves the icon name stored on a shortcut into a rendered glyph. */
-export function ShortcutIcon({ name, size = 18 }: { name: string; size?: number }) {
+/**
+ * Shortcut marks are solid in the reference, not outlines, so the glyph is
+ * filled with the same colour as its stroke.
+ */
+export function ShortcutIcon({
+  name,
+  size = 18,
+  color = brand[700],
+}: {
+  name: string;
+  size?: number;
+  color?: string;
+}) {
+  // The receipt needs its ruled lines knocked out, so it has its own drawing.
+  if (name === "receipt") return <ReceiptGlyph size={size} color={color} />;
   const Icon = icons[name] ?? Star;
-  return <Icon size={size} color={brand[700]} strokeWidth={2} />;
+  return <Icon size={size} color={color} fill={color} strokeWidth={1.6} />;
 }

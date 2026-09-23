@@ -53,7 +53,7 @@ function Row({
             justifyContent: "center",
           }}
         >
-          <ShortcutIcon name={item.icon} size={19} />
+          <ShortcutIcon name={item.icon} size={18} />
         </View>
         <View style={{ flex: 1, gap: 1 }}>
           <AppText variant="h3" numberOfLines={1}>

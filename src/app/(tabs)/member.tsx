@@ -3,9 +3,10 @@ import { ScrollView, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { Activity, ChevronRight, Info, Lock, Receipt, ShoppingBasket, Wallet } from "lucide-react-native";
+import { Activity, ChevronRight, Lock, ShoppingBasket } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
+import { PointsCardGlyph, ReceiptGlyph } from "../../components/MemberGlyphs";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { brand, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
@@ -14,7 +15,33 @@ import { useMemberStore } from "../../store/memberStore";
 
 const GUTTER = 16;
 
-/** Outlined bar that fills from the left, as the reference draws it. */
+/** Small filled tile used by the Poinmu and Benefit headings. */
+function GlyphTile({
+  children,
+  size = 22,
+  background,
+}: {
+  children: React.ReactNode;
+  size?: number;
+  background: string;
+}) {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 6,
+        backgroundColor: background,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {children}
+    </View>
+  );
+}
+
+/** Outlined pill that fills from the left, at the reference's 13.5pt height. */
 function ProgressRow({
   icon,
   label,
@@ -29,7 +56,7 @@ function ProgressRow({
     <View style={{ gap: 7 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         {icon}
-        <AppText variant="titleLg" color={ink[800]} style={{ flex: 1 }}>
+        <AppText variant="bodyMedium" color={ink[800]} style={{ flex: 1 }}>
           {label}
         </AppText>
         <AppText variant="titleLg" color={brand[800]}>
@@ -38,14 +65,22 @@ function ProgressRow({
       </View>
       <View
         style={{
-          height: 20,
-          borderRadius: 10,
+          height: 13.5,
+          borderRadius: 7,
           borderWidth: 1.4,
           borderColor: brand[700],
           overflow: "hidden",
+          justifyContent: "center",
         }}
       >
-        <View style={{ width: `${percent}%`, height: "100%", backgroundColor: brand[700] }} />
+        <View
+          style={{
+            width: `${percent}%`,
+            height: "100%",
+            borderRadius: 7,
+            backgroundColor: brand[700],
+          }}
+        />
       </View>
     </View>
   );
@@ -78,6 +113,8 @@ export default function MemberScreen() {
           backgroundColor: "#FFFFFF",
           borderBottomLeftRadius: 18,
           borderBottomRightRadius: 18,
+          zIndex: 2,
+          ...(shadow.sm as object),
         }}
       >
         <SafeAreaView edges={["top"]}>
@@ -157,12 +194,12 @@ export default function MemberScreen() {
           {unlocked ? (
             <View style={{ width: cardWidth, alignSelf: "center", gap: 12 }}>
               <ProgressRow
-                icon={<ShoppingBasket size={17} color={brand[700]} />}
+                icon={<ShoppingBasket size={15} color={brand[700]} fill={brand[700]} strokeWidth={1.6} />}
                 label="Total Belanja"
                 ratio={spendProgress}
               />
               <ProgressRow
-                icon={<Receipt size={17} color={brand[700]} />}
+                icon={<ReceiptGlyph size={15} color={brand[700]} detail="#FFFFFF" />}
                 label="Total Transaksi"
                 ratio={txProgress}
               />
@@ -174,8 +211,8 @@ export default function MemberScreen() {
               <View
                 key={t.id}
                 style={{
-                  width: i === index ? 20 : 7,
-                  height: 7,
+                  width: i === index ? 18 : 6,
+                  height: 6.5,
                   borderRadius: 4,
                   backgroundColor: i === index ? brand[900] : brand[200],
                 }}
@@ -199,7 +236,9 @@ export default function MemberScreen() {
               ...(shadow.xs as object),
             }}
           >
-            <Wallet size={19} color={brand[700]} />
+            <GlyphTile background={brand[900]}>
+              <PointsCardGlyph size={14} color="#FFFFFF" detail={brand[900]} />
+            </GlyphTile>
             <AppText variant="h3" style={{ flex: 1 }}>
               Poinmu
             </AppText>
@@ -217,7 +256,9 @@ export default function MemberScreen() {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Activity size={18} color={brand[700]} />
+              <GlyphTile background={brand[900]}>
+                <Activity size={13} color="#FFFFFF" strokeWidth={2.6} />
+              </GlyphTile>
               <AppText variant="h3">{tier.name} Benefit</AppText>
             </View>
             <AppText variant="body" color={ink[700]} style={{ lineHeight: 19 }}>
@@ -237,7 +278,14 @@ export default function MemberScreen() {
                 borderColor: brand[700],
               }}
             >
-              <Info size={17} color={brand[700]} />
+              <GlyphTile size={26} background={brand[100]}>
+                <AppText
+                  color={brand[800]}
+                  style={{ fontSize: 13, lineHeight: 17, fontFamily: "Urbanist_700Bold" }}
+                >
+                  i
+                </AppText>
+              </GlyphTile>
               <AppText variant="h3" color={brand[700]}>
                 Informasi Selengkapnya
               </AppText>
