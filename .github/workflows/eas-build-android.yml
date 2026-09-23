@@ -38,8 +38,11 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      # Perintah yang sama persis dengan yang dipakai server EAS, supaya
+      # lockfile yang tidak sinkron ketahuan di sini dalam hitungan detik
+      # dan bukan setelah menunggu antrean build.
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --include=dev
 
       - name: Typecheck
         run: npx tsc --noEmit
