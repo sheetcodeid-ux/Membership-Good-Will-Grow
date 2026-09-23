@@ -27,7 +27,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # eas-cli depends on @oclif/plugin-autocomplete, which refuses to
+          # install on anything below Node 22.
+          node-version: 22
           cache: npm
 
       - name: Setup EAS
