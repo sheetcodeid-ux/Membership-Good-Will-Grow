@@ -2,6 +2,7 @@ import React from "react";
 import { Platform } from "react-native";
 import { Icon } from "@expo/ui";
 import {
+  BadgeCheck,
   Bell,
   Bookmark,
   ChevronRight,
@@ -85,7 +86,7 @@ export type AppIconName = keyof typeof native;
 const web: Record<AppIconName, LucideIcon> = {
   home: House,
   order: ShoppingBasket,
-  member: CircleUser,
+  member: BadgeCheck,
   profile: CircleUser,
   compose: Feather,
   cart: ShoppingCart,

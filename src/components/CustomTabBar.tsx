@@ -15,6 +15,7 @@ import { AppIcon, type AppIconName } from "./ui/AppIcon";
 import { AppText } from "./ui/AppText";
 import { LiquidGlass, LiquidGlassGroup, liquidGlassAvailable } from "./ui/LiquidGlass";
 import { brand, ink } from "../theme/colors";
+import { useResponsive } from "../theme/responsive";
 import { shadow } from "../theme/shadows";
 import { useUiStore } from "../store/uiStore";
 const BAR_HEIGHT = 54;
@@ -90,6 +91,7 @@ function TabButton({
 }
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const r = useResponsive();
   const openShortcuts = useUiStore((s) => s.openShortcuts);
   const activeName = state.routes[state.index]?.name ?? "index";
   const fab = fabActions[activeName] ?? fabActions.index;
@@ -107,6 +109,12 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         left: 0,
         right: 0,
         bottom: 0,
+        // Stays with the content column instead of stretching across a
+        // tablet, where a bar the full width of the screen puts the tabs
+        // further apart than a thumb can reach.
+        width: r.contentWidth + FAB_SIZE + 18,
+        maxWidth: "100%",
+        alignSelf: "center",
         flexDirection: "row",
         alignItems: "center",
         gap: 6,

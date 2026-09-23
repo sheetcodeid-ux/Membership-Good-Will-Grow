@@ -47,7 +47,11 @@ function CheckInCard({ outletName }: { outletName: string }) {
   );
 }
 
-export function PostCard({ post }: { post: FeedPost }) {
+/**
+ * Memoised: the feed re-renders whenever a filter or a like changes, and
+ * without this every card in the list re-runs its layout for one card's sake.
+ */
+function PostCardBase({ post }: { post: FeedPost }) {
   const toggleLike = useFeedStore((s) => s.toggleLike);
   const toggleBookmark = useSocialStore((s) => s.toggleBookmark);
   const bookmarked = useSocialStore((s) => s.isBookmarked(post.id));
@@ -135,3 +139,13 @@ export function PostCard({ post }: { post: FeedPost }) {
     </View>
   );
 }
+
+export const PostCard = React.memo(
+  PostCardBase,
+  (a, b) =>
+    a.post.id === b.post.id &&
+    a.post.liked === b.post.liked &&
+    a.post.likes === b.post.likes &&
+    a.post.bookmarked === b.post.bookmarked &&
+    a.post.comments === b.post.comments
+);

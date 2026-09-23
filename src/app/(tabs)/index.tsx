@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SegmentedControl } from "@expo/ui/community/segmented-control";
 import Animated, {
   type SharedValue,
   FadeInDown,
@@ -14,7 +15,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
 } from "react-native-reanimated";
 import { AppText } from "../../components/ui/AppText";
 import { Avatar } from "../../components/ui/Avatar";
@@ -22,10 +22,12 @@ import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { AppIcon } from "../../components/ui/AppIcon";
 import { LiquidGlass } from "../../components/ui/LiquidGlass";
+import { UiHost } from "../../components/ui/UiHost";
 import { PostCard } from "../../components/PostCard";
 import { HeaderMenu } from "../../components/HeaderMenu";
 import { brand, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
+import { platform, useResponsive } from "../../theme/responsive";
 import { useFeedStore } from "../../store/feedStore";
 import { useAuthStore } from "../../store/authStore";
 
@@ -41,97 +43,68 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
  * carousel's scroll offset, so the active dot stretches and fades as the page
  * turns instead of after it.
  */
-function Dot({ index, progress }: { index: number; progress: SharedValue<number> }) {
+function Dot({
+  index,
+  progress,
+  size,
+}: {
+  index: number;
+  progress: SharedValue<number>;
+  size: number;
+}) {
   const style = useAnimatedStyle(() => {
-    const distance = Math.abs(progress.value - index);
-    const nearness = Math.max(0, 1 - distance);
+    const nearness = Math.max(0, 1 - Math.abs(progress.value - index));
     return {
-      width: interpolate(nearness, [0, 1], [5, 18]),
+      width: interpolate(nearness, [0, 1], [size, size * 3.6]),
       backgroundColor: interpolateColor(nearness, [0, 1], [ink[300], brand[900]]),
     };
   });
 
-  return <Animated.View style={[{ height: 5, borderRadius: 3 }, style]} />;
-}
-
-/** Feed filter chip whose fill eases between states. */
-function FilterPill({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  const progress = useSharedValue(active ? 1 : 0);
-  progress.value = withTiming(active ? 1 : 0, { duration: 220 });
-
-  const pillStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(progress.value, [0, 1], [ink[100], brand[900]]),
-  }));
-  const labelStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(progress.value, [0, 1], [ink[600], "#FFFFFF"]),
-  }));
-
-  return (
-    <PressableScale onPress={onPress} scaleTo={0.94}>
-      <Animated.View
-        style={[
-          {
-            height: 24,
-            paddingHorizontal: 11,
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-          },
-          pillStyle,
-        ]}
-      >
-        <Animated.Text
-          style={[
-            { fontSize: 11, lineHeight: 15, fontFamily: "Urbanist_600SemiBold" },
-            labelStyle,
-          ]}
-        >
-          {label}
-        </Animated.Text>
-      </Animated.View>
-    </PressableScale>
-  );
+  return <Animated.View style={[{ height: size, borderRadius: size / 2 }, style]} />;
 }
 
 export default function HomeScreen() {
-  const { width, height } = useWindowDimensions();
+  const r = useResponsive();
   const insets = useSafeAreaInsets();
-  const [filter, setFilter] = useState(filters[0]);
+  const [filterIndex, setFilterIndex] = useState(0);
   const [showProfileBanner, setShowProfileBanner] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const posts = useFeedStore((s) => s.posts);
   const name = useAuthStore((s) => s.name);
   const username = useAuthStore((s) => s.username);
 
-  /** Page position of the promo carousel, in pages, updated on the UI thread. */
   const bannerProgress = useSharedValue(0);
   const menuScale = useSharedValue(1);
 
+  // The carousel pages on the content column, which is narrower than the
+  // window once the screen is wide enough to centre it.
+  const pageWidth = r.contentWidth;
+
   const onBannerScroll = useAnimatedScrollHandler((event) => {
-    bannerProgress.value = event.contentOffset.x / Math.max(1, width);
+    bannerProgress.value = event.contentOffset.x / Math.max(1, pageWidth);
   });
 
   const menuButtonStyle = useAnimatedStyle(() => ({
     transform: [{ scale: menuScale.value }],
   }));
 
-  // Measured off the reference: the banner covers ~31.5% of the screen and the
-  // header pill straddles its bottom edge, which is what the blur picks up.
-  const bannerHeight = Math.min(320, Math.max(220, height * 0.315));
+  // Measured off the reference at 31.5% of the screen, then bounded so the
+  // banner neither swallows a tall phone nor vanishes on a short one.
+  const bannerHeight = Math.min(360, Math.max(200, r.height * 0.315));
+  const pillHeight = r.s(50);
 
-  const visiblePosts = posts.filter((p) => {
-    if (filter === "Post") return p.type === "post";
-    if (filter === "Check-In") return p.type === "checkin";
-    return true;
-  });
+  const visiblePosts = useMemo(() => {
+    const kind = filters[filterIndex];
+    if (kind === "Post") return posts.filter((p) => p.type === "post");
+    if (kind === "Check-In") return posts.filter((p) => p.type === "checkin");
+    return posts;
+  }, [posts, filterIndex]);
+
+  const openMenu = useCallback(() => {
+    menuScale.value = withSpring(0.9, { damping: 14, stiffness: 400 });
+    menuScale.value = withSpring(1, { damping: 12, stiffness: 260 });
+    setMenuOpen(true);
+  }, [menuScale]);
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
@@ -139,121 +112,133 @@ export default function HomeScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 170 }}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom + r.s(170),
+          alignItems: "center",
+        }}
       >
-        <View>
-          <AnimatedScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={onBannerScroll}
-            scrollEventThrottle={16}
-            style={{ height: bannerHeight }}
-          >
-            {banners.map((label) => (
-              <ImagePlaceholder
-                key={label}
-                label={label}
-                radius={0}
-                iconSize={40}
-                style={{ height: bannerHeight, width }}
-              />
-            ))}
-          </AnimatedScrollView>
+        {/* Content column: full width on phones, centred and capped beyond. */}
+        <View style={{ width: pageWidth }}>
+          <View>
+            <AnimatedScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={onBannerScroll}
+              scrollEventThrottle={16}
+              decelerationRate="fast"
+              style={{ height: bannerHeight }}
+            >
+              {banners.map((label) => (
+                <ImagePlaceholder
+                  key={label}
+                  label={label}
+                  radius={0}
+                  iconSize={r.s(40)}
+                  style={{ height: bannerHeight, width: pageWidth }}
+                />
+              ))}
+            </AnimatedScrollView>
 
-          <View
-            style={{
-              position: "absolute",
-              // Clears the header pill, which overlaps the banner's bottom edge.
-              bottom: 34,
-              alignSelf: "center",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 6,
-            }}
-            pointerEvents="none"
-          >
-            {banners.map((label, i) => (
-              <Dot key={label} index={i} progress={bannerProgress} />
-            ))}
-          </View>
-        </View>
-
-        <LiquidGlass
-          radius={20}
-          interactive
-          style={{
-            marginHorizontal: 16,
-            marginTop: -22,
-            height: 50,
-            ...(shadow.xs as object),
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingHorizontal: 9,
-            }}
-          >
-            <PressableScale onPress={() => router.push(`/profile/${username}` as never)}>
-              <Avatar name={name} size={26} />
-            </PressableScale>
-            {/* Brand lockup supplied later. */}
-            <ImagePlaceholder radius={6} iconSize={13} style={{ width: 96, height: 21 }} />
-            <PressableScale
-              onPress={() => {
-                menuScale.value = withSpring(0.9, { damping: 14, stiffness: 320 });
-                menuScale.value = withSpring(1, { damping: 12, stiffness: 240 });
-                setMenuOpen(true);
+            <View
+              style={{
+                position: "absolute",
+                bottom: pillHeight * 0.68,
+                alignSelf: "center",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: r.s(6),
               }}
-              hitSlop={8}
+              pointerEvents="none"
             >
-              <Animated.View
-                style={[
-                  {
-                    width: 30,
-                    height: 30,
-                    borderRadius: 10,
-                    backgroundColor: "rgba(155,185,255,0.55)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  },
-                  menuButtonStyle,
-                ]}
-              >
-                <AppIcon name="more" size={17} color={brand[800]} emphasis />
-              </Animated.View>
-            </PressableScale>
+              {banners.map((label, i) => (
+                <Dot key={label} index={i} progress={bannerProgress} size={r.s(5)} />
+              ))}
+            </View>
           </View>
-        </LiquidGlass>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-          style={{ marginTop: 12, flexGrow: 0 }}
-        >
-          {filters.map((f) => (
-            <FilterPill key={f} label={f} active={filter === f} onPress={() => setFilter(f)} />
-          ))}
-        </ScrollView>
-
-        <View style={{ marginTop: 20, gap: 28 }}>
-          {visiblePosts.map((post, i) => (
-            <Animated.View
-              // Keying on the filter replays the stagger when the list changes.
-              key={`${filter}-${post.id}`}
-              entering={FadeInDown.delay(Math.min(i, 6) * 55)
-                .duration(360)
-                .springify()
-                .damping(18)}
+          <LiquidGlass
+            radius={r.s(20)}
+            interactive
+            style={{
+              marginHorizontal: r.gutter,
+              marginTop: -pillHeight * 0.44,
+              height: pillHeight,
+              ...(shadow.xs as object),
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingHorizontal: r.s(9),
+              }}
             >
-              <PostCard post={post} />
-            </Animated.View>
-          ))}
+              <PressableScale
+                onPress={() => router.push(`/profile/${username}` as never)}
+                hitSlop={10}
+                rippleBorderless
+              >
+                <Avatar name={name} size={r.s(26)} />
+              </PressableScale>
+              {/* Brand lockup supplied later. */}
+              <ImagePlaceholder
+                radius={6}
+                iconSize={r.s(13)}
+                style={{ width: r.s(96), height: r.s(21) }}
+              />
+              <PressableScale onPress={openMenu} hitSlop={10} rippleBorderless>
+                <Animated.View
+                  style={[
+                    {
+                      width: r.s(30),
+                      height: r.s(30),
+                      borderRadius: r.s(10),
+                      backgroundColor: "rgba(155,185,255,0.55)",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    },
+                    menuButtonStyle,
+                  ]}
+                >
+                  <AppIcon name="more" size={r.s(17)} color={brand[800]} emphasis />
+                </Animated.View>
+              </PressableScale>
+            </View>
+          </LiquidGlass>
+
+          {/* Platform-native segmented control: UISegmentedControl on iOS,
+              Material tabs on Android, and a matching web control. */}
+          <UiHost matchContents={false} style={{ marginTop: r.s(12), paddingHorizontal: r.gutter }}>
+            <SegmentedControl
+              values={filters}
+              selectedIndex={filterIndex}
+              onChange={(e) => setFilterIndex(e.nativeEvent.selectedSegmentIndex)}
+              // Expo UI's web fallback paints every label white once a tint
+              // is set, which erases the unselected ones. Native controls
+              // handle the contrast themselves, so the tint is native-only.
+              tintColor={platform.isWeb ? undefined : brand[900]}
+              appearance="light"
+              style={{ height: r.s(32) }}
+            />
+          </UiHost>
+
+          <View style={{ marginTop: r.s(20), gap: r.s(28) }}>
+            {visiblePosts.map((post, i) => (
+              <Animated.View
+                // Keying on the filter replays the stagger when the list changes.
+                key={`${filterIndex}-${post.id}`}
+                entering={FadeInDown.delay(Math.min(i, 6) * 55)
+                  .duration(360)
+                  .springify()
+                  .damping(18)}
+              >
+                <PostCard post={post} />
+              </Animated.View>
+            ))}
+          </View>
         </View>
       </ScrollView>
 
@@ -263,9 +248,9 @@ export default function HomeScreen() {
           exiting={FadeOutDown.duration(200)}
           style={{
             position: "absolute",
-            left: 12,
-            right: 12,
-            bottom: insets.bottom + 80,
+            alignSelf: "center",
+            width: pageWidth - r.gutter * 1.5,
+            bottom: insets.bottom + r.s(80),
           }}
         >
           <PressableScale
@@ -273,34 +258,44 @@ export default function HomeScreen() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: 11,
+              gap: r.s(11),
               backgroundColor: "#FFFFFF",
-              borderRadius: 16,
-              paddingVertical: 10,
-              paddingHorizontal: 12,
+              borderRadius: r.s(16),
+              paddingVertical: r.s(10),
+              paddingHorizontal: r.s(12),
               ...(shadow.md as object),
             }}
           >
             <View
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 9,
+                width: r.s(28),
+                height: r.s(28),
+                borderRadius: r.s(9),
                 backgroundColor: gold[50],
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <AppIcon name="gift" size={15} color={gold[600]} emphasis />
+              <AppIcon name="gift" size={r.s(15)} color={gold[600]} emphasis />
             </View>
             <AppText
               color={brand[700]}
-              style={{ flex: 1, fontSize: 11.5, lineHeight: 16, fontFamily: "Urbanist_600SemiBold" }}
+              numberOfLines={2}
+              style={{
+                flex: 1,
+                fontSize: r.s(11.5),
+                lineHeight: r.s(16),
+                fontFamily: "Urbanist_600SemiBold",
+              }}
             >
               Lengkapi profil anda, dapatkan reward menarik
             </AppText>
-            <PressableScale onPress={() => setShowProfileBanner(false)} hitSlop={12}>
-              <AppIcon name="close" size={16} color={ink[400]} />
+            <PressableScale
+              onPress={() => setShowProfileBanner(false)}
+              hitSlop={14}
+              rippleBorderless
+            >
+              <AppIcon name="close" size={r.s(16)} color={ink[400]} />
             </PressableScale>
           </PressableScale>
         </Animated.View>
