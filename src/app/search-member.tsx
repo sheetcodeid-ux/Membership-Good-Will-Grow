@@ -1,26 +1,37 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FlatList, Platform, TextInput, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { AppIcon } from "../components/ui/AppIcon";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
+import { UiText } from "../components/ui/Text";
+import { PressableScale } from "../components/ui/PressableScale";
 import { MemberRow } from "../components/MemberRow";
-import { ink, surface } from "../theme/colors";
-import { fontFamilies } from "../theme/typography";
+import { brand, ink, surface } from "../theme/colors";
+import { HIT_SIZE, radius, space, type as typeScale } from "../theme/scale";
+import { shadow } from "../theme/shadows";
+import { useResponsive } from "../theme/responsive";
 import { members } from "../data/mock";
 import { useAuthStore } from "../store/authStore";
 
 export default function SearchMemberScreen() {
   const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const r = useResponsive();
   const me = useAuthStore((s) => s.username);
 
-  const results = members.filter(
-    (m) =>
-      // You can't follow yourself, so keep your own card out of the results.
-      m.username !== me &&
-      (m.name.toLowerCase().includes(query.toLowerCase()) ||
-        m.username.toLowerCase().includes(query.toLowerCase()))
-  );
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return members.filter(
+      (m) =>
+        // You can't follow yourself, so keep your own card out of the results.
+        m.username !== me &&
+        (m.name.toLowerCase().includes(q) || m.username.toLowerCase().includes(q))
+    );
+  }, [query, me]);
+
+  const searching = query.trim().length > 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
@@ -30,49 +41,96 @@ export default function SearchMemberScreen() {
       <FlatList
         data={results}
         keyExtractor={(m) => m.id}
-        contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
+        contentContainerStyle={{
+          padding: r.gutter,
+          paddingBottom: space.xxxl * 2,
+          gap: space.md,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-              backgroundColor: "#FFFFFF",
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              height: 54,
-              marginBottom: 6,
-            }}
-          >
-            <AppIcon name="search" size={20} color={ink[400]} />
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholder="Cari nama atau username..."
-              placeholderTextColor={ink[300]}
-              style={[
-                {
-                  flex: 1,
-                  minWidth: 0,
-                  padding: 0,
-                  fontFamily: fontFamilies.regular,
-                  fontSize: 15.5,
-                  color: ink[900],
-                },
-                Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
-              ]}
-            />
+          <View style={{ gap: space.lg, marginBottom: space.xs }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: space.md,
+                backgroundColor: "#FFFFFF",
+                borderRadius: radius.lg,
+                paddingHorizontal: space.lg,
+                height: HIT_SIZE + space.xs,
+                // The ring on focus is the only thing that tells you the
+                // keyboard is pointed here; a white box on a white page does
+                // not, and the caret alone is too small to catch.
+                borderWidth: 1.5,
+                borderColor: focused ? brand[300] : "transparent",
+                ...(shadow.xs as object),
+              }}
+            >
+              <AppIcon name="search" size={20} color={focused ? brand[600] : ink[400]} />
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder="Cari nama atau username..."
+                placeholderTextColor={ink[300]}
+                returnKeyType="search"
+                autoCorrect={false}
+                autoCapitalize="none"
+                style={[
+                  {
+                    flex: 1,
+                    minWidth: 0,
+                    padding: 0,
+                    fontFamily: typeScale.body.fontFamily,
+                    fontSize: typeScale.body.fontSize,
+                    color: ink[900],
+                  },
+                  Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
+                ]}
+              />
+              {searching ? (
+                <PressableScale onPress={() => setQuery("")} rippleBorderless scaleTo={0.9}>
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      backgroundColor: ink[200],
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <AppIcon name="close" size={13} color={ink[600]} />
+                  </View>
+                </PressableScale>
+              ) : null}
+            </View>
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
+              <UiText token="label" color={ink[500]}>
+                {searching ? "HASIL PENCARIAN" : "SARAN UNTUK KAMU"}
+              </UiText>
+              <View style={{ flex: 1, height: 1, backgroundColor: ink[200] }} />
+              <UiText token="label" color={ink[400]}>
+                {results.length}
+              </UiText>
+            </View>
           </View>
         }
-        renderItem={({ item }) => <MemberRow member={item} actionLabel={undefined} />}
+        renderItem={({ item, index }) => (
+          <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 40).duration(260)}>
+            <MemberRow member={item} actionLabel={undefined} />
+          </Animated.View>
+        )}
         ListEmptyComponent={
           <EmptyState
-            icon={<AppIcon name="userOff" size={54} color={ink[300]} />}
+            icon={<AppIcon name="userOff" size={60} color={ink[300]} />}
             title="Member tidak ditemukan"
-            subtitle="Coba kata kunci lain."
-            style={{ paddingTop: 60 }}
+            subtitle={`Tidak ada yang cocok dengan "${query.trim()}". Coba kata kunci lain.`}
+            style={{ paddingTop: space.xxxl * 2 }}
           />
         }
       />

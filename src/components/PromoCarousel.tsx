@@ -17,10 +17,11 @@ import type { PromoBanner } from "../data/banners";
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 /**
- * The banner's lower corners. Two points tighter than the bar that overlaps
- * them, so the two curves read as nested rather than as one mis-set radius.
+ * The banner's lower corners. Kept well inside the bar that overlaps them,
+ * so the two curves read as nested rather than as one mis-set radius — and
+ * shallow enough that the artwork keeps its width right down to the edge.
  */
-const BANNER_RADIUS = radius.xl - 2;
+const BANNER_RADIUS = radius.md + 2;
 
 /** Indicator that tracks the scroll offset rather than the settled page. */
 function Dot({ index, progress }: { index: number; progress: SharedValue<number> }) {

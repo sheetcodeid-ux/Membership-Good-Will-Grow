@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -62,18 +63,31 @@ function TabButton({
   const progress = useSharedValue(focused ? 1 : 0);
   progress.value = withSpring(focused ? 1 : 0, { damping: 17, stiffness: 210 });
 
-  // ink[200] rather than white: on a glass bar a white pill turns into a
-  // solid chip, since white is also what the wash is made of. A grey at low
-  // alpha reads as a recess in the glass instead, which is what keeps the
-  // blur visible through the selected tab.
+  /**
+   * The selected tab is glass in its own right, not a coloured chip.
+   *
+   * Grey rather than white, because white is what the bar's wash is already
+   * made of — a white pill on it reads as paper laid over glass. The layers
+   * are the same ones the bar itself uses (a tinted fill, a diagonal sheen,
+   * a rim light along the top edge), minus a second blur pass: the bar has
+   * already blurred what is behind, and stacking another BlurView on Android
+   * costs a frame for no visible gain.
+   */
   const pillStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      ["rgba(214,218,228,0)", "rgba(214,218,228,0.58)"]
+      ["rgba(206,212,226,0)", "rgba(206,212,226,0.52)"]
+    ),
+    borderColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      ["rgba(255,255,255,0)", "rgba(255,255,255,0.5)"]
     ),
     transform: [{ scale: 0.94 + progress.value * 0.06 }],
   }));
+
+  const glazeStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
 
   const iconStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: -progress.value * 1.5 }],
@@ -91,6 +105,8 @@ function TabButton({
           {
             flex: 1,
             borderRadius: radius.pill,
+            borderWidth: 1,
+            overflow: "hidden",
             alignItems: "center",
             justifyContent: "center",
             gap: 3,
@@ -98,6 +114,28 @@ function TabButton({
           pillStyle,
         ]}
       >
+        <Animated.View
+          style={[StyleSheet.absoluteFill, glazeStyle]}
+          pointerEvents="none"
+        >
+          <LinearGradient
+            colors={["rgba(255,255,255,0.46)", "rgba(255,255,255,0.10)", "rgba(255,255,255,0)"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0.85, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View
+            style={{
+              position: "absolute",
+              left: "18%",
+              right: "18%",
+              top: 0,
+              height: 1,
+              backgroundColor: "rgba(255,255,255,0.8)",
+            }}
+          />
+        </Animated.View>
+
         <Animated.View style={iconStyle}>
           <AppIcon
             name={tab.icon}

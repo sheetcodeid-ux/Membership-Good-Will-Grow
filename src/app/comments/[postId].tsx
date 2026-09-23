@@ -11,13 +11,13 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { SlideInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, SlideInDown } from "react-native-reanimated";
 import { AppIcon } from "../../components/ui/AppIcon";
 import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { PressableScale } from "../../components/ui/PressableScale";
-import { brand, ink } from "../../theme/colors";
+import { brand, danger, ink } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
 import { HIT_SIZE, radius, space } from "../../theme/scale";
 import { useFeedStore } from "../../store/feedStore";
@@ -35,6 +35,19 @@ export default function CommentsSheet() {
   const addComment = useFeedStore((s) => s.addComment);
   const name = useAuthStore((s) => s.name);
   const [text, setText] = useState("");
+  /**
+   * Liking a comment is local for now — the feed store has no field for it.
+   * The affordance still has to be there: a comment list where the only
+   * possible action is adding another comment reads as a form, not a
+   * conversation.
+   */
+  const [liked, setLiked] = useState<Set<string>>(new Set());
+  const toggleLike = (id: string) =>
+    setLiked((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
 
   const send = () => {
     if (!text.trim()) return;
@@ -77,9 +90,26 @@ export default function CommentsSheet() {
               paddingBottom: space.md,
             }}
           >
-            <UiText token="h2" style={{ flex: 1 }}>
-              Komentar
-            </UiText>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: space.sm }}>
+              <UiText token="h2">Komentar</UiText>
+              {comments.length ? (
+                <View
+                  style={{
+                    minWidth: 24,
+                    paddingHorizontal: space.sm,
+                    height: 22,
+                    borderRadius: 11,
+                    backgroundColor: brand[50],
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <UiText token="label" color={brand[700]}>
+                    {comments.length}
+                  </UiText>
+                </View>
+              ) : null}
+            </View>
             <PressableScale
               onPress={() => router.back()}
               rippleBorderless
@@ -101,27 +131,60 @@ export default function CommentsSheet() {
             contentContainerStyle={{ padding: space.xl, paddingTop: space.sm, gap: space.lg, flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <View style={{ flexDirection: "row", gap: space.md }}>
-                <Avatar name={item.authorName} size={40} />
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: ink[50],
-                    borderRadius: radius.lg,
-                    padding: space.lg,
-                    gap: 2,
-                  }}
-                >
-                  <UiText token="bodySemibold">{item.authorName}</UiText>
-                  <UiText token="body" color={ink[700]}>
-                    {item.text}
-                  </UiText>
-                  <UiText token="caption" color={ink[400]} style={{ marginTop: space.xs }}>
-                    {item.time}
-                  </UiText>
+            renderItem={({ item, index }) => (
+              <Animated.View
+                entering={FadeInDown.delay(Math.min(index, 6) * 40).duration(240)}
+                style={{ flexDirection: "row", gap: space.md }}
+              >
+                <Avatar name={item.authorName} size={38} />
+                <View style={{ flex: 1, gap: space.xs }}>
+                  <View
+                    style={{
+                      backgroundColor: ink[50],
+                      // Square off the corner nearest the avatar. A bubble
+                      // rounded on all four floats free of its author; one
+                      // corner pinned points back at who said it.
+                      borderRadius: radius.lg,
+                      borderTopLeftRadius: space.xs,
+                      paddingHorizontal: space.lg,
+                      paddingVertical: space.md,
+                      gap: 1,
+                    }}
+                  >
+                    <UiText token="bodySemibold" color={brand[900]}>
+                      {item.authorName}
+                    </UiText>
+                    <UiText token="body" color={ink[700]}>
+                      {item.text}
+                    </UiText>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: space.lg,
+                      paddingLeft: space.sm,
+                    }}
+                  >
+                    <UiText token="label" color={ink[400]}>
+                      {item.time}
+                    </UiText>
+                    <PressableScale onPress={() => toggleLike(item.id)} rippleBorderless scaleTo={0.9}>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: space.xs }}>
+                        <AppIcon
+                          name="heart"
+                          size={14}
+                          color={liked.has(item.id) ? danger[500] : ink[400]}
+                          emphasis={liked.has(item.id)}
+                        />
+                        <UiText token="label" color={liked.has(item.id) ? danger[500] : ink[400]}>
+                          Suka
+                        </UiText>
+                      </View>
+                    </PressableScale>
+                  </View>
                 </View>
-              </View>
+              </Animated.View>
             )}
             ListEmptyComponent={
               <EmptyState

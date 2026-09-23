@@ -10,8 +10,10 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { SegmentedTabs } from "../components/ui/SegmentedTabs";
 import { PressableScale } from "../components/ui/PressableScale";
 import { PostCard } from "../components/PostCard";
-import { brand, ink, surface } from "../theme/colors";
-import { fontFamilies } from "../theme/typography";
+import { brand, gold, ink, surface } from "../theme/colors";
+import { radius, space, type as typeScale } from "../theme/scale";
+import { shadow } from "../theme/shadows";
+import { useResponsive } from "../theme/responsive";
 import { useFeedStore } from "../store/feedStore";
 import { useSocialStore } from "../store/socialStore";
 
@@ -19,6 +21,7 @@ export default function BookmarkScreen() {
   const [tab, setTab] = useState("posts");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
+  const r = useResponsive();
 
   const posts = useFeedStore((s) => s.posts);
   const bookmarkedIds = useSocialStore((s) => s.bookmarkedPostIds);
@@ -53,8 +56,34 @@ export default function BookmarkScreen() {
         <FlatList
           data={saved}
           keyExtractor={(p) => p.id}
-          contentContainerStyle={{ paddingVertical: 20, gap: 26, flexGrow: 1 }}
+          contentContainerStyle={{
+            paddingVertical: space.xl,
+            paddingBottom: space.xxxl * 2,
+            gap: space.xxl,
+            flexGrow: 1,
+          }}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            saved.length ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: space.sm,
+                  paddingHorizontal: r.gutter,
+                  marginBottom: -space.sm,
+                }}
+              >
+                <UiText token="label" color={ink[500]}>
+                  TERSIMPAN
+                </UiText>
+                <View style={{ flex: 1, height: 1, backgroundColor: ink[200] }} />
+                <UiText token="label" color={ink[400]}>
+                  {saved.length} post
+                </UiText>
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => <PostCard post={item} />}
           ListEmptyComponent={
             <EmptyState
@@ -80,37 +109,48 @@ export default function BookmarkScreen() {
               style={{ backgroundColor: brand[900], borderRadius: 14, marginBottom: 8 }}
             />
           }
-          renderItem={({ item }) => (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 14,
-                backgroundColor: "#FFFFFF",
-                borderRadius: 16,
-                padding: 16,
-              }}
-            >
-              <View
+          renderItem={({ item, index }) => {
+            // Folders differ only by name, which is nothing to aim at in a
+            // long list. The spine colour cycles so each one keeps a place
+            // you can find again without reading.
+            const spine = [brand[600], gold[600], brand[800], "#2E7D5B"][index % 4];
+            return (
+              <PressableScale
+                scaleTo={0.99}
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 13,
-                  backgroundColor: brand[50],
+                  flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "center",
+                  gap: space.lg,
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: radius.lg,
+                  padding: space.lg,
+                  ...(shadow.xs as object),
                 }}
               >
-                <AppIcon name="folder" size={20} color={brand[700]} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <UiText token="titleLg">{item.name}</UiText>
-                <UiText token="caption" color={ink[400]}>
-                  {item.postIds.length} post
-                </UiText>
-              </View>
-            </View>
-          )}
+                <View
+                  style={{
+                    width: 46,
+                    height: 46,
+                    borderRadius: radius.md,
+                    backgroundColor: `${spine}14`,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <AppIcon name="folder" size={21} color={spine} />
+                </View>
+                <View style={{ flex: 1, gap: 1 }}>
+                  <UiText token="titleLg" color={brand[900]} numberOfLines={1}>
+                    {item.name}
+                  </UiText>
+                  <UiText token="caption" color={ink[400]}>
+                    {item.postIds.length} post tersimpan
+                  </UiText>
+                </View>
+                <AppIcon name="chevronRight" size={18} color={ink[300]} />
+              </PressableScale>
+            );
+          }}
           ListEmptyComponent={
             <EmptyState
               icon={<AppIcon name="bookmark" size={54} color={ink[300]} />}
@@ -161,8 +201,8 @@ export default function BookmarkScreen() {
                     backgroundColor: ink[50],
                     borderWidth: 1.5,
                     borderColor: ink[200],
-                    fontFamily: fontFamilies.medium,
-                    fontSize: 15.5,
+                    fontFamily: typeScale.bodyMedium.fontFamily,
+                    fontSize: typeScale.bodyMedium.fontSize,
                     color: ink[900],
                   },
                   Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
