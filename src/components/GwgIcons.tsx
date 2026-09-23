@@ -21,19 +21,33 @@ export interface GlyphProps {
   active?: boolean;
 }
 
-/** House with an arched door; the roof meets the walls instead of floating. */
+/**
+ * House with an overhanging roof and a doorway.
+ *
+ * The roof runs past the walls on both sides rather than meeting them flush;
+ * that overhang is the whole difference between a house and a pentagon, and
+ * it is what survives at tab-bar size.
+ */
 export function HomeGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M11.02 2.94a1.6 1.6 0 0 1 1.96 0l7.64 5.95c.39.3.62.77.62 1.26V18.8a2.4 2.4 0 0 1-2.4 2.4H5.16a2.4 2.4 0 0 1-2.4-2.4v-8.65c0-.49.23-.96.62-1.26Z"
+        d="M2.2 10.4 11.1 3.2a1.45 1.45 0 0 1 1.8 0l8.9 7.2"
+        fill="none"
+        stroke={color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M4.5 9.1v9.6a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5V9.1"
         fill={active ? color : "none"}
         stroke={color}
         strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
       <Path
-        d="M9.5 21.2v-3.9a2.5 2.5 0 0 1 5 0v3.9"
+        d="M9.6 21.2v-4.6a2.4 2.4 0 0 1 4.8 0v4.6"
         fill={active ? "#FFFFFF" : "none"}
         stroke={active ? "#FFFFFF" : color}
         strokeWidth={active ? 0 : 1.9}
@@ -44,36 +58,33 @@ export function HomeGlyph({ size = 24, color = "#000", active = false }: GlyphPr
 }
 
 /**
- * Shopping bag with a folded lip and rope handles.
+ * Shopping bag with a rope handle.
  *
  * A cup says "a drink"; a bag says "an order was placed", which is what this
- * tab actually opens. The fold across the top and the two handle arcs are
- * what stop it reading as a plain box.
+ * tab actually opens. The body widens towards the base the way a paper bag
+ * does under weight, and the handle stands clear above the lip — that gap is
+ * what stops the whole thing reading as a box.
  */
 export function OrderGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M8.1 7.4V6.2a3.9 3.9 0 0 1 7.8 0v1.2"
+        d="M8.5 8.2V6.6a3.5 3.5 0 0 1 7 0v1.6"
         fill="none"
         stroke={color}
         strokeWidth={1.9}
         strokeLinecap="round"
       />
       <Path
-        d="M4.6 7.4h14.8a1.7 1.7 0 0 1 1.69 1.87l-1.13 11.2a2 2 0 0 1-1.99 1.8H5.03a2 2 0 0 1-1.99-1.8L1.91 9.27A1.7 1.7 0 0 1 3.6 7.4Z"
+        d="M5.3 8.2h13.4a2 2 0 0 1 2 2.18l-.78 8.6a2.6 2.6 0 0 1-2.59 2.37H6.67a2.6 2.6 0 0 1-2.59-2.37l-.78-8.6a2 2 0 0 1 2-2.18Z"
         fill={active ? color : "none"}
         stroke={color}
         strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
       <Path
-        d="M2.2 11.6h19.6"
-        stroke={active ? "#FFFFFF" : color}
-        strokeWidth={1.8}
-      />
-      <Path
-        d="M8.6 15.1h6.8"
+        d="M9 11.6c0 1.9 1.34 3.2 3 3.2s3-1.3 3-3.2"
+        fill="none"
         stroke={active ? "#FFFFFF" : color}
         strokeWidth={1.8}
         strokeLinecap="round"
@@ -83,36 +94,43 @@ export function OrderGlyph({ size = 24, color = "#000", active = false }: GlyphP
 }
 
 /**
- * Membership card with a chip and a star.
+ * Membership card, seen slightly narrow, with a stripe and a star.
  *
- * A medal reads as an award and sits awkwardly beside the profile figure,
- * since both are about a person. The card is the thing membership actually
- * gives you, and its silhouette shares nothing with the other three.
+ * A medal reads as an award and shares its subject — a person — with the
+ * profile tab beside it. The card is the thing membership actually hands
+ * you, and nothing else in the bar is a horizontal rectangle, so it holds
+ * its own shape at a glance.
  */
 export function MemberGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M3.4 4.6h17.2a2.2 2.2 0 0 1 2.2 2.2v10.4a2.2 2.2 0 0 1-2.2 2.2H3.4a2.2 2.2 0 0 1-2.2-2.2V6.8a2.2 2.2 0 0 1 2.2-2.2Z"
+        d="M3.6 5.1h16.8a2.4 2.4 0 0 1 2.4 2.4v9a2.4 2.4 0 0 1-2.4 2.4H3.6a2.4 2.4 0 0 1-2.4-2.4v-9a2.4 2.4 0 0 1 2.4-2.4Z"
         fill={active ? color : "none"}
         stroke={color}
         strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
       <Path
-        d="M1.2 8.9h21.6"
+        d="M1.2 9.1h21.6"
         stroke={active ? "#FFFFFF" : color}
         strokeWidth={1.9}
       />
       <Path
-        d="M16.4 11.9l.92 1.86 2.05.3-1.48 1.44.35 2.04-1.84-.96-1.84.96.35-2.04-1.48-1.44 2.05-.3Z"
+        d="M16.9 11.7l.83 1.68 1.85.27-1.34 1.3.32 1.85-1.66-.87-1.66.87.32-1.85-1.34-1.3 1.85-.27Z"
         fill={active ? "#FFFFFF" : "none"}
         stroke={active ? "none" : color}
-        strokeWidth={1.5}
+        strokeWidth={1.4}
         strokeLinejoin="round"
       />
       <Path
-        d="M4.4 15.9h5"
+        d="M4.6 13.3h4.8"
+        stroke={active ? "#FFFFFF" : color}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M4.6 16.1h2.8"
         stroke={active ? "#FFFFFF" : color}
         strokeWidth={1.9}
         strokeLinecap="round"
@@ -122,34 +140,37 @@ export function MemberGlyph({ size = 24, color = "#000", active = false }: Glyph
 }
 
 /**
- * Figure inside a rounded frame.
+ * Figure in a ring.
  *
- * A bare bust is what every avatar placeholder in the app already uses; the
- * frame is what makes this one read as "your account" instead of "a person".
+ * No frame: a square around a person is a form field, not an account. The
+ * ring is the shape an avatar already has everywhere else in the app, and
+ * the shoulders are cut to land exactly on it, so the figure sits inside the
+ * ring rather than being pasted over it.
  */
 export function ProfileGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path
-        d="M5.4 2.6h13.2a2.8 2.8 0 0 1 2.8 2.8v13.2a2.8 2.8 0 0 1-2.8 2.8H5.4a2.8 2.8 0 0 1-2.8-2.8V5.4a2.8 2.8 0 0 1 2.8-2.8Z"
+      <Circle
+        cx={12}
+        cy={12}
+        r={9.4}
         fill={active ? color : "none"}
         stroke={color}
         strokeWidth={active ? 0 : 1.9}
-        strokeLinejoin="round"
       />
       <Circle
         cx={12}
         cy={9.7}
-        r={2.9}
+        r={3}
         fill={active ? "#FFFFFF" : "none"}
         stroke={active ? "none" : color}
-        strokeWidth={1.8}
+        strokeWidth={1.9}
       />
       <Path
-        d="M6.6 19.2c0-2.86 2.42-4.8 5.4-4.8s5.4 1.94 5.4 4.8"
+        d="M6.91 19.9c.42-3.3 2.52-5 5.09-5s4.67 1.7 5.09 5"
         fill="none"
         stroke={active ? "#FFFFFF" : color}
-        strokeWidth={1.8}
+        strokeWidth={1.9}
         strokeLinecap="round"
       />
     </Svg>
@@ -157,26 +178,33 @@ export function ProfileGlyph({ size = 24, color = "#000", active = false }: Glyp
 }
 
 /**
- * Feather, traced off the reference rather than drawn by eye.
+ * Pencil over a baseline.
  *
- * Thresholding the reference art and walking its boundary surfaced two
- * details no eyeball pass had caught: a V bitten into the top edge beside
- * the tip, and a deeper V at the lower left splitting the blade's lobe from
- * the stem. Without them the shape reads as a plain leaf.
- *
- * The outline below is generated from that trace — simplified, then fitted
- * with Catmull-Rom tangents so every edge is a curve. Only two vertices are
- * held sharp (the lobe tip and the floor of the top notch); the handles
- * shrink on tight bends so the curve cannot bulge past the silhouette. It
- * fills 21 of the 24 units, matching the 44% of the disc the reference
- * feather covers.
+ * The feather this replaces was borrowed styling; the button opens the
+ * composer, so it should say "write" and nothing else. The baseline under
+ * the pencil is what separates composing from editing a picture, and the
+ * flat cut at the tip reads as a sharpened point rather than a stray spike.
  */
 export function ComposeGlyph({ size = 24, color = "#000" }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M18.78 2.36C19.20 2.38 22.26 2.41 22.41 2.62C22.57 2.84 22.56 6.20 22.50 7.46C22.44 8.73 22.26 9.25 22.07 10.06C21.88 10.86 21.85 11.25 21.38 12.22C20.91 13.19 19.90 14.89 19.30 15.76C18.70 16.63 18.44 16.77 17.83 17.31C17.23 17.86 16.46 18.50 15.76 18.96C15.05 19.41 14.43 19.74 13.69 19.99C12.94 20.24 12.50 20.53 11.35 20.43C10.21 20.32 8.03 19.23 6.94 19.39C5.86 19.54 3.54 21.36 2.88 21.64C2.23 21.91 2.17 21.59 2.02 21.46C1.87 21.34 1.54 20.68 1.50 20.51C1.46 20.34 1.53 20.15 1.67 19.99C1.82 19.83 1.93 19.71 2.54 19.39C3.14 19.07 4.19 18.68 5.22 18.09C6.24 17.50 7.63 16.68 8.59 15.93C9.54 15.18 10.56 14.07 10.83 13.69C11.11 13.30 10.88 12.89 10.83 12.73C10.79 12.58 10.63 12.45 10.49 12.39C10.34 12.33 10.05 12.25 9.80 12.30C9.54 12.36 9.59 12.22 8.85 12.73C8.10 13.25 6.05 14.91 5.39 15.33C4.73 15.75 4.61 15.41 4.61 15.41C4.61 15.41 4.38 14.85 4.35 14.29C4.32 13.73 4.26 12.88 4.44 12.13C4.61 11.38 5.11 10.41 5.39 9.88C5.67 9.35 5.40 9.68 6.08 9.02C6.76 8.36 8.19 6.88 9.36 5.99C10.54 5.11 12.42 4.09 12.99 3.83C13.57 3.58 13.68 3.83 13.86 4.01C14.04 4.18 14.43 5.08 14.64 5.39C14.84 5.70 14.92 5.75 15.07 5.82C15.21 5.89 15.67 5.91 15.67 5.91C15.67 5.91 17.09 3.70 17.49 3.14C17.88 2.58 17.82 2.73 18.01 2.62C18.19 2.52 18.58 2.49 18.70 2.45C18.82 2.41 18.37 2.34 18.78 2.36Z"
+        d="M17.9 1.9a2.62 2.62 0 0 1 3.7 3.7l-1.28 1.28-3.7-3.7Z"
         fill={color}
+      />
+      <Path
+        d="M15.35 4.45 19.05 8.15 9.1 18.1l-3.7-3.7Z"
+        fill={color}
+      />
+      <Path
+        d="M4.42 15.62 8.12 19.32 3.6 20.4a.8.8 0 0 1-.97-.97Z"
+        fill={color}
+      />
+      <Path
+        d="M3.4 22.6h17.2"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
       />
     </Svg>
   );

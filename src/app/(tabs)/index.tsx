@@ -42,6 +42,12 @@ const filters: FeedFilterOption[] = [
 /** Banner slots the marketing team fills in later. */
 
 const PILL_HEIGHT = 52;
+/**
+ * The bar's corner at rest. Deliberately tighter than the cards below it: on
+ * a 52pt bar the card radius turns the ends into half-circles, which reads as
+ * a pill floating on the banner rather than as a bar resting against it.
+ */
+const BAR_RADIUS = 13;
 
 /** Round control inside the glass bar, with an optional unread dot. */
 function GlassButton({
@@ -150,20 +156,31 @@ export default function HomeScreen() {
     return (rest - y) / (rest - stuckY);
   });
 
-  // marginLeft/marginRight rather than the shorthand: the shorthand is
-  // expanded once at style-resolution time, so every frame Reanimated wrote
-  // afterwards landed on a property nothing reads and the bar stayed inset
-  // by a gutter no matter how far it had climbed.
-  const insetStyle = useAnimatedStyle(() => ({
+  /**
+   * marginLeft/marginRight rather than the shorthand: the shorthand is
+   * expanded once at style-resolution time, so every frame Reanimated wrote
+   * afterwards landed on a property nothing reads and the bar stayed inset by
+   * a gutter no matter how far it had climbed.
+   *
+   * The radii are split across two layers. A view cannot both cast a shadow
+   * and clip its children on iOS, so the outer layer carries the margins and
+   * the shadow, and the inner one — same curve, no shadow — does the
+   * clipping.
+   */
+  const shellStyle = useAnimatedStyle(() => ({
     marginLeft: interpolate(stuck.value, [0, 1], [r.gutter, 0], "clamp"),
     marginRight: interpolate(stuck.value, [0, 1], [r.gutter, 0], "clamp"),
-    borderTopLeftRadius: interpolate(stuck.value, [0, 1], [radius.lg, 0], "clamp"),
-    borderTopRightRadius: interpolate(stuck.value, [0, 1], [radius.lg, 0], "clamp"),
-    // The landed bar keeps a generous curve on its bottom corners; it is the
-    // only edge still meeting content, so it is the edge that has to look
-    // deliberate.
-    borderBottomLeftRadius: interpolate(stuck.value, [0, 1], [radius.lg, radius.xl], "clamp"),
-    borderBottomRightRadius: interpolate(stuck.value, [0, 1], [radius.lg, radius.xl], "clamp"),
+    borderTopLeftRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, 0], "clamp"),
+    borderTopRightRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, 0], "clamp"),
+    borderBottomLeftRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, radius.lg], "clamp"),
+    borderBottomRightRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, radius.lg], "clamp"),
+  }));
+
+  const clipStyle = useAnimatedStyle(() => ({
+    borderTopLeftRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, 0], "clamp"),
+    borderTopRightRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, 0], "clamp"),
+    borderBottomLeftRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, radius.lg], "clamp"),
+    borderBottomRightRadius: interpolate(stuck.value, [0, 1], [BAR_RADIUS, radius.lg], "clamp"),
     overflow: "hidden" as const,
   }));
 
@@ -263,8 +280,12 @@ export default function HomeScreen() {
         pointerEvents="box-none"
       >
         <View style={{ width: "100%", maxWidth: Math.max(r.contentWidth, 520), alignSelf: "center" }} pointerEvents="box-none">
-        <Animated.View style={insetStyle} pointerEvents="box-none">
-        <LiquidGlass radius={0} interactive style={{ ...(shadow.sm as object) }}>
+        <Animated.View
+          style={[shellStyle, shadow.glass as object]}
+          pointerEvents="box-none"
+        >
+        <Animated.View style={clipStyle} pointerEvents="box-none">
+        <LiquidGlass radius={0} interactive>
           {/* Opaque layer that takes over as the bar lands. */}
           <Animated.View
             style={[
@@ -329,6 +350,7 @@ export default function HomeScreen() {
             </View>
           </Animated.View>
         </LiquidGlass>
+        </Animated.View>
         </Animated.View>
         </View>
       </Animated.View>

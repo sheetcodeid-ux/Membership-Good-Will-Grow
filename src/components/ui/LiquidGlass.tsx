@@ -26,6 +26,12 @@ interface LiquidGlassProps {
   radius: number;
   /** Brand colour pooled into the glass. Keep it low-alpha. */
   tint?: string;
+  /**
+   * How much the surface frosts over, 0..1. The default lets what is behind
+   * read through clearly; push it up only where something has to stay legible
+   * over arbitrary content.
+   */
+  opacity?: number;
   /** Lets the surface flex under a press on iOS 26. */
   interactive?: boolean;
   style?: ViewStyle | ViewStyle[];
@@ -34,7 +40,8 @@ interface LiquidGlassProps {
 export function LiquidGlass({
   children,
   radius,
-  tint = "rgba(155,185,255,0.22)",
+  tint = "rgba(155,185,255,0.12)",
+  opacity = 1,
   interactive = false,
   style,
 }: LiquidGlassProps) {
@@ -59,22 +66,40 @@ export function LiquidGlass({
           borderRadius: radius,
           overflow: "hidden",
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.62)",
+          borderColor: "rgba(255,255,255,0.45)",
         },
         style,
       ]}
     >
-      <BlurView intensity={95} tint="light" style={StyleSheet.absoluteFill} />
+      {/* Blur hard, wash light. The blur is what makes it glass; the wash is
+          only there to keep contrast, and past about a third it stops being a
+          window and turns into frosted plastic. */}
+      <BlurView
+        intensity={58}
+        tint="light"
+        // Android blurs nothing unless asked: blurMethod defaults to "none",
+        // so BlurView is only a translucent tint there. With the wash this
+        // light, leaving it off would show the feed through the bar in sharp
+        // focus instead of behind glass.
+        blurMethod="dimezisBlurView"
+        blurReductionFactor={4}
+        style={StyleSheet.absoluteFill}
+      />
+
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: `rgba(255,255,255,${0.26 * opacity})` },
+        ]}
+      />
 
       {/* Diagonal sheen: bright at the top-left, almost gone by the bottom-right. */}
-      {/* A near-opaque wash under the sheen: at lower coverage the text
-          scrolling beneath stays legible through the bar, which reads as a
-          rendering fault rather than as glass. */}
-      <View
-        style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.72)" }]}
-      />
       <LinearGradient
-        colors={["rgba(255,255,255,0.75)", "rgba(255,255,255,0.35)", "rgba(255,255,255,0.18)"]}
+        colors={[
+          `rgba(255,255,255,${0.42 * opacity})`,
+          `rgba(255,255,255,${0.16 * opacity})`,
+          `rgba(255,255,255,${0.04 * opacity})`,
+        ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -96,7 +121,7 @@ export function LiquidGlass({
           right: radius * 0.5,
           top: 0,
           height: 1,
-          backgroundColor: "rgba(255,255,255,0.9)",
+          backgroundColor: "rgba(255,255,255,0.75)",
         }}
       />
 
