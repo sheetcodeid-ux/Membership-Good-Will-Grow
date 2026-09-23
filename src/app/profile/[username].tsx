@@ -2,17 +2,19 @@ import React, { useMemo, useState } from "react";
 import { FlatList, TextInput, View, Platform } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Search, Pencil, UserPlus, FilePlus2, Users } from "lucide-react-native";
-import { AppText } from "../../components/ui";
+import { Pencil, FilePlus2, Users } from "lucide-react-native";
+import { UiText } from "../../components/ui/Text";
 import { AppHeader } from "../../components/ui/AppHeader";
 import { Avatar } from "../../components/ui/Avatar";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
 import { PressableScale } from "../../components/ui/PressableScale";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { PostCard } from "../../components/PostCard";
 import { MemberRow } from "../../components/MemberRow";
 import { brand, ink, surface } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
+import { HIT_SIZE, radius, space } from "../../theme/scale";
 import { members } from "../../data/mock";
 import { useAuthStore } from "../../store/authStore";
 import { useFeedStore } from "../../store/feedStore";
@@ -74,61 +76,96 @@ export default function MemberProfileScreen() {
         right={
           isMe ? (
             <PressableScale onPress={() => router.push("/edit-profile")} hitSlop={10}>
-              <Pencil size={20} color={brand[700]} />
+              <Pencil size={22} color={brand[700]} />
             </PressableScale>
           ) : undefined
         }
       >
-        <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 4 }}>
-          <View style={{ flexDirection: "row", gap: 14 }}>
-            <Avatar name={name} size={62} />
-            <View style={{ flex: 1, paddingTop: 2 }}>
-              <AppText variant="h3">{name}</AppText>
-              <AppText variant="caption" color={ink[400]}>
-                @{username}
-              </AppText>
-              {bio ? (
-                <AppText variant="caption" color={ink[600]} style={{ marginTop: 4 }}>
-                  {bio}
-                </AppText>
-              ) : isMe ? (
-                <PressableScale onPress={() => router.push("/edit-profile")}>
-                  <AppText variant="caption" color={ink[400]} style={{ marginTop: 4 }}>
-                    Tambahkan bio
-                  </AppText>
-                </PressableScale>
-              ) : null}
-            </View>
+        <View style={{ paddingHorizontal: space.xl, paddingTop: space.sm, paddingBottom: space.lg }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: space.lg }}>
+            <Avatar name={name} size={78} />
 
-            {!isMe && member ? (
-              <PressableScale
-                onPress={() => toggleFollow(member.id)}
-                style={{
-                  height: 38,
-                  paddingHorizontal: 16,
-                  borderRadius: 10,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 7,
-                  backgroundColor: isFollowing ? ink[100] : brand[900],
-                }}
-              >
-                <AppText variant="bodySemibold" color={isFollowing ? ink[600] : "#FFFFFF"}>
-                  {isFollowing ? "Mengikuti" : "Ikuti"}
-                </AppText>
-                {!isFollowing ? <UserPlus size={15} color="#FFFFFF" /> : null}
+            {/* Counts read as a row of three, which is what people scan for
+                on a profile before they read anything else. */}
+            <View style={{ flex: 1, flexDirection: "row" }}>
+              {(
+                [
+                  ["Postingan", counts.posts, "posts"],
+                  ["Pengikut", counts.followers, "followers"],
+                  ["Mengikuti", counts.following, "following"],
+                ] as const
+              ).map(([label, count, key]) => (
+                <PressableScale
+                  key={label}
+                  onPress={() => setTab(key)}
+                  rippleColor={null}
+                  style={{ flex: 1, alignItems: "center", paddingVertical: space.xs }}
+                >
+                  <UiText token="h3" color={ink[900]}>
+                    {count}
+                  </UiText>
+                  <UiText token="caption" color={ink[400]}>
+                    {label}
+                  </UiText>
+                </PressableScale>
+              ))}
+            </View>
+          </View>
+
+          <View style={{ marginTop: space.md, gap: 2 }}>
+            <UiText token="h3">{name}</UiText>
+            <UiText token="caption" color={ink[400]}>
+              @{username}
+            </UiText>
+            {bio ? (
+              <UiText token="body" color={ink[600]} style={{ marginTop: space.xs }}>
+                {bio}
+              </UiText>
+            ) : isMe ? (
+              <PressableScale onPress={() => router.push("/edit-profile")} rippleColor={null}>
+                <UiText token="body" color={brand[600]} style={{ marginTop: space.xs }}>
+                  Tambahkan bio
+                </UiText>
               </PressableScale>
             ) : null}
           </View>
+
+          {!isMe && member ? (
+            <PressableScale
+              onPress={() => toggleFollow(member.id)}
+              style={{
+                marginTop: space.lg,
+                height: HIT_SIZE,
+                borderRadius: radius.md,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: space.sm,
+                borderWidth: isFollowing ? 1.5 : 0,
+                borderColor: ink[200],
+                backgroundColor: isFollowing ? "#FFFFFF" : brand[900],
+              }}
+            >
+              <AppIcon
+                name={isFollowing ? "member" : "profile"}
+                size={19}
+                color={isFollowing ? ink[600] : "#FFFFFF"}
+                emphasis={isFollowing}
+              />
+              <UiText token="bodySemibold" color={isFollowing ? ink[600] : "#FFFFFF"}>
+                {isFollowing ? "Mengikuti" : "Ikuti"}
+              </UiText>
+            </PressableScale>
+          ) : null}
         </View>
 
         <SegmentedTabs
           value={tab}
           onChange={setTab}
           tabs={[
-            { key: "posts", label: `Postingan (${counts.posts})` },
-            { key: "followers", label: `Pengikut (${counts.followers})` },
-            { key: "following", label: `Mengikuti (${counts.following})` },
+            { key: "posts", label: "Postingan" },
+            { key: "followers", label: "Pengikut" },
+            { key: "following", label: "Mengikuti" },
           ]}
         />
       </AppHeader>
@@ -137,12 +174,12 @@ export default function MemberProfileScreen() {
         <FlatList
           data={memberPosts}
           keyExtractor={(p) => p.id}
-          contentContainerStyle={{ paddingVertical: 20, gap: 26, flexGrow: 1 }}
+          contentContainerStyle={{ paddingVertical: space.lg, gap: space.md, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <PostCard post={item} />}
           ListEmptyComponent={
             <EmptyState
-              icon={<FilePlus2 size={54} color={brand[300]} strokeWidth={1.8} />}
+              icon={<FilePlus2 size={64} color={brand[300]} strokeWidth={1.7} />}
               title="Belum ada post"
               subtitle={isMe ? "Mulai bagikan momenmu!" : "Member ini belum membagikan apa pun."}
               style={{ paddingTop: 80 }}
@@ -153,7 +190,7 @@ export default function MemberProfileScreen() {
         <FlatList
           data={peopleList}
           keyExtractor={(m) => m.id}
-          contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
+          contentContainerStyle={{ padding: space.lg, gap: space.md, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
@@ -161,14 +198,16 @@ export default function MemberProfileScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 12,
+                gap: space.md,
                 backgroundColor: "#FFFFFF",
-                borderRadius: 16,
-                paddingHorizontal: 16,
-                height: 52,
+                borderRadius: radius.md,
+                borderWidth: 1,
+                borderColor: ink[100],
+                paddingHorizontal: space.lg,
+                height: HIT_SIZE + 4,
               }}
             >
-              <Search size={20} color={ink[400]} />
+              <AppIcon name="search" size={20} color={ink[400]} />
               <TextInput
                 value={query}
                 onChangeText={setQuery}
@@ -195,7 +234,7 @@ export default function MemberProfileScreen() {
           )}
           ListEmptyComponent={
             <EmptyState
-              icon={<Users size={54} color={ink[300]} strokeWidth={1.8} />}
+              icon={<Users size={64} color={ink[300]} strokeWidth={1.7} />}
               title={tab === "followers" ? "Belum ada pengikut" : "Belum mengikuti siapa pun"}
               style={{ paddingTop: 60 }}
             />
