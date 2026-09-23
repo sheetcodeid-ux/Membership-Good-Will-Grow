@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { AppIcon } from "../../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
-import { AppText } from "../../components/ui/AppText";
+import { UiText } from "../../components/ui/Text";
+import { Avatar } from "../../components/ui/Avatar";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { AccountHeroArt } from "../../components/AccountHeroArt";
+import { AccountMenu, AccountSection } from "../../components/AccountMenu";
 import {
   BlockedUserGlyph,
   FaqGlyph,
@@ -27,94 +30,17 @@ import {
 } from "../../components/AccountIcons";
 import { brand, danger, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
+import { radius, space } from "../../theme/scale";
+import { useResponsive } from "../../theme/responsive";
 import { CONTACT, openEmail, openWhatsApp } from "../../data/contact";
 import { localPhone, useAuthStore } from "../../store/authStore";
+import { coupons, orders } from "../../data/mock";
 
-/** Measured off the reference: cards sit 10.5pt in from each edge. */
-const GUTTER = 11;
-const ROW_H = 47.5;
-const ROW_GAP = 7.5;
-const GROUP_GAP = 21;
-
-function MenuCard({
-  icon,
-  label,
-  onPress,
-  tone = brand[800],
-  chevronColor = brand[700],
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onPress?: () => void;
-  tone?: string;
-  chevronColor?: string;
-}) {
-  return (
-    <PressableScale
-      onPress={onPress}
-      scaleTo={0.99}
-      style={{
-        height: ROW_H,
-        borderRadius: 14,
-        backgroundColor: "#FFFFFF",
-        flexDirection: "row",
-        alignItems: "center",
-        paddingLeft: 15,
-        paddingRight: 18,
-        gap: 7,
-        ...(shadow.xs as object),
-      }}
-    >
-      <View style={{ width: 17, alignItems: "center" }}>{icon}</View>
-      <AppText variant="bodyMedium" color={tone} numberOfLines={1} style={{ flex: 1 }}>
-        {label}
-      </AppText>
-      <AppIcon name="chevronRight" size={16} color={chevronColor} />
-    </PressableScale>
-  );
-}
-
-/** Green WhatsApp disc / outlined envelope, as the reference draws them. */
-function HelpCard({
-  icon,
-  value,
-  onPress,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  onPress: () => void;
-}) {
-  return (
-    <PressableScale
-      onPress={onPress}
-      scaleTo={0.99}
-      style={{
-        height: 54,
-        borderRadius: 14,
-        backgroundColor: "#FFFFFF",
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 13,
-        gap: 12,
-        ...(shadow.xs as object),
-      }}
-    >
-      {icon}
-      <View style={{ flex: 1, gap: 1 }}>
-        <AppText variant="caption" color={ink[500]} numberOfLines={1}>
-          {CONTACT.csName}
-        </AppText>
-        <AppText variant="bodySemibold" color={ink[900]} numberOfLines={1}>
-          {value}
-        </AppText>
-      </View>
-      <AppIcon name="chevronRight" size={16} color={brand[700]} />
-    </PressableScale>
-  );
-}
+const HERO_H = 200;
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
+  const r = useResponsive();
   const name = useAuthStore((s) => s.name);
   const phone = useAuthStore((s) => s.phone);
   const referralCode = useAuthStore((s) => s.referralCode);
@@ -130,252 +56,245 @@ export default function AccountScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
-      <StatusBar style="dark" />
-
-      <View
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderBottomLeftRadius: 18,
-          borderBottomRightRadius: 18,
-          zIndex: 2,
-          ...(shadow.sm as object),
-        }}
-      >
-        <SafeAreaView edges={["top"]}>
-          <View style={{ paddingHorizontal: 16, height: 44, justifyContent: "center" }}>
-            <AppText
-              color={brand[700]}
-              style={{ fontSize: 16, lineHeight: 22, fontFamily: "Urbanist_500Medium" }}
-            >
-              Account
-            </AppText>
-          </View>
-        </SafeAreaView>
-      </View>
+      <StatusBar style="light" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: GUTTER,
-          paddingTop: 11,
-          paddingBottom: insets.bottom + 100,
-        }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
       >
-        {/* Identity card. The gradient runs left to right in the reference. */}
-        <PressableScale scaleTo={0.99} onPress={() => router.push("/profile-detail")}>
-          <LinearGradient
-            colors={[brand[950], brand[500]]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ borderRadius: 16, padding: 13, ...(shadow.sm as object) }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 11 }}>
-              <View
-                style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 21,
-                  backgroundColor: "rgba(255,255,255,0.16)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <AppIcon name="profile" size={22} color="#FFFFFF" emphasis />
-              </View>
-              <View style={{ flex: 1, gap: 1 }}>
-                <AppText
-                  color="#FFFFFF"
-                  numberOfLines={1}
-                  style={{ fontSize: 17, lineHeight: 23, fontFamily: "Urbanist_700Bold" }}
-                >
-                  {name}
-                </AppText>
-                <AppText color="rgba(255,255,255,0.88)" style={{ fontSize: 13, lineHeight: 18 }}>
-                  {localPhone(phone)}
-                </AppText>
-              </View>
-              <AppIcon name="chevronRight" size={18} color="rgba(255,255,255,0.9)" />
-            </View>
+        {/* Inside the list, not pinned over it: the scene belongs to the top
+            of the page and should leave with it. Pinned, it stayed put while
+            the rows slid over it. */}
+        <View style={{ height: HERO_H + insets.top }}>
+          <AccountHeroArt width={r.width} height={HERO_H + insets.top} />
+        </View>
 
-            <PressableScale
-              onPress={copyCode}
-              scaleTo={0.98}
-              style={{
-                marginTop: 11,
-                height: 34,
-                borderRadius: 11,
-                backgroundColor: "#FFFFFF",
-                flexDirection: "row",
-                alignItems: "center",
-                paddingHorizontal: 12,
-                gap: 9,
-              }}
-            >
-              <QrGlyph size={15} color={brand[600]} />
-              <AppText variant="bodyMedium" color={ink[800]} style={{ flex: 1 }}>
-                Kode Referal
-              </AppText>
-              <AppText
-                color={brand[900]}
-                style={{ fontSize: 15, lineHeight: 20, fontFamily: "Urbanist_700Bold" }}
-              >
-                {referralCode}
-              </AppText>
-              {copied ? (
-                <AppIcon name="check" size={16} color={brand[600]} />
-              ) : (
-                <AppIcon name="copy" size={16} color={brand[800]} />
-              )}
-            </PressableScale>
-          </LinearGradient>
-        </PressableScale>
+        <SafeAreaView edges={["top"]} style={{ position: "absolute", left: 0, right: 0 }}>
+          <View style={{ height: 48, justifyContent: "center", paddingHorizontal: r.gutter }}>
+            <UiText token="h3" color="#FFFFFF">
+              Akun Saya
+            </UiText>
+          </View>
+        </SafeAreaView>
 
-        <PressableScale
-          onPress={() => router.push("/edit-profile")}
-          scaleTo={0.99}
+        <View
           style={{
-            marginTop: ROW_GAP + 3,
-            height: 61,
-            borderRadius: 14,
-            backgroundColor: "#FFFFFF",
-            flexDirection: "row",
-            alignItems: "center",
-            paddingLeft: 13,
-            paddingRight: 18,
-            gap: 12,
-            ...(shadow.xs as object),
+            paddingHorizontal: r.gutter,
+            // The identity card overlaps the scene, which is what ties the
+            // two together instead of stacking them.
+            marginTop: -(HERO_H - 96),
           }}
         >
-          <View
+          {/* Identity. Tapping it opens the detail; the pencil goes straight
+              to editing, because those are different intentions. */}
+          <PressableScale
+            scaleTo={0.99}
+            onPress={() => router.push("/profile-detail")}
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 11,
-              backgroundColor: gold[50],
+              backgroundColor: "#FFFFFF",
+              borderTopLeftRadius: radius.lg,
+              borderTopRightRadius: radius.lg,
+              padding: space.lg,
+              flexDirection: "row",
               alignItems: "center",
-              justifyContent: "center",
+              gap: space.md,
+              ...(shadow.md as object),
             }}
           >
-            <GiftGlyph size={21} color={gold[500]} detail={gold[50]} />
-          </View>
-          <AppText
-            color={brand[900]}
-            numberOfLines={2}
-            style={{ flex: 1, fontSize: 13.5, lineHeight: 18, fontFamily: "Urbanist_600SemiBold" }}
+            <Avatar name={name} size={56} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <UiText token="h3" color={brand[900]} numberOfLines={1}>
+                {name}
+              </UiText>
+              <UiText token="caption" color={ink[500]}>
+                {localPhone(phone)}
+              </UiText>
+            </View>
+            <PressableScale
+              onPress={() => router.push("/edit-profile")}
+              rippleBorderless
+              hitSlop={12}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                backgroundColor: brand[50],
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <AppIcon name="compose" size={18} color={brand[700]} />
+            </PressableScale>
+          </PressableScale>
+
+          {/* Referral rides under the card as one piece with it — the code is
+              part of who you are here, not another menu row. */}
+          <PressableScale onPress={copyCode} scaleTo={0.99}>
+            <LinearGradient
+              colors={[gold[300], gold[500]]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                borderBottomLeftRadius: radius.lg,
+                borderBottomRightRadius: radius.lg,
+                paddingHorizontal: space.lg,
+                paddingVertical: space.md,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: space.sm,
+              }}
+            >
+              <QrGlyph size={17} color="#7A5514" detail={gold[300]} />
+              <UiText token="captionMedium" color="#5E3F0C">
+                Kode Referal
+              </UiText>
+              <View style={{ flex: 1 }} />
+              <UiText token="bodySemibold" color="#3F2A06">
+                {referralCode}
+              </UiText>
+              <AppIcon
+                name={copied ? "check" : "copy"}
+                size={16}
+                color={copied ? "#2E7D5B" : "#5E3F0C"}
+              />
+            </LinearGradient>
+          </PressableScale>
+
+          {/* The one thing the screen actively asks for, given its own card
+              with a button rather than being buried in a list. */}
+          <View
+            style={{
+              marginTop: space.lg,
+              backgroundColor: "#FFF6E2",
+              borderRadius: radius.lg,
+              padding: space.lg,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: space.md,
+            }}
           >
-            Lengkapi profil anda, dapatkan reward menarik
-          </AppText>
-          <AppIcon name="chevronRight" size={16} color={brand[700]} />
-        </PressableScale>
-
-        <View style={{ marginTop: GROUP_GAP, gap: ROW_GAP }}>
-          <MenuCard
-            icon={<TagGlyph />}
-            label="Kupon Saya"
-            onPress={() => router.push("/coupons")}
-          />
-          <MenuCard
-            icon={<VoucherGlyph />}
-            label="Voucher Saya"
-            onPress={() => router.push("/vouchers")}
-          />
-          <MenuCard
-            icon={<PointsHistoryGlyph />}
-            label="Histori Poin"
-            onPress={() => router.push("/points-history")}
-          />
-          <MenuCard
-            icon={<OrderHistoryGlyph />}
-            label="Riwayat Pemesanan"
-            onPress={() => router.push("/order-history")}
-          />
-          <MenuCard
-            icon={<TagGlyph />}
-            label="Riwayat Pembelian Kupon"
-            onPress={() => router.push("/coupon-purchases")}
-          />
-          <MenuCard
-            icon={<BlockedUserGlyph />}
-            label="Daftar Blokir Pengguna"
-            onPress={() => router.push("/blocked")}
-          />
-          <MenuCard
-            icon={<MenuLinesGlyph />}
-            label="Atur Menu Pintas"
-            onPress={() => router.push("/shortcuts")}
-          />
-          <MenuCard
-            icon={<GearFlowerGlyph color={brand[400]} />}
-            label="Pengaturan"
-            onPress={() => router.push("/settings")}
-          />
-        </View>
-
-        <View style={{ marginTop: GROUP_GAP, gap: ROW_GAP }}>
-          <MenuCard
-            icon={<FaqGlyph color={brand[300]} />}
-            label="FAQ"
-            onPress={() => router.push("/faq")}
-          />
-          <MenuCard
-            icon={<TermsGlyph color={brand[300]} />}
-            label="Syarat & Ketentuan"
-            onPress={() => router.push("/terms")}
-          />
-          <MenuCard
-            icon={<PrivacyGlyph color={brand[400]} />}
-            label="Kebijakan Privasi"
-            onPress={() => router.push("/privacy")}
-          />
-        </View>
-
-        <View style={{ marginTop: GROUP_GAP }}>
-          <MenuCard
-            icon={<LogoutGlyph />}
-            label="Keluar"
-            tone={brand[800]}
-            chevronColor={danger[500]}
-            onPress={() => setConfirmLogout(true)}
-          />
-        </View>
-
-        <AppText variant="bodySemibold" color={ink[800]} style={{ marginTop: GROUP_GAP + 2 }}>
-          Butuh Bantuan?
-        </AppText>
-
-        <View style={{ marginTop: 9, gap: ROW_GAP }}>
-          <HelpCard
-            icon={
-              <View
+            <View style={{ flex: 1, gap: space.sm }}>
+              <UiText token="bodySemibold" color="#7A5514">
+                Lengkapi profilmu, dapatkan reward
+              </UiText>
+              <PressableScale
+                onPress={() => router.push("/edit-profile")}
+                scaleTo={0.97}
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: "#25D366",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  alignSelf: "flex-start",
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: radius.pill,
+                  paddingHorizontal: space.lg,
+                  paddingVertical: space.sm,
                 }}
               >
-                <WhatsAppGlyph size={23} />
-              </View>
-            }
-            value={CONTACT.phoneLabel}
-            onPress={() => openWhatsApp()}
-          />
-          <HelpCard
-            icon={
-              <View style={{ width: 40, alignItems: "center" }}>
-                <AppIcon name="mail" size={27} color={brand[800]} />
-              </View>
-            }
-            value={CONTACT.emailLabel}
-            onPress={() => openEmail("Bantuan Good Will Grow")}
-          />
-        </View>
+                <UiText token="label" color="#7A5514">
+                  Lengkapi sekarang
+                </UiText>
+              </PressableScale>
+            </View>
+            <GiftGlyph size={44} color={gold[500]} detail="#FFF6E2" />
+          </View>
 
-        <AppText variant="caption" color={ink[400]} center style={{ marginTop: 16 }}>
-          v1.0.0
-        </AppText>
+          <AccountSection title="Aktivitas kamu" />
+          <AccountMenu
+            items={[
+              {
+                icon: <OrderHistoryGlyph />,
+                label: "Riwayat Pemesanan",
+                badge: String(orders.length),
+                onPress: () => router.push("/order-history"),
+              },
+              {
+                icon: <PointsHistoryGlyph />,
+                label: "Histori Poin",
+                onPress: () => router.push("/points-history"),
+              },
+              {
+                icon: <TagGlyph />,
+                label: "Kupon Saya",
+                badge: String(coupons.length),
+                onPress: () => router.push("/coupons"),
+              },
+              {
+                icon: <VoucherGlyph />,
+                label: "Voucher Saya",
+                onPress: () => router.push("/vouchers"),
+              },
+              {
+                icon: <TagGlyph />,
+                label: "Riwayat Pembelian Kupon",
+                onPress: () => router.push("/coupon-purchases"),
+              },
+            ]}
+          />
+
+          <AccountSection title="Preferensi" />
+          <AccountMenu
+            items={[
+              {
+                icon: <GearFlowerGlyph />,
+                label: "Pengaturan",
+                onPress: () => router.push("/settings"),
+              },
+              {
+                icon: <MenuLinesGlyph />,
+                label: "Atur Menu Pintas",
+                onPress: () => router.push("/shortcuts"),
+              },
+              {
+                icon: <BlockedUserGlyph />,
+                label: "Daftar Blokir Pengguna",
+                onPress: () => router.push("/blocked"),
+              },
+            ]}
+          />
+
+          <AccountSection title="Bantuan & ketentuan" />
+          <AccountMenu
+            items={[
+              { icon: <FaqGlyph />, label: "FAQ", onPress: () => router.push("/faq") },
+              {
+                icon: <TermsGlyph />,
+                label: "Syarat & Ketentuan",
+                onPress: () => router.push("/terms"),
+              },
+              {
+                icon: <PrivacyGlyph />,
+                label: "Kebijakan Privasi",
+                onPress: () => router.push("/privacy"),
+              },
+              {
+                icon: <WhatsAppGlyph size={19} />,
+                label: CONTACT.phoneLabel,
+                onPress: () => openWhatsApp(),
+              },
+              {
+                icon: <AppIcon name="mail" size={19} color={brand[700]} />,
+                label: CONTACT.emailLabel,
+                onPress: () => openEmail("Bantuan Good Will Grow"),
+              },
+            ]}
+          />
+
+          <View style={{ marginTop: space.xxl }}>
+            <AccountMenu
+              items={[
+                {
+                  icon: <LogoutGlyph />,
+                  label: "Keluar",
+                  tone: danger[500],
+                  plain: true,
+                  onPress: () => setConfirmLogout(true),
+                },
+              ]}
+            />
+          </View>
+
+          <UiText token="caption" color={ink[400]} center style={{ marginTop: space.lg }}>
+            Good Will Grow v1.0.0
+          </UiText>
+        </View>
       </ScrollView>
 
       {confirmLogout ? (
