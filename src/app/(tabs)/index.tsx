@@ -3,7 +3,6 @@ import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SegmentedControl } from "@expo/ui/community/segmented-control";
 import Animated, {
   type SharedValue,
   FadeInDown,
@@ -19,21 +18,24 @@ import Animated, {
 import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
-import { LinearGradient } from "expo-linear-gradient";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { AppIcon } from "../../components/ui/AppIcon";
 import { LiquidGlass } from "../../components/ui/LiquidGlass";
-import { UiHost } from "../../components/ui/UiHost";
 import { PostCard } from "../../components/PostCard";
 import { HeaderMenu } from "../../components/HeaderMenu";
+import { FeedFilter, type FeedFilterOption } from "../../components/FeedFilter";
 import { brand, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
-import { platform, useResponsive } from "../../theme/responsive";
+import { useResponsive } from "../../theme/responsive";
 import { radius, space } from "../../theme/scale";
 import { useFeedStore } from "../../store/feedStore";
 import { useAuthStore } from "../../store/authStore";
 
-const filters = ["Semua Feed", "Post", "Check-In"];
+const filters: FeedFilterOption[] = [
+  { key: "all", label: "Semua", icon: "home" },
+  { key: "post", label: "Post", icon: "comment" },
+  { key: "checkin", label: "Check-In", icon: "pin" },
+];
 
 /** Banner slots the marketing team fills in later. */
 const banners = ["Banner Promo 1", "Banner Promo 2", "Banner Promo 3"];
@@ -58,7 +60,7 @@ function Dot({
     const nearness = Math.max(0, 1 - Math.abs(progress.value - index));
     return {
       width: interpolate(nearness, [0, 1], [size, size * 3.6]),
-      backgroundColor: interpolateColor(nearness, [0, 1], [ink[300], brand[900]]),
+      backgroundColor: interpolateColor(nearness, [0, 1], [ink[400], brand[900]]),
     };
   });
 
@@ -68,7 +70,7 @@ function Dot({
 export default function HomeScreen() {
   const r = useResponsive();
   const insets = useSafeAreaInsets();
-  const [filterIndex, setFilterIndex] = useState(0);
+  const [filter, setFilter] = useState("all");
   const [showProfileBanner, setShowProfileBanner] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const posts = useFeedStore((s) => s.posts);
@@ -96,11 +98,24 @@ export default function HomeScreen() {
   const pillHeight = r.s(56);
 
   const visiblePosts = useMemo(() => {
-    const kind = filters[filterIndex];
-    if (kind === "Post") return posts.filter((p) => p.type === "post");
-    if (kind === "Check-In") return posts.filter((p) => p.type === "checkin");
+    if (filter === "post") return posts.filter((p) => p.type === "post");
+    if (filter === "checkin") return posts.filter((p) => p.type === "checkin");
     return posts;
-  }, [posts, filterIndex]);
+  }, [posts, filter]);
+
+  // Counts sit on the chips so the filter says what it will show.
+  const options = useMemo<FeedFilterOption[]>(
+    () =>
+      filters.map((f) => ({
+        ...f,
+        count:
+          f.key === "all"
+            ? posts.length
+            : posts.filter((p) => (f.key === "post" ? p.type === "post" : p.type === "checkin"))
+                .length,
+      })),
+    [posts]
+  );
 
   const openMenu = useCallback(() => {
     menuScale.value = withSpring(0.9, { damping: 14, stiffness: 400 });
@@ -141,18 +156,6 @@ export default function HomeScreen() {
                 />
               ))}
             </AnimatedScrollView>
-
-            <LinearGradient
-              colors={["transparent", "rgba(8,30,80,0.45)"]}
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: bannerHeight * 0.4,
-              }}
-              pointerEvents="none"
-            />
 
             <View
               style={{
@@ -223,27 +226,15 @@ export default function HomeScreen() {
             </View>
           </LiquidGlass>
 
-          {/* Platform-native segmented control: UISegmentedControl on iOS,
-              Material tabs on Android, and a matching web control. */}
-          <UiHost matchContents={false} style={{ marginTop: space.lg, paddingHorizontal: r.gutter }}>
-            <SegmentedControl
-              values={filters}
-              selectedIndex={filterIndex}
-              onChange={(e) => setFilterIndex(e.nativeEvent.selectedSegmentIndex)}
-              // Expo UI's web fallback paints every label white once a tint
-              // is set, which erases the unselected ones. Native controls
-              // handle the contrast themselves, so the tint is native-only.
-              tintColor={platform.isWeb ? undefined : brand[900]}
-              appearance="light"
-              style={{ height: r.s(38) }}
-            />
-          </UiHost>
+          <View style={{ marginTop: space.lg, paddingHorizontal: r.gutter }}>
+            <FeedFilter options={options} value={filter} onChange={setFilter} />
+          </View>
 
           <View style={{ marginTop: space.lg, gap: space.md }}>
             {visiblePosts.map((post, i) => (
               <Animated.View
                 // Keying on the filter replays the stagger when the list changes.
-                key={`${filterIndex}-${post.id}`}
+                key={`${filter}-${post.id}`}
                 entering={FadeInDown.delay(Math.min(i, 6) * 55)
                   .duration(360)
                   .springify()

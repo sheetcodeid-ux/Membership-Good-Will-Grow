@@ -9,19 +9,11 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import {
-  Heart,
-  MessageCircle,
-  MoreHorizontal,
-  Bookmark,
-  BadgeCheck,
-  ChevronRight,
-  MapPin,
-} from "lucide-react-native";
 import { UiText } from "./ui/Text";
 import { Avatar } from "./ui/Avatar";
 import { ImagePlaceholder } from "./ui/ImagePlaceholder";
 import { PressableScale } from "./ui/PressableScale";
+import { AppIcon } from "./ui/AppIcon";
 import { brand, ink, danger } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { useResponsive } from "../theme/responsive";
@@ -115,7 +107,7 @@ function CheckInCard({ outletName, s }: { outletName: string; s: (n: number) => 
             justifyContent: "center",
           }}
         >
-          <MapPin size={s(17)} color="#FFFFFF" fill="#FFFFFF" strokeWidth={1.6} />
+          <AppIcon name="pin" size={s(18)} color="#FFFFFF" emphasis />
         </View>
         <View style={{ flex: 1 }}>
           <UiText token="caption" color={ink[400]}>
@@ -125,7 +117,7 @@ function CheckInCard({ outletName, s }: { outletName: string; s: (n: number) => 
             {outletName}
           </UiText>
         </View>
-        <ChevronRight size={s(18)} color={brand[700]} strokeWidth={2.2} />
+        <AppIcon name="chevronRight" size={s(18)} color={brand[700]} />
       </LinearGradient>
     </PressableScale>
   );
@@ -166,7 +158,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
                 {post.authorName}
               </UiText>
             </PressableScale>
-            <BadgeCheck size={r.s(14)} color={brand[500]} fill={brand[500]} strokeWidth={0} />
+            <AppIcon name="member" size={r.s(15)} color={brand[500]} emphasis />
           </View>
           <UiText token="caption" color={ink[400]}>
             {post.time}
@@ -174,7 +166,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
         </View>
 
         <PressableScale hitSlop={10} rippleBorderless>
-          <MoreHorizontal size={r.s(18)} color={ink[300]} />
+          <AppIcon name="more" size={r.s(18)} color={ink[300]} />
         </PressableScale>
       </View>
 
@@ -187,7 +179,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
             marginTop: r.s(11),
           }}
         >
-          <MapPin size={r.s(13)} color={danger[500]} fill={danger[500]} strokeWidth={0} />
+          <AppIcon name="pin" size={r.s(14)} color={danger[500]} emphasis />
           <UiText token="captionMedium" color={ink[600]} numberOfLines={1}>
             {post.outletName}
           </UiText>
@@ -212,12 +204,6 @@ function PostCardBase({ post }: { post: FeedPost }) {
             iconSize={r.s(32)}
             style={{ height: r.s(240) }}
           />
-          {/* Scrim so anything laid over the artwork stays readable. */}
-          <LinearGradient
-            colors={["transparent", "rgba(8,30,80,0.28)"]}
-            style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: r.s(70) }}
-            pointerEvents="none"
-          />
         </View>
       </PressableScale>
 
@@ -239,11 +225,11 @@ function PostCardBase({ post }: { post: FeedPost }) {
           count={post.likes}
           size={r.s(18)}
         >
-          <Heart
-            size={r.s(19)}
+          <AppIcon
+            name="heart"
+            size={r.s(21)}
             color={post.liked ? danger[500] : ink[400]}
-            fill={post.liked ? danger[500] : "transparent"}
-            strokeWidth={post.liked ? 0 : 1.9}
+            emphasis={!!post.liked}
           />
         </ReactionButton>
 
@@ -253,7 +239,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
           count={post.comments}
           size={r.s(18)}
         >
-          <MessageCircle size={r.s(19)} color={ink[400]} strokeWidth={1.9} />
+          <AppIcon name="comment" size={r.s(21)} color={ink[400]} />
         </ReactionButton>
 
         <View style={{ flex: 1 }} />
@@ -263,11 +249,11 @@ function PostCardBase({ post }: { post: FeedPost }) {
           onPress={() => toggleBookmark(post.id)}
           size={r.s(18)}
         >
-          <Bookmark
-            size={r.s(19)}
+          <AppIcon
+            name="bookmark"
+            size={r.s(21)}
             color={bookmarked ? brand[700] : ink[400]}
-            fill={bookmarked ? brand[700] : "transparent"}
-            strokeWidth={bookmarked ? 0 : 1.9}
+            emphasis={bookmarked}
           />
         </ReactionButton>
       </View>
