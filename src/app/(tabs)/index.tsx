@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
@@ -23,6 +21,7 @@ import { AppText } from "../../components/ui/AppText";
 import { Avatar } from "../../components/ui/Avatar";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
+import { LiquidGlass } from "../../components/ui/LiquidGlass";
 import { PostCard } from "../../components/PostCard";
 import { HeaderMenu } from "../../components/HeaderMenu";
 import { brand, gold, ink, surface } from "../../theme/colors";
@@ -180,25 +179,16 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View
+        <LiquidGlass
+          radius={20}
+          interactive
           style={{
             marginHorizontal: 16,
             marginTop: -22,
             height: 50,
-            borderRadius: 20,
-            overflow: "hidden",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.55)",
             ...(shadow.xs as object),
           }}
         >
-          <BlurView intensity={45} tint="light" style={StyleSheet.absoluteFill} />
-          <LinearGradient
-            colors={["rgba(210,224,255,0.45)", "rgba(255,255,255,0.35)", "rgba(219,230,255,0.45)"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
-          />
           <View
             style={{
               flex: 1,
@@ -238,7 +228,7 @@ export default function HomeScreen() {
               </Animated.View>
             </PressableScale>
           </View>
-        </View>
+        </LiquidGlass>
 
         <ScrollView
           horizontal
