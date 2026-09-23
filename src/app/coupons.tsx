@@ -13,9 +13,11 @@ import { shadow } from "../theme/shadows";
 import { coupons } from "../data/mock";
 import type { Coupon } from "../data/types";
 
-const CARD_H = 104;
-/** Diameter of the notches punched along the ticket's seam. */
-const NOTCH = 9;
+/* Ticket metrics, taken as ratios off the reference card (2.87 : 1). */
+const CARD_H = 114;
+const PHOTO_W = 118;
+/** Diameter of the bites punched out of the coloured panel's left edge. */
+const NOTCH = 10;
 
 /** Two overlapping tickets, drawn for the empty state. */
 function EmptyTickets({ size = 120 }: { size?: number }) {
@@ -50,54 +52,75 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
       style={{
         height: CARD_H,
         flexDirection: "row",
-        borderRadius: 14,
+        borderRadius: 16,
         overflow: "hidden",
         backgroundColor: "#FFFFFF",
         ...(shadow.xs as object),
       }}
     >
-      <View style={{ width: CARD_H * 1.16 }}>
-        <ImagePlaceholder radius={0} iconSize={20} style={{ flex: 1 }} />
-        <View style={{ position: "absolute", top: 6, left: 6 }}>
+      <View style={{ width: PHOTO_W }}>
+        <ImagePlaceholder radius={0} iconSize={22} style={{ flex: 1 }} />
+        <View style={{ position: "absolute", top: 8, left: 8 }}>
           <BrandLogo brandId={coupon.brandId} size={18} />
         </View>
       </View>
 
-      <View style={{ flex: 1, backgroundColor: brand[900], paddingHorizontal: 15, paddingVertical: 12 }}>
-        <AppText variant="h3" color="#FFFFFF" numberOfLines={2}>
+      {/* Clipping the panel means only the right half of each circle shows,
+          so the notches read as bites rather than floating dots. */}
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: brand[900],
+          overflow: "hidden",
+          paddingLeft: 15,
+          paddingRight: 14,
+          paddingTop: 11,
+          paddingBottom: 12,
+        }}
+      >
+        <AppText
+          color="#FFFFFF"
+          numberOfLines={2}
+          style={{ fontSize: 16, lineHeight: 21, fontFamily: "Urbanist_700Bold" }}
+        >
           {coupon.title}
         </AppText>
         <View style={{ flex: 1 }} />
-        <AppText variant="caption" color="rgba(255,255,255,0.88)">
+        <AppText
+          color="rgba(255,255,255,0.92)"
+          style={{ fontSize: 11.5, lineHeight: 16, fontFamily: "Urbanist_400Regular" }}
+        >
           Tersisa {coupon.daysLeft} hari
         </AppText>
-        <AppText variant="caption" color="rgba(255,255,255,0.55)">
+        <AppText
+          color="rgba(255,255,255,0.5)"
+          style={{ fontSize: 11.5, lineHeight: 16, fontFamily: "Urbanist_400Regular" }}
+        >
           {coupon.used ? "Sudah Digunakan" : "Belum Digunakan"}
         </AppText>
-      </View>
 
-      {/* Notches punched along the seam, in the page colour. */}
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          left: CARD_H * 1.16 - NOTCH / 2,
-          top: 0,
-          bottom: 0,
-          justifyContent: "space-around",
-        }}
-      >
-        {Array.from({ length: 7 }).map((_, i) => (
-          <View
-            key={i}
-            style={{
-              width: NOTCH,
-              height: NOTCH,
-              borderRadius: NOTCH / 2,
-              backgroundColor: ink[200],
-            }}
-          />
-        ))}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            left: -NOTCH / 2,
+            top: 0,
+            bottom: 0,
+            justifyContent: "space-around",
+          }}
+        >
+          {Array.from({ length: 7 }).map((_, i) => (
+            <View
+              key={i}
+              style={{
+                width: NOTCH,
+                height: NOTCH,
+                borderRadius: NOTCH / 2,
+                backgroundColor: surface,
+              }}
+            />
+          ))}
+        </View>
       </View>
     </PressableScale>
   );
