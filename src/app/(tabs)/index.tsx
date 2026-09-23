@@ -22,7 +22,6 @@ import { PostCard } from "../../components/PostCard";
 import { PostCardSkeleton } from "../../components/ui/Skeleton";
 import { HeaderMenu } from "../../components/HeaderMenu";
 import { PromoCarousel } from "../../components/PromoCarousel";
-import { SectionHeader } from "../../components/SectionHeader";
 import { FeedFilter, type FeedFilterOption } from "../../components/FeedFilter";
 import { brand, danger, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
@@ -134,7 +133,7 @@ export default function HomeScreen() {
   });
 
   /** Where the bar comes to rest once it has climbed to the top. */
-  const stuckY = insets.top + space.xs;
+  const stuckY = 0;
 
   /**
    * The bar rides with the page until it reaches the top, then stays. Driving
@@ -146,13 +145,37 @@ export default function HomeScreen() {
     transform: [{ translateY: Math.max(stuckY, pillRestY - scrollY.value) }],
   }));
 
-  /** Tightens as it lands, so it reads as a bar rather than a floating pill. */
+  /**
+   * On the way up the bar loses its side margins and its top corners, so it
+   * arrives as a header spanning the screen rather than a pill parked at the
+   * top. The glass fades out underneath as a solid white takes over, which is
+   * what keeps the status bar area readable once content is passing behind.
+   */
+  const stuckProgress = (y: number) =>
+    pillRestY > stuckY ? (pillRestY - y) / (pillRestY - stuckY) : 0;
+
   const insetStyle = useAnimatedStyle(() => {
     const y = Math.max(stuckY, pillRestY - scrollY.value);
-    const stuck = pillRestY > stuckY ? (pillRestY - y) / (pillRestY - stuckY) : 0;
+    const stuck = stuckProgress(y);
     return {
-      marginHorizontal: interpolate(stuck, [0, 1], [r.gutter, space.sm], "clamp"),
+      marginHorizontal: interpolate(stuck, [0, 1], [r.gutter, 0], "clamp"),
+      borderTopLeftRadius: interpolate(stuck, [0, 1], [radius.lg, 0], "clamp"),
+      borderTopRightRadius: interpolate(stuck, [0, 1], [radius.lg, 0], "clamp"),
+      borderBottomLeftRadius: radius.lg,
+      borderBottomRightRadius: radius.lg,
+      overflow: "hidden" as const,
     };
+  });
+
+  const solidStyle = useAnimatedStyle(() => {
+    const y = Math.max(stuckY, pillRestY - scrollY.value);
+    return { opacity: interpolate(stuckProgress(y), [0.45, 1], [0, 1], "clamp") };
+  });
+
+  /** The landed bar covers the status bar too, so it needs that height back. */
+  const padStyle = useAnimatedStyle(() => {
+    const y = Math.max(stuckY, pillRestY - scrollY.value);
+    return { height: interpolate(stuckProgress(y), [0, 1], [0, insets.top], "clamp") };
   });
 
   const onPillLayout = useCallback(
@@ -178,7 +201,7 @@ export default function HomeScreen() {
           />
         }
         contentContainerStyle={{
-          paddingTop: insets.top + space.sm,
+          paddingTop: 0,
           paddingBottom: insets.bottom + r.s(170),
           alignItems: "center",
         }}
@@ -186,29 +209,22 @@ export default function HomeScreen() {
         <View style={{ width: r.contentWidth }}>
           <PromoCarousel
             slides={banners}
-            gutter={r.gutter}
-            height={Math.min(300, Math.max(210, r.height * 0.29))}
+            width={r.contentWidth}
+            height={Math.min(300, Math.max(210, r.height * 0.3))}
           />
 
           {/* Reserves the bar's slot in the flow; the bar itself is drawn in
               the overlay below so it can climb without the page reflowing. */}
           <View
             onLayout={onPillLayout}
-            style={{ height: PILL_HEIGHT, marginTop: -PILL_HEIGHT * 0.42 }}
+            style={{ height: PILL_HEIGHT, marginTop: -PILL_HEIGHT * 0.55 }}
           />
 
           <View style={{ paddingHorizontal: r.gutter, marginTop: space.md }}>
             <FeedFilter options={options} value={filter} onChange={setFilter} />
           </View>
 
-          <View style={{ paddingHorizontal: r.gutter, marginTop: space.lg }}>
-            <SectionHeader
-              title="Postingan Terbaru"
-              subtitle={loading ? "Memuat…" : `${visiblePosts.length} postingan dari komunitas`}
-            />
-          </View>
-
-          <View style={{ gap: space.md }}>
+          <View style={{ gap: space.md, marginTop: space.lg }}>
             {loading ? [0, 1].map((i) => <PostCardSkeleton key={i} gutter={r.gutter} />) : null}
             {loading
               ? null
@@ -238,10 +254,19 @@ export default function HomeScreen() {
       >
         <View style={{ width: r.contentWidth, alignSelf: "center" }} pointerEvents="box-none">
         <Animated.View style={insetStyle} pointerEvents="box-none">
-        <LiquidGlass radius={radius.lg} interactive style={{ height: PILL_HEIGHT, ...(shadow.sm as object) }}>
+        <LiquidGlass radius={0} interactive style={{ ...(shadow.sm as object) }}>
+          {/* Opaque layer that takes over as the bar lands. */}
+          <Animated.View
+            style={[
+              { position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: "#FFFFFF" },
+              solidStyle,
+            ]}
+            pointerEvents="none"
+          />
+          <Animated.View style={padStyle} />
           <View
             style={{
-              flex: 1,
+              height: PILL_HEIGHT,
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: space.sm + 2,
@@ -293,23 +318,23 @@ export default function HomeScreen() {
               alignItems: "center",
               gap: space.md,
               backgroundColor: "#FFFFFF",
-              borderRadius: radius.lg,
+              borderRadius: radius.pill,
               paddingVertical: space.sm + 2,
-              paddingHorizontal: space.md,
+              paddingHorizontal: space.sm + 2,
               ...(shadow.md as object),
             }}
           >
             <View
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: radius.sm,
-                backgroundColor: gold[50],
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                backgroundColor: gold[100],
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <AppIcon name="gift" size={17} color={gold[600]} />
+              <AppIcon name="gift" size={19} color={gold[500]} />
             </View>
             <UiText
               token="caption"

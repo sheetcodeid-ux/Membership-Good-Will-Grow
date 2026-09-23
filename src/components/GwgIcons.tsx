@@ -138,26 +138,21 @@ export function ProfileGlyph({ size = 24, color = "#000", active = false }: Glyp
 }
 
 /**
- * Quill feather, as the reference draws it: a curved spine with barbs cut
- * across it, and the shaft carrying on past the vane.
+ * Feather as the reference draws it: one leaf, a soft point at the tip, a
+ * notch cut out of the lower edge and a spine running through it. No barbs —
+ * at 24pt they close up into noise.
  */
 export function ComposeGlyph({ size = 24, color = "#000" }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M20.9 2.9c.7 6.2-1.5 10.8-5.2 13.1-2.6 1.6-5.5 1.9-7.6 1.3L20.9 2.9Z"
+        d="M20.6 3.3c.9 4.9-.6 9.3-3.9 12.1-2.2 1.9-5 2.9-8 3.1l-2.4 2.4a1.05 1.05 0 0 1-1.5-1.48l2.4-2.4c.2-3 1.2-5.8 3.1-8 2.8-3.3 7.2-4.8 12.1-3.9Z"
         fill={color}
       />
       <Path
-        d="M20.9 2.9 3.6 20.9"
-        stroke={color}
-        strokeWidth={1.9}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M16.4 5.6 12.2 9.9M18.1 8.7 13.9 13M18.4 12.3l-3.3 3.4"
+        d="M18.4 5.5 7.3 18.5"
         stroke="#FFFFFF"
-        strokeWidth={1.25}
+        strokeWidth={1.35}
         strokeLinecap="round"
       />
     </Svg>

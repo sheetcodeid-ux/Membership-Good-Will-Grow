@@ -34,7 +34,7 @@ interface LiquidGlassProps {
 export function LiquidGlass({
   children,
   radius,
-  tint = "rgba(155,185,255,0.30)",
+  tint = "rgba(155,185,255,0.22)",
   interactive = false,
   style,
 }: LiquidGlassProps) {
@@ -64,11 +64,17 @@ export function LiquidGlass({
         style,
       ]}
     >
-      <BlurView intensity={60} tint="light" style={StyleSheet.absoluteFill} />
+      <BlurView intensity={95} tint="light" style={StyleSheet.absoluteFill} />
 
       {/* Diagonal sheen: bright at the top-left, almost gone by the bottom-right. */}
+      {/* A near-opaque wash under the sheen: at lower coverage the text
+          scrolling beneath stays legible through the bar, which reads as a
+          rendering fault rather than as glass. */}
+      <View
+        style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.72)" }]}
+      />
       <LinearGradient
-        colors={["rgba(255,255,255,0.58)", "rgba(255,255,255,0.16)", "rgba(255,255,255,0.05)"]}
+        colors={["rgba(255,255,255,0.75)", "rgba(255,255,255,0.35)", "rgba(255,255,255,0.18)"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}

@@ -17,6 +17,7 @@ import { Avatar } from "./ui/Avatar";
 import { ImagePlaceholder } from "./ui/ImagePlaceholder";
 import { PressableScale } from "./ui/PressableScale";
 import { AppIcon } from "./ui/AppIcon";
+import { BrandLogo } from "./BrandLogo";
 import { brand, ink, danger } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { useResponsive } from "../theme/responsive";
@@ -72,7 +73,15 @@ function ReactionButton({
   );
 }
 
-function CheckInCard({ outletName, s }: { outletName: string; s: (n: number) => number }) {
+function CheckInCard({
+  outletName,
+  brandId,
+  s,
+}: {
+  outletName: string;
+  brandId?: string;
+  s: (n: number) => number;
+}) {
   return (
     <PressableScale
       scaleTo={0.99}
@@ -100,17 +109,21 @@ function CheckInCard({ outletName, s }: { outletName: string; s: (n: number) => 
           paddingHorizontal: s(12),
         }}
       >
+        {/* The partner's own mark says where this is far faster than a pin. */}
         <View
           style={{
-            width: s(34),
-            height: s(34),
-            borderRadius: s(11),
-            backgroundColor: brand[900],
+            width: s(38),
+            height: s(38),
+            borderRadius: s(12),
+            backgroundColor: "#FFFFFF",
+            borderWidth: 1,
+            borderColor: ink[100],
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
-          <AppIcon name="pin" size={s(18)} color="#FFFFFF" emphasis />
+          <BrandLogo brandId={brandId} size={s(30)} />
         </View>
         <View style={{ flex: 1 }}>
           <UiText token="caption" color={ink[400]}>
@@ -201,23 +214,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
         </PressableScale>
       </View>
 
-      {post.type === "checkin" && post.outletName ? (
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: r.s(5),
-            marginTop: r.s(11),
-          }}
-        >
-          <AppIcon name="pin" size={r.s(14)} color={danger[500]} emphasis />
-          <UiText token="captionMedium" color={ink[600]} numberOfLines={1}>
-            {post.outletName}
-          </UiText>
-        </View>
-      ) : null}
-
-      <UiText token="body" color={ink[800]} style={{ marginTop: space.sm + 2 }}>
+      <UiText token="body" color={ink[800]} style={{ marginTop: space.md }}>
         {post.caption}
       </UiText>
 
@@ -258,7 +255,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
       </GestureDetector>
 
       {post.type === "checkin" && post.outletName ? (
-        <CheckInCard outletName={post.outletName} s={r.s} />
+        <CheckInCard outletName={post.outletName} brandId={post.brandId} s={r.s} />
       ) : null}
 
       <View
