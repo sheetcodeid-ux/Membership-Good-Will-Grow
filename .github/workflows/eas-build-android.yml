@@ -47,6 +47,12 @@ jobs:
       - name: Lint
         run: npx eslint src --max-warnings=0
 
+      # Mendaftarkan project ke EAS pada build pertama, dan menautkannya pada
+      # build berikutnya. Tanpa ini, eas build berhenti karena tidak boleh
+      # mengonfigurasi project sendiri dalam mode non-interaktif.
+      - name: Daftarkan project EAS
+        run: eas init --account sheetcodes-team --non-interactive
+
       - name: Build
         run: eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait
 
