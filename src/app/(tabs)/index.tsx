@@ -16,7 +16,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { AppText } from "../../components/ui/AppText";
+import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { LinearGradient } from "expo-linear-gradient";
@@ -29,6 +29,7 @@ import { HeaderMenu } from "../../components/HeaderMenu";
 import { brand, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
 import { platform, useResponsive } from "../../theme/responsive";
+import { radius, space } from "../../theme/scale";
 import { useFeedStore } from "../../store/feedStore";
 import { useAuthStore } from "../../store/authStore";
 
@@ -92,7 +93,7 @@ export default function HomeScreen() {
   // Measured off the reference at 31.5% of the screen, then bounded so the
   // banner neither swallows a tall phone nor vanishes on a short one.
   const bannerHeight = Math.min(360, Math.max(200, r.height * 0.315));
-  const pillHeight = r.s(50);
+  const pillHeight = r.s(56);
 
   const visiblePosts = useMemo(() => {
     const kind = filters[filterIndex];
@@ -171,11 +172,11 @@ export default function HomeScreen() {
           </View>
 
           <LiquidGlass
-            radius={r.s(20)}
+            radius={radius.xl}
             interactive
             style={{
               marginHorizontal: r.gutter,
-              marginTop: -pillHeight * 0.44,
+              marginTop: -pillHeight * 0.46,
               height: pillHeight,
               ...(shadow.xs as object),
             }}
@@ -186,7 +187,7 @@ export default function HomeScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingHorizontal: r.s(9),
+                paddingHorizontal: space.md,
               }}
             >
               <PressableScale
@@ -194,21 +195,21 @@ export default function HomeScreen() {
                 hitSlop={10}
                 rippleBorderless
               >
-                <Avatar name={name} size={r.s(26)} />
+                <Avatar name={name} size={r.s(32)} />
               </PressableScale>
               {/* Brand lockup supplied later. */}
               <ImagePlaceholder
                 radius={6}
                 iconSize={r.s(13)}
-                style={{ width: r.s(96), height: r.s(21) }}
+                style={{ width: r.s(104), height: r.s(24) }}
               />
               <PressableScale onPress={openMenu} hitSlop={10} rippleBorderless>
                 <Animated.View
                   style={[
                     {
-                      width: r.s(30),
-                      height: r.s(30),
-                      borderRadius: r.s(10),
+                      width: r.s(38),
+                      height: r.s(38),
+                      borderRadius: radius.md,
                       backgroundColor: "rgba(155,185,255,0.55)",
                       alignItems: "center",
                       justifyContent: "center",
@@ -216,7 +217,7 @@ export default function HomeScreen() {
                     menuButtonStyle,
                   ]}
                 >
-                  <AppIcon name="more" size={r.s(17)} color={brand[800]} emphasis />
+                  <AppIcon name="more" size={r.s(19)} color={brand[800]} emphasis />
                 </Animated.View>
               </PressableScale>
             </View>
@@ -224,7 +225,7 @@ export default function HomeScreen() {
 
           {/* Platform-native segmented control: UISegmentedControl on iOS,
               Material tabs on Android, and a matching web control. */}
-          <UiHost matchContents={false} style={{ marginTop: r.s(12), paddingHorizontal: r.gutter }}>
+          <UiHost matchContents={false} style={{ marginTop: space.lg, paddingHorizontal: r.gutter }}>
             <SegmentedControl
               values={filters}
               selectedIndex={filterIndex}
@@ -234,11 +235,11 @@ export default function HomeScreen() {
               // handle the contrast themselves, so the tint is native-only.
               tintColor={platform.isWeb ? undefined : brand[900]}
               appearance="light"
-              style={{ height: r.s(32) }}
+              style={{ height: r.s(38) }}
             />
           </UiHost>
 
-          <View style={{ marginTop: r.s(16), gap: r.s(14) }}>
+          <View style={{ marginTop: space.lg, gap: space.md }}>
             {visiblePosts.map((post, i) => (
               <Animated.View
                 // Keying on the filter replays the stagger when the list changes.
@@ -263,7 +264,7 @@ export default function HomeScreen() {
             position: "absolute",
             alignSelf: "center",
             width: pageWidth - r.gutter * 1.5,
-            bottom: insets.bottom + r.s(80),
+            bottom: insets.bottom + r.s(88),
           }}
         >
           <PressableScale
@@ -271,44 +272,35 @@ export default function HomeScreen() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: r.s(11),
+              gap: space.md,
               backgroundColor: "#FFFFFF",
-              borderRadius: r.s(16),
-              paddingVertical: r.s(10),
-              paddingHorizontal: r.s(12),
+              borderRadius: radius.lg,
+              paddingVertical: space.md,
+              paddingHorizontal: space.lg,
               ...(shadow.md as object),
             }}
           >
             <View
               style={{
-                width: r.s(28),
-                height: r.s(28),
-                borderRadius: r.s(9),
+                width: r.s(36),
+                height: r.s(36),
+                borderRadius: radius.sm,
                 backgroundColor: gold[50],
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <AppIcon name="gift" size={r.s(15)} color={gold[600]} emphasis />
+              <AppIcon name="gift" size={r.s(19)} color={gold[600]} emphasis />
             </View>
-            <AppText
-              color={brand[700]}
-              numberOfLines={2}
-              style={{
-                flex: 1,
-                fontSize: r.s(11.5),
-                lineHeight: r.s(16),
-                fontFamily: "Urbanist_600SemiBold",
-              }}
-            >
+            <UiText token="bodySemibold" color={brand[700]} numberOfLines={2} style={{ flex: 1 }}>
               Lengkapi profil anda, dapatkan reward menarik
-            </AppText>
+            </UiText>
             <PressableScale
               onPress={() => setShowProfileBanner(false)}
               hitSlop={14}
               rippleBorderless
             >
-              <AppIcon name="close" size={r.s(16)} color={ink[400]} />
+              <AppIcon name="close" size={r.s(20)} color={ink[400]} />
             </PressableScale>
           </PressableScale>
         </Animated.View>

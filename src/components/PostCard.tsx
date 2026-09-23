@@ -18,13 +18,14 @@ import {
   ChevronRight,
   MapPin,
 } from "lucide-react-native";
-import { AppText } from "./ui/AppText";
+import { UiText } from "./ui/Text";
 import { Avatar } from "./ui/Avatar";
 import { ImagePlaceholder } from "./ui/ImagePlaceholder";
 import { PressableScale } from "./ui/PressableScale";
 import { brand, ink, danger } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { useResponsive } from "../theme/responsive";
+import { radius, space } from "../theme/scale";
 import { useFeedStore } from "../store/feedStore";
 import { useSocialStore } from "../store/socialStore";
 import type { FeedPost } from "../data/types";
@@ -68,9 +69,9 @@ function ReactionButton({
     >
       <Animated.View style={style}>{children}</Animated.View>
       {count !== undefined ? (
-        <AppText variant="captionMedium" color={active ? ink[700] : ink[500]}>
+        <UiText token="captionMedium" color={active ? ink[700] : ink[500]}>
           {count}
-        </AppText>
+        </UiText>
       ) : null}
     </PressableScale>
   );
@@ -117,12 +118,12 @@ function CheckInCard({ outletName, s }: { outletName: string; s: (n: number) => 
           <MapPin size={s(17)} color="#FFFFFF" fill="#FFFFFF" strokeWidth={1.6} />
         </View>
         <View style={{ flex: 1 }}>
-          <AppText variant="caption" color={ink[400]}>
+          <UiText token="caption" color={ink[400]}>
             Check In
-          </AppText>
-          <AppText variant="bodySemibold" color={brand[800]} numberOfLines={1}>
+          </UiText>
+          <UiText token="bodySemibold" color={brand[800]} numberOfLines={1}>
             {outletName}
-          </AppText>
+          </UiText>
         </View>
         <ChevronRight size={s(18)} color={brand[700]} strokeWidth={2.2} />
       </LinearGradient>
@@ -148,28 +149,28 @@ function PostCardBase({ post }: { post: FeedPost }) {
       style={{
         marginHorizontal: r.gutter,
         backgroundColor: "#FFFFFF",
-        borderRadius: r.s(20),
-        padding: r.s(14),
+        borderRadius: radius.xl,
+        padding: space.lg,
         ...(shadow.sm as object),
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: r.s(11) }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: space.md }}>
         <PressableScale onPress={openProfile} rippleBorderless>
-          <Avatar name={post.authorName} size={r.s(38)} />
+          <Avatar name={post.authorName} size={r.s(42)} />
         </PressableScale>
 
         <View style={{ flex: 1, gap: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: r.s(5) }}>
             <PressableScale onPress={openProfile} rippleColor={null}>
-              <AppText variant="titleLg" numberOfLines={1}>
+              <UiText token="titleLg" numberOfLines={1}>
                 {post.authorName}
-              </AppText>
+              </UiText>
             </PressableScale>
             <BadgeCheck size={r.s(14)} color={brand[500]} fill={brand[500]} strokeWidth={0} />
           </View>
-          <AppText variant="caption" color={ink[400]}>
+          <UiText token="caption" color={ink[400]}>
             {post.time}
-          </AppText>
+          </UiText>
         </View>
 
         <PressableScale hitSlop={10} rippleBorderless>
@@ -187,33 +188,29 @@ function PostCardBase({ post }: { post: FeedPost }) {
           }}
         >
           <MapPin size={r.s(13)} color={danger[500]} fill={danger[500]} strokeWidth={0} />
-          <AppText variant="captionMedium" color={ink[600]} numberOfLines={1}>
+          <UiText token="captionMedium" color={ink[600]} numberOfLines={1}>
             {post.outletName}
-          </AppText>
+          </UiText>
         </View>
       ) : null}
 
-      <AppText
-        variant="body"
-        color={ink[800]}
-        style={{ marginTop: r.s(9), lineHeight: r.s(19) }}
-      >
+      <UiText token="body" color={ink[800]} style={{ marginTop: space.sm + 2 }}>
         {post.caption}
-      </AppText>
+      </UiText>
 
       <PressableScale onPress={openComments} scaleTo={0.995} rippleColor={null}>
         <View
           style={{
-            marginTop: r.s(12),
-            borderRadius: r.s(16),
+            marginTop: space.md,
+            borderRadius: radius.lg,
             overflow: "hidden",
           }}
         >
           <ImagePlaceholder
             label="Foto Post"
-            radius={r.s(16)}
+            radius={radius.lg}
             iconSize={r.s(32)}
-            style={{ height: r.s(252) }}
+            style={{ height: r.s(240) }}
           />
           {/* Scrim so anything laid over the artwork stays readable. */}
           <LinearGradient
@@ -232,8 +229,8 @@ function PostCardBase({ post }: { post: FeedPost }) {
         style={{
           flexDirection: "row",
           alignItems: "center",
-          gap: r.s(18),
-          marginTop: r.s(13),
+          gap: space.xl,
+          marginTop: space.lg,
         }}
       >
         <ReactionButton

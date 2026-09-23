@@ -13,12 +13,13 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { SlideInDown } from "react-native-reanimated";
 import { MessageSquare, Send, X } from "lucide-react-native";
-import { AppText } from "../../components/ui";
+import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { brand, ink } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
+import { HIT_SIZE, radius, space } from "../../theme/scale";
 import { useFeedStore } from "../../store/feedStore";
 import { useAuthStore } from "../../store/authStore";
 
@@ -57,56 +58,74 @@ export default function CommentsSheet() {
         <Animated.View
           entering={SlideInDown.duration(300)}
           style={{
-            height: "68%",
+            height: "72%",
             backgroundColor: "#FFFFFF",
-            borderTopLeftRadius: 26,
-            borderTopRightRadius: 26,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
           }}
         >
           <View style={{ alignItems: "center", paddingTop: 10 }}>
-            <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: ink[200] }} />
+            <View style={{ width: 44, height: 5, borderRadius: 3, backgroundColor: ink[200] }} />
           </View>
 
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              paddingHorizontal: 20,
-              paddingTop: 16,
-              paddingBottom: 10,
+              paddingHorizontal: space.xl,
+              paddingTop: space.lg,
+              paddingBottom: space.md,
             }}
           >
-            <AppText variant="h3" style={{ flex: 1 }}>
+            <UiText token="h2" style={{ flex: 1 }}>
               Komentar
-            </AppText>
-            <PressableScale onPress={() => router.back()} hitSlop={12}>
-              <X size={22} color={ink[500]} />
+            </UiText>
+            <PressableScale
+              onPress={() => router.back()}
+              rippleBorderless
+              style={{
+                width: HIT_SIZE,
+                height: HIT_SIZE,
+                borderRadius: HIT_SIZE / 2,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <X size={24} color={ink[500]} strokeWidth={2.2} />
             </PressableScale>
           </View>
 
           <FlatList
             data={comments}
             keyExtractor={(c) => c.id}
-            contentContainerStyle={{ padding: 20, paddingTop: 6, gap: 16, flexGrow: 1 }}
+            contentContainerStyle={{ padding: space.xl, paddingTop: space.sm, gap: space.lg, flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <Avatar name={item.authorName} size={34} />
-                <View style={{ flex: 1, backgroundColor: ink[50], borderRadius: 14, padding: 12 }}>
-                  <AppText variant="bodySemibold">{item.authorName}</AppText>
-                  <AppText variant="body" color={ink[700]}>
+              <View style={{ flexDirection: "row", gap: space.md }}>
+                <Avatar name={item.authorName} size={40} />
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: ink[50],
+                    borderRadius: radius.lg,
+                    padding: space.lg,
+                    gap: 2,
+                  }}
+                >
+                  <UiText token="bodySemibold">{item.authorName}</UiText>
+                  <UiText token="body" color={ink[700]}>
                     {item.text}
-                  </AppText>
-                  <AppText variant="micro" color={ink[400]} style={{ marginTop: 4 }}>
+                  </UiText>
+                  <UiText token="caption" color={ink[400]} style={{ marginTop: space.xs }}>
                     {item.time}
-                  </AppText>
+                  </UiText>
                 </View>
               </View>
             )}
             ListEmptyComponent={
               <EmptyState
-                icon={<MessageSquare size={50} color={ink[300]} strokeWidth={1.7} />}
+                icon={<MessageSquare size={62} color={ink[300]} strokeWidth={1.6} />}
                 title="Belum ada komentar"
                 subtitle="Jadilah yang pertama berkomentar!"
                 style={{ paddingTop: 40 }}
@@ -119,21 +138,22 @@ export default function CommentsSheet() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 10,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
+                gap: space.md,
+                paddingHorizontal: space.lg,
+                paddingVertical: space.md,
               }}
             >
-              <Avatar name={name} size={34} />
+              <Avatar name={name} size={40} />
               <View
                 style={{
                   flex: 1,
-                  height: 44,
-                  borderRadius: 22,
+                  height: HIT_SIZE,
+                  borderRadius: HIT_SIZE / 2,
                   borderWidth: 1.5,
                   borderColor: ink[200],
+                  backgroundColor: ink[50],
                   justifyContent: "center",
-                  paddingHorizontal: 16,
+                  paddingHorizontal: space.xl,
                 }}
               >
                 <TextInput
@@ -157,15 +177,15 @@ export default function CommentsSheet() {
               <PressableScale
                 onPress={send}
                 style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
+                  width: HIT_SIZE,
+                  height: HIT_SIZE,
+                  borderRadius: HIT_SIZE / 2,
                   alignItems: "center",
                   justifyContent: "center",
                   backgroundColor: text.trim() ? brand[900] : ink[200],
                 }}
               >
-                <Send size={19} color="#FFFFFF" />
+                <Send size={21} color="#FFFFFF" />
               </PressableScale>
             </View>
           </SafeAreaView>

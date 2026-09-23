@@ -1,11 +1,12 @@
 import React from "react";
 import { View } from "react-native";
-import { ChevronLeft, X } from "lucide-react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ChevronLeft, X } from "lucide-react-native";
 import { PressableScale } from "./PressableScale";
-import { AppText } from "./AppText";
+import { UiText } from "./Text";
 import { brand } from "../../theme/colors";
+import { HIT_SIZE, radius, space } from "../../theme/scale";
 
 interface AppHeaderProps {
   title?: string;
@@ -17,7 +18,12 @@ interface AppHeaderProps {
   children?: React.ReactNode;
 }
 
-/** White bar with rounded bottom corners, used on every inner screen. */
+/**
+ * White bar with rounded bottom corners, used on every inner screen.
+ *
+ * The back control is a full touch target rather than a bare glyph, and the
+ * bar is tall enough for the rebuilt type scale to sit comfortably.
+ */
 export function AppHeader({
   title,
   showBack = true,
@@ -31,37 +37,51 @@ export function AppHeader({
     <View
       style={{
         backgroundColor: "#FFFFFF",
-        borderBottomLeftRadius: 18,
-        borderBottomRightRadius: 18,
+        borderBottomLeftRadius: radius.xl,
+        borderBottomRightRadius: radius.xl,
       }}
     >
       <SafeAreaView edges={["top"]}>
         <View
           style={{
-            height: 50,
+            height: 60,
             flexDirection: "row",
             alignItems: "center",
-            gap: 12,
-            paddingHorizontal: 16,
+            paddingHorizontal: space.sm,
+            gap: space.xs,
           }}
         >
           {showBack ? (
-            <PressableScale onPress={onBack ?? (() => router.back())} hitSlop={12}>
+            <PressableScale
+              onPress={onBack ?? (() => router.back())}
+              rippleBorderless
+              style={{
+                width: HIT_SIZE,
+                height: HIT_SIZE,
+                borderRadius: HIT_SIZE / 2,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <LeftIcon
-                size={leftIcon === "close" ? 21 : 23}
-                color={brand[700]}
-                strokeWidth={leftIcon === "close" ? 2.4 : 2}
+                size={leftIcon === "close" ? 23 : 26}
+                color={brand[800]}
+                strokeWidth={leftIcon === "close" ? 2.4 : 2.1}
               />
             </PressableScale>
-          ) : null}
+          ) : (
+            <View style={{ width: space.sm }} />
+          )}
+
           {title ? (
-            <AppText variant="titleLg" color={brand[700]} numberOfLines={1} style={{ flex: 1 }}>
+            <UiText token="h3" color={brand[900]} numberOfLines={1} style={{ flex: 1 }}>
               {title}
-            </AppText>
+            </UiText>
           ) : (
             <View style={{ flex: 1 }} />
           )}
           {right}
+          <View style={{ width: space.sm }} />
         </View>
         {children}
       </SafeAreaView>

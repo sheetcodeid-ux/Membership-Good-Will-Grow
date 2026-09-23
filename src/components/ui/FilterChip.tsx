@@ -1,7 +1,8 @@
 import React from "react";
 import { PressableScale } from "./PressableScale";
-import { AppText } from "./AppText";
+import { UiText } from "./Text";
 import { brand, ink } from "../../theme/colors";
+import { radius, space } from "../../theme/scale";
 
 /** Outlined pill, as used by the notification categories. */
 export function FilterChip({
@@ -17,26 +18,23 @@ export function FilterChip({
     <PressableScale
       onPress={onPress}
       style={{
-        height: 34,
-        paddingHorizontal: 17,
-        borderRadius: 17,
+        height: 40,
+        paddingHorizontal: space.lg,
+        borderRadius: radius.pill,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1.5,
-        borderColor: active ? brand[700] : ink[200],
-        backgroundColor: "#FFFFFF",
+        borderColor: active ? brand[900] : ink[200],
+        backgroundColor: active ? brand[900] : "#FFFFFF",
       }}
     >
-      <AppText
-        color={active ? brand[700] : ink[500]}
-        style={{
-          fontSize: 13,
-          lineHeight: 18,
-          fontFamily: active ? "Urbanist_600SemiBold" : "Urbanist_500Medium",
-        }}
+      <UiText
+        token={active ? "captionMedium" : "caption"}
+        color={active ? "#FFFFFF" : ink[600]}
+        style={active ? { fontFamily: "Urbanist_600SemiBold" } : undefined}
       >
         {label}
-      </AppText>
+      </UiText>
     </PressableScale>
   );
 }

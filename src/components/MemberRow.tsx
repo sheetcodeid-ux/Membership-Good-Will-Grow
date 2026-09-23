@@ -1,10 +1,11 @@
 import React from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
-import { AppText } from "./ui/AppText";
+import { UiText } from "./ui/Text";
 import { Avatar } from "./ui/Avatar";
 import { PressableScale } from "./ui/PressableScale";
 import { brand, ink } from "../theme/colors";
+import { HIT_SIZE, radius, space } from "../theme/scale";
 import { useSocialStore } from "../store/socialStore";
 import type { Member } from "../data/types";
 
@@ -20,38 +21,38 @@ export function MemberRow({ member, actionLabel }: { member: Member; actionLabel
       style={{
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        gap: space.md,
         backgroundColor: "#FFFFFF",
-        borderRadius: 16,
-        paddingVertical: 12,
-        paddingHorizontal: 14,
+        borderRadius: radius.lg,
+        paddingVertical: space.md,
+        paddingHorizontal: space.lg,
       }}
     >
-      <Avatar name={member.name} size={44} />
+      <Avatar name={member.name} size={52} />
       <View style={{ flex: 1 }}>
-        <AppText variant="titleLg" numberOfLines={1}>
+        <UiText token="titleLg" numberOfLines={1}>
           {member.name}
-        </AppText>
-        <AppText variant="caption" color={ink[400]} numberOfLines={1}>
+        </UiText>
+        <UiText token="caption" color={ink[400]} numberOfLines={1}>
           @{member.username}
-        </AppText>
+        </UiText>
       </View>
 
       <PressableScale
         onPress={() => toggleFollow(member.id)}
         style={{
-          minWidth: 96,
-          height: 38,
-          borderRadius: 10,
+          minWidth: 104,
+          height: HIT_SIZE - 4,
+          borderRadius: radius.md,
           alignItems: "center",
           justifyContent: "center",
-          paddingHorizontal: 14,
+          paddingHorizontal: space.lg,
           backgroundColor: following ? ink[100] : brand[900],
         }}
       >
-        <AppText variant="bodySemibold" color={following ? ink[600] : "#FFFFFF"}>
+        <UiText token="bodySemibold" color={following ? ink[600] : "#FFFFFF"}>
           {actionLabel ?? (following ? "Mengikuti" : "Ikuti")}
-        </AppText>
+        </UiText>
       </PressableScale>
     </PressableScale>
   );

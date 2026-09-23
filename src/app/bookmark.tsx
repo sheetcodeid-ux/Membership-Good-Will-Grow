@@ -3,7 +3,8 @@ import { FlatList, Platform, Pressable, StyleSheet, TextInput, View } from "reac
 import { StatusBar } from "expo-status-bar";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Bookmark as BookmarkIcon, Plus, FolderOpen } from "lucide-react-native";
-import { AppText, Button } from "../components/ui";
+import { Button } from "../components/ui";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { SegmentedTabs } from "../components/ui/SegmentedTabs";
@@ -103,10 +104,10 @@ export default function BookmarkScreen() {
                 <FolderOpen size={20} color={brand[700]} />
               </View>
               <View style={{ flex: 1 }}>
-                <AppText variant="titleLg">{item.name}</AppText>
-                <AppText variant="caption" color={ink[400]}>
+                <UiText token="titleLg">{item.name}</UiText>
+                <UiText token="caption" color={ink[400]}>
                   {item.postIds.length} post
-                </AppText>
+                </UiText>
               </View>
             </View>
           )}
@@ -141,10 +142,10 @@ export default function BookmarkScreen() {
                 gap: 16,
               }}
             >
-              <AppText variant="h3">Buat Koleksi Baru</AppText>
-              <AppText variant="body" color={ink[500]}>
+              <UiText token="h3">Buat Koleksi Baru</UiText>
+              <UiText token="body" color={ink[500]}>
                 Beri nama koleksi untuk mengelompokkan post yang kamu simpan.
-              </AppText>
+              </UiText>
 
               <TextInput
                 value={name}
@@ -181,9 +182,9 @@ export default function BookmarkScreen() {
                     borderColor: ink[200],
                   }}
                 >
-                  <AppText variant="title" color={ink[600]}>
+                  <UiText token="title" color={ink[600]}>
                     Batal
-                  </AppText>
+                  </UiText>
                 </PressableScale>
                 <View style={{ flex: 1 }}>
                   <Button

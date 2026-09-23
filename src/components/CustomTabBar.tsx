@@ -10,24 +10,27 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import type { BottomTabBarProps } from "expo-router/js-tabs";
+import { UiText } from "./ui/Text";
 import { PressableScale } from "./ui/PressableScale";
 import { AppIcon, type AppIconName } from "./ui/AppIcon";
-import { AppText } from "./ui/AppText";
 import { LiquidGlass, LiquidGlassGroup, liquidGlassAvailable } from "./ui/LiquidGlass";
 import { brand, ink } from "../theme/colors";
-import { useResponsive } from "../theme/responsive";
 import { shadow } from "../theme/shadows";
+import { radius, space, TAB_BAR_HEIGHT } from "../theme/scale";
+import { useResponsive } from "../theme/responsive";
 import { useUiStore } from "../store/uiStore";
-const BAR_HEIGHT = 54;
-const FAB_SIZE = 55;
+
+/** Sized so every tab clears the 48pt minimum touch target. */
+const FAB_SIZE = 60;
+
 const tabs: Record<string, { icon: AppIconName; label: string }> = {
   index: { icon: "home", label: "Home" },
   order: { icon: "order", label: "Order" },
   member: { icon: "member", label: "Member" },
   profile: { icon: "profile", label: "Profile" },
 };
-/** The floating action button changes with the tab you are on. On Member and
- *  Profile it opens the quick menu instead of navigating. */
+
+/** The floating action button changes with the tab you are on. */
 const fabActions: Record<
   string,
   { icon: AppIconName; onPress?: () => void; opensMenu?: boolean }
@@ -37,10 +40,14 @@ const fabActions: Record<
   member: { icon: "menu", opensMenu: true },
   profile: { icon: "menu", opensMenu: true },
 };
+
 /**
- * One tab. The selected pill grows and tints with a spring rather than
- * snapping, so moving between tabs reads as the highlight sliding across the
- * glass instead of blinking from one slot to the next.
+ * One tab.
+ *
+ * The selected state is carried by a filled pill that grows into place, and
+ * the icon lifts a couple of points as it takes over — enough to read as a
+ * change of place without the bar jumping around. The whole cell is the
+ * target, so there is no small icon to aim at.
  */
 function TabButton({
   name,
@@ -53,42 +60,60 @@ function TabButton({
 }) {
   const tab = tabs[name];
   const progress = useSharedValue(focused ? 1 : 0);
-  progress.value = withSpring(focused ? 1 : 0, { damping: 16, stiffness: 180 });
+  progress.value = withSpring(focused ? 1 : 0, { damping: 17, stiffness: 210 });
+
   const pillStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      ["rgba(255,255,255,0)", "rgba(255,255,255,0.68)"]
+      ["rgba(255,255,255,0)", "rgba(255,255,255,0.78)"]
     ),
-    transform: [{ scale: 0.96 + progress.value * 0.04 }],
+    transform: [{ scale: 0.94 + progress.value * 0.06 }],
   }));
-  const tint = focused ? brand[700] : ink[500];
+
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -progress.value * 1.5 }],
+  }));
+
   return (
     <PressableScale
       onPress={onPress}
-      scaleTo={0.93}
-      style={{ flex: 1, height: BAR_HEIGHT - 10 }}
+      scaleTo={0.94}
+      rippleBorderless
+      style={{ flex: 1, height: TAB_BAR_HEIGHT - space.md }}
     >
       <Animated.View
         style={[
           {
             flex: 1,
-            borderRadius: (BAR_HEIGHT - 10) / 2,
+            borderRadius: radius.pill,
             alignItems: "center",
             justifyContent: "center",
-            gap: 2,
+            gap: 3,
           },
           pillStyle,
         ]}
       >
-        <AppIcon name={tab.icon} size={19} color={tint} emphasis={focused} />
-        <AppText variant="micro" color={tint}>
+        <Animated.View style={iconStyle}>
+          <AppIcon
+            name={tab.icon}
+            size={22}
+            color={focused ? brand[800] : ink[500]}
+            emphasis={focused}
+          />
+        </Animated.View>
+        <UiText
+          token="label"
+          color={focused ? brand[800] : ink[500]}
+          style={{ fontSize: 11, lineHeight: 13 }}
+        >
           {tab.label}
-        </AppText>
+        </UiText>
       </Animated.View>
     </PressableScale>
   );
 }
+
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const r = useResponsive();
@@ -96,10 +121,12 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const activeName = state.routes[state.index]?.name ?? "index";
   const fab = fabActions[activeName] ?? fabActions.index;
   const onFabPress = fab.opensMenu ? openShortcuts : fab.onPress;
+
   const fabSpin = useSharedValue(0);
   const fabStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${fabSpin.value}deg` }],
   }));
+
   return (
     <LiquidGlassGroup
       spacing={18}
@@ -110,27 +137,27 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         right: 0,
         bottom: 0,
         // Stays with the content column instead of stretching across a
-        // tablet, where a bar the full width of the screen puts the tabs
-        // further apart than a thumb can reach.
-        width: r.contentWidth + FAB_SIZE + 18,
+        // tablet, where a bar the full width puts the tabs further apart
+        // than a thumb can reach.
+        width: r.contentWidth + FAB_SIZE + space.xl,
         maxWidth: "100%",
         alignSelf: "center",
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
-        paddingHorizontal: 12,
-        paddingBottom: insets.bottom + 10,
+        gap: space.sm,
+        paddingHorizontal: space.md,
+        paddingBottom: insets.bottom + space.md,
       }}
     >
       <LiquidGlass
-        radius={BAR_HEIGHT / 2}
+        radius={TAB_BAR_HEIGHT / 2}
         interactive
         style={{
           flex: 1,
-          height: BAR_HEIGHT,
+          height: TAB_BAR_HEIGHT,
           flexDirection: "row",
           alignItems: "center",
-          paddingHorizontal: 6,
+          paddingHorizontal: space.xs + 2,
           ...(shadow.lg as object),
         }}
       >
@@ -154,13 +181,14 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           );
         })}
       </LiquidGlass>
+
       <PressableScale
         onPress={() => {
-          // A quarter turn and back, so the button acknowledges the press.
-          fabSpin.value = withTiming(90, { duration: 160 });
-          fabSpin.value = withSpring(0, { damping: 11, stiffness: 190 });
+          fabSpin.value = withTiming(90, { duration: 150 });
+          fabSpin.value = withSpring(0, { damping: 11, stiffness: 200 });
           onFabPress?.();
         }}
+        scaleTo={0.92}
         style={{
           width: FAB_SIZE,
           height: FAB_SIZE,
@@ -170,7 +198,6 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         }}
       >
         {liquidGlassAvailable ? (
-          // On iOS 26 the button is glass too, so it can merge with the bar.
           <LiquidGlass
             radius={FAB_SIZE / 2}
             interactive
@@ -178,18 +205,18 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             <Animated.View style={fabStyle}>
-              <AppIcon name={fab.icon} size={23} color="#FFFFFF" emphasis />
+              <AppIcon name={fab.icon} size={24} color="#FFFFFF" emphasis />
             </Animated.View>
           </LiquidGlass>
         ) : (
           <LinearGradient
-            colors={[brand[600], brand[900]]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            colors={[brand[500], brand[900]]}
+            start={{ x: 0.1, y: 0 }}
+            end={{ x: 0.9, y: 1 }}
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             <Animated.View style={fabStyle}>
-              <AppIcon name={fab.icon} size={23} color="#FFFFFF" emphasis />
+              <AppIcon name={fab.icon} size={24} color="#FFFFFF" emphasis />
             </Animated.View>
           </LinearGradient>
         )}

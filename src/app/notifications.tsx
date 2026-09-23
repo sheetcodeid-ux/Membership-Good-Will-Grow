@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { BellOff, Gift, ShoppingBag, Crown, Info } from "lucide-react-native";
-import { AppText } from "../components/ui";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { FilterChip } from "../components/ui/FilterChip";
 import { PressableScale } from "../components/ui/PressableScale";
 import { brand, gold, ink, success, surface } from "../theme/colors";
+import { HIT_SIZE, radius, space } from "../theme/scale";
 import { useNotificationStore } from "../store/notificationStore";
 import type { NotificationItem } from "../data/types";
 
@@ -61,7 +62,7 @@ export default function NotificationsScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 14, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: space.lg, gap: space.sm }}
         >
           {categories.map((c) => (
             <FilterChip
@@ -77,7 +78,7 @@ export default function NotificationsScreen() {
       <FlatList
         data={visible}
         keyExtractor={(n) => n.id}
-        contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
+        contentContainerStyle={{ padding: space.lg, gap: space.md, flexGrow: 1, paddingBottom: space.xxxl }}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
           const Icon = iconFor[item.kind];
@@ -87,48 +88,50 @@ export default function NotificationsScreen() {
               scaleTo={0.99}
               style={{
                 flexDirection: "row",
-                gap: 12,
+                alignItems: "center",
+                gap: space.md,
+                minHeight: HIT_SIZE + space.lg,
                 backgroundColor: item.read ? "#FFFFFF" : brand[50],
-                borderRadius: 16,
-                padding: 14,
+                borderRadius: radius.lg,
+                padding: space.lg,
               }}
             >
               <View
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 13,
+                  width: 46,
+                  height: 46,
+                  borderRadius: radius.md,
                   backgroundColor: bgFor[item.kind],
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Icon size={19} color={tintFor[item.kind]} />
+                <Icon size={22} color={tintFor[item.kind]} strokeWidth={1.9} />
               </View>
-              <View style={{ flex: 1, gap: 3 }}>
+              <View style={{ flex: 1, gap: 2 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <AppText variant="bodySemibold" style={{ flex: 1 }} numberOfLines={1}>
+                  <UiText token="bodySemibold" style={{ flex: 1 }} numberOfLines={1}>
                     {item.title}
-                  </AppText>
+                  </UiText>
                   {!item.read ? (
                     <View
                       style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: success[500] }}
                     />
                   ) : null}
                 </View>
-                <AppText variant="caption" color={ink[500]}>
+                <UiText token="caption" color={ink[500]}>
                   {item.body}
-                </AppText>
-                <AppText variant="micro" color={ink[400]}>
+                </UiText>
+                <UiText token="caption" color={ink[400]} style={{ fontSize: 12 }}>
                   {item.time}
-                </AppText>
+                </UiText>
               </View>
             </PressableScale>
           );
         }}
         ListEmptyComponent={
           <EmptyState
-            icon={<BellOff size={54} color={ink[300]} strokeWidth={1.7} />}
+            icon={<BellOff size={64} color={ink[300]} strokeWidth={1.6} />}
             title="Belum ada notifikasi"
             subtitle="Notifikasi yang masuk akan muncul di sini."
           />
