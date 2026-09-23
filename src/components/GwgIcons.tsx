@@ -21,19 +21,19 @@ export interface GlyphProps {
   active?: boolean;
 }
 
-/** House with a lifted eave and a lit doorway. */
+/** House with an arched doorway and a wide stance. */
 export function HomeGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M3.6 10.4 11.1 3.9a1.4 1.4 0 0 1 1.8 0l7.5 6.5a1.6 1.6 0 0 1 .55 1.21V19a2 2 0 0 1-2 2H5.05a2 2 0 0 1-2-2v-7.39c0-.47.2-.91.55-1.21Z"
+        d="M2.9 10.9 10.9 3.7a1.65 1.65 0 0 1 2.2 0l8 7.2a1.7 1.7 0 0 1 .56 1.26V19a2.2 2.2 0 0 1-2.2 2.2H4.54A2.2 2.2 0 0 1 2.34 19v-6.84c0-.48.2-.94.56-1.26Z"
         fill={active ? color : "none"}
         stroke={color}
         strokeWidth={active ? 0 : 1.7}
         strokeLinejoin="round"
       />
       <Path
-        d="M9.5 21v-4.4a2.5 2.5 0 0 1 5 0V21"
+        d="M9.2 21.2v-4.6a2.8 2.8 0 0 1 5.6 0v4.6"
         fill={active ? "#FFFFFF" : "none"}
         stroke={active ? "#FFFFFF" : color}
         strokeWidth={active ? 0 : 1.7}
@@ -77,26 +77,22 @@ export function OrderGlyph({ size = 24, color = "#000", active = false }: GlyphP
   );
 }
 
-/** Scalloped seal with a check, for membership standing. */
+/** Rosette seal with a check — a mark of standing, not a generic shield. */
 export function MemberGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
-  const petals = Array.from({ length: 10 }, (_, i) => {
-    const a = (i / 10) * Math.PI * 2;
-    return `${12 + Math.cos(a) * 9.4},${12 + Math.sin(a) * 9.4}`;
-  }).join(" ");
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d={`M ${petals.split(" ").join(" L ")} Z`}
+        d="M 12.00 2.40 Q 14.04 4.37 15.42 4.03 Q 16.80 3.69 17.19 5.05 Q 17.59 6.41 18.95 6.81 Q 20.31 7.20 19.97 8.58 Q 19.63 9.96 20.62 10.98 Q 21.60 12.00 20.62 13.02 Q 19.63 14.04 19.97 15.42 Q 20.31 16.80 18.95 17.19 Q 17.59 17.59 17.19 18.95 Q 16.80 20.31 15.42 19.97 Q 14.04 19.63 13.02 20.62 Q 12.00 21.60 10.98 20.62 Q 9.96 19.63 8.58 19.97 Q 7.20 20.31 6.81 18.95 Q 6.41 17.59 5.05 17.19 Q 3.69 16.80 4.03 15.42 Q 4.37 14.04 3.38 13.02 Q 2.40 12.00 3.38 10.98 Q 4.37 9.96 4.03 8.58 Q 3.69 7.20 5.05 6.81 Q 6.41 6.41 6.81 5.05 Q 7.20 3.69 8.58 4.03 Q 9.96 4.37 10.98 3.38 Z"
         fill={active ? color : "none"}
         stroke={color}
-        strokeWidth={active ? 0 : 1.7}
+        strokeWidth={active ? 0 : 1.6}
         strokeLinejoin="round"
       />
       <Path
-        d="M8.2 12.3l2.6 2.6 5-5.2"
+        d="M8.3 12.2l2.5 2.5 4.9-5.1"
         fill="none"
         stroke={active ? "#FFFFFF" : color}
-        strokeWidth={2}
+        strokeWidth={2.1}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -104,21 +100,28 @@ export function MemberGlyph({ size = 24, color = "#000", active = false }: Glyph
   );
 }
 
-/** Bust inside a ring, cropped so the shoulders meet the edge. */
+/** Bust in a ring, shoulders meeting the rim so it fills its circle. */
 export function ProfileGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Circle
         cx={12}
         cy={12}
-        r={9.3}
+        r={9.4}
         fill={active ? color : "none"}
         stroke={color}
         strokeWidth={active ? 0 : 1.7}
       />
-      <Circle cx={12} cy={9.7} r={3.1} fill={active ? "#FFFFFF" : "none"} stroke={active ? "none" : color} strokeWidth={1.7} />
+      <Circle
+        cx={12}
+        cy={9.9}
+        r={3.35}
+        fill={active ? "#FFFFFF" : "none"}
+        stroke={active ? "none" : color}
+        strokeWidth={1.7}
+      />
       <Path
-        d="M6.3 18.9a6.1 6.1 0 0 1 11.4 0"
+        d="M5.4 19.3a6.85 6.85 0 0 1 13.2 0"
         fill="none"
         stroke={active ? "#FFFFFF" : color}
         strokeWidth={1.7}
@@ -128,16 +131,31 @@ export function ProfileGlyph({ size = 24, color = "#000", active = false }: Glyp
   );
 }
 
-/** Nib with an ink drop, for composing. */
+/**
+ * Fountain-pen nib: shoulders, a slit down the middle and a breather hole.
+ * A plain diagonal line reads as a pencil; those three details are what make
+ * it a pen.
+ */
 export function ComposeGlyph({ size = 24, color = "#000" }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M4 20.2 6.1 14 16.4 3.7a2.3 2.3 0 0 1 3.3 0l.6.6a2.3 2.3 0 0 1 0 3.3L10 17.9Z"
+        d="M14.9 2.6 21.4 9.1a1.5 1.5 0 0 1 .1 2.03l-8.2 9.4a2 2 0 0 1-1.06.64l-6.9 1.5a1 1 0 0 1-1.19-1.19l1.5-6.9a2 2 0 0 1 .64-1.06l9.4-8.2a1.5 1.5 0 0 1 2.03.1Z"
         fill={color}
       />
-      <Path d="M14.6 5.6 18.4 9.4" stroke="#FFFFFF" strokeWidth={1.5} strokeLinecap="round" />
-      <Circle cx={5.3} cy={18.9} r={1.15} fill="#FFFFFF" />
+      <Path
+        d="M9.2 9.4 14.6 14.8"
+        stroke="#FFFFFF"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <Circle cx={15.4} cy={8.6} r={1.25} fill="#FFFFFF" />
+      <Path
+        d="M5.1 18.9 8.3 15.7"
+        stroke="#FFFFFF"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
     </Svg>
   );
 }
@@ -319,6 +337,68 @@ export function PinGlyph({ size = 24, color = "#000", active = true }: GlyphProp
         strokeWidth={active ? 0 : 1.8}
       />
       <Circle cx={12} cy={9.7} r={2.7} fill="#FFFFFF" />
+    </Svg>
+  );
+}
+
+/** Stacked cards, for a feed that mixes every kind of post. */
+export function StackGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Rect
+        x={5.4}
+        y={2.6}
+        width={13.2}
+        height={4}
+        rx={1.6}
+        fill={active ? color : "none"}
+        stroke={color}
+        strokeWidth={active ? 0 : 1.6}
+        opacity={active ? 0.55 : 1}
+      />
+      <Rect
+        x={3.4}
+        y={7.6}
+        width={17.2}
+        height={13.8}
+        rx={3}
+        fill={active ? color : "none"}
+        stroke={color}
+        strokeWidth={active ? 0 : 1.7}
+      />
+      <Path
+        d="M7.4 12.4h9.2M7.4 16.4h5.6"
+        stroke={active ? "#FFFFFF" : color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+/** Framed picture, for image posts. */
+export function PhotoPostGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Rect
+        x={2.8}
+        y={4.2}
+        width={18.4}
+        height={15.6}
+        rx={3}
+        fill={active ? color : "none"}
+        stroke={color}
+        strokeWidth={active ? 0 : 1.7}
+      />
+      <Circle cx={8.6} cy={9.6} r={1.7} fill={active ? "#FFFFFF" : color} />
+      <Path
+        d="M4.6 17.6l4.1-4.1a1.6 1.6 0 0 1 2.2 0l2.3 2.3 1.9-1.9a1.6 1.6 0 0 1 2.2 0l2.1 2.1"
+        fill="none"
+        stroke={active ? "#FFFFFF" : color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }

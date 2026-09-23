@@ -14,9 +14,11 @@ import {
   MenuGlyph,
   MoreGlyph,
   OrderGlyph,
+  PhotoPostGlyph,
   PinGlyph,
   ProfileGlyph,
   SearchGlyph,
+  StackGlyph,
   type GlyphProps,
 } from "../GwgIcons";
 import { ink } from "../../theme/colors";
@@ -48,6 +50,8 @@ const glyphs = {
   close: CloseGlyph,
   chevronRight: ChevronGlyph,
   pin: PinGlyph,
+  stack: StackGlyph,
+  photoPost: PhotoPostGlyph,
 } satisfies Record<string, React.ComponentType<GlyphProps>>;
 
 export type AppIconName = keyof typeof glyphs;

@@ -46,7 +46,7 @@ export function FeedFilter({
   const [trackWidth, setTrackWidth] = useState(0);
   const index = Math.max(0, options.findIndex((o) => o.key === value));
   const thumbX = useSharedValue(0);
-  const pad = 5;
+  const pad = 4;
   const segment = trackWidth > 0 ? (trackWidth - pad * 2) / options.length : 0;
 
   const onLayout = useCallback(
@@ -65,8 +65,8 @@ export function FeedFilter({
     <View
       onLayout={onLayout}
       style={{
-        height: 54,
-        borderRadius: radius.lg,
+        height: 44,
+        borderRadius: radius.md,
         backgroundColor: ink[100],
         padding: pad,
         flexDirection: "row",
@@ -83,7 +83,7 @@ export function FeedFilter({
               left: pad,
               top: pad,
               bottom: pad,
-              borderRadius: radius.md,
+              borderRadius: radius.sm,
               overflow: "hidden",
               ...(shadow.sm as object),
             },
@@ -138,19 +138,19 @@ function Segment({
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "row",
-        gap: space.xs + 2,
+        gap: space.xs + 1,
       }}
     >
       <AppIcon
         name={option.icon}
-        size={17}
+        size={16}
         color={selected ? "#FFFFFF" : ink[500]}
         emphasis={selected}
       />
       <Animated.Text
         numberOfLines={1}
         style={[
-          { fontSize: 13, lineHeight: 18, fontFamily: "Urbanist_600SemiBold" },
+          { fontSize: 12.5, lineHeight: 16, fontFamily: "Urbanist_600SemiBold" },
           labelStyle,
         ]}
       >
@@ -159,10 +159,10 @@ function Segment({
       {option.count !== undefined ? (
         <View
           style={{
-            minWidth: 20,
-            paddingHorizontal: 5,
-            height: 18,
-            borderRadius: 9,
+            minWidth: 18,
+            paddingHorizontal: 4,
+            height: 16,
+            borderRadius: 8,
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: selected ? "rgba(255,255,255,0.24)" : ink[200],
