@@ -10,17 +10,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import type { BottomTabBarProps } from "expo-router/js-tabs";
-import {
-  House,
-  ShoppingBasket,
-  BadgeCheck,
-  CircleUser,
-  Feather,
-  ShoppingCart,
-  Menu,
-  type LucideIcon,
-} from "lucide-react-native";
 import { PressableScale } from "./ui/PressableScale";
+import { AppIcon, type AppIconName } from "./ui/AppIcon";
 import { AppText } from "./ui/AppText";
 import { LiquidGlass, LiquidGlassGroup, liquidGlassAvailable } from "./ui/LiquidGlass";
 import { brand, ink } from "../theme/colors";
@@ -28,19 +19,22 @@ import { shadow } from "../theme/shadows";
 import { useUiStore } from "../store/uiStore";
 const BAR_HEIGHT = 54;
 const FAB_SIZE = 55;
-const tabs: Record<string, { icon: LucideIcon; label: string }> = {
-  index: { icon: House, label: "Home" },
-  order: { icon: ShoppingBasket, label: "Order" },
-  member: { icon: BadgeCheck, label: "Member" },
-  profile: { icon: CircleUser, label: "Profile" },
+const tabs: Record<string, { icon: AppIconName; label: string }> = {
+  index: { icon: "home", label: "Home" },
+  order: { icon: "order", label: "Order" },
+  member: { icon: "member", label: "Member" },
+  profile: { icon: "profile", label: "Profile" },
 };
 /** The floating action button changes with the tab you are on. On Member and
  *  Profile it opens the quick menu instead of navigating. */
-const fabActions: Record<string, { icon: LucideIcon; onPress?: () => void; opensMenu?: boolean }> = {
-  index: { icon: Feather, onPress: () => router.push("/create-post") },
-  order: { icon: ShoppingCart, onPress: () => router.push("/cart") },
-  member: { icon: Menu, opensMenu: true },
-  profile: { icon: Menu, opensMenu: true },
+const fabActions: Record<
+  string,
+  { icon: AppIconName; onPress?: () => void; opensMenu?: boolean }
+> = {
+  index: { icon: "compose", onPress: () => router.push("/create-post") },
+  order: { icon: "cart", onPress: () => router.push("/cart") },
+  member: { icon: "menu", opensMenu: true },
+  profile: { icon: "menu", opensMenu: true },
 };
 /**
  * One tab. The selected pill grows and tints with a spring rather than
@@ -67,7 +61,6 @@ function TabButton({
     ),
     transform: [{ scale: 0.96 + progress.value * 0.04 }],
   }));
-  const Icon = tab.icon;
   const tint = focused ? brand[700] : ink[500];
   return (
     <PressableScale
@@ -87,7 +80,7 @@ function TabButton({
           pillStyle,
         ]}
       >
-        <Icon size={19} color={tint} strokeWidth={focused ? 2.3 : 1.9} />
+        <AppIcon name={tab.icon} size={19} color={tint} emphasis={focused} />
         <AppText variant="micro" color={tint}>
           {tab.label}
         </AppText>
@@ -100,7 +93,6 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const openShortcuts = useUiStore((s) => s.openShortcuts);
   const activeName = state.routes[state.index]?.name ?? "index";
   const fab = fabActions[activeName] ?? fabActions.index;
-  const FabIcon = fab.icon;
   const onFabPress = fab.opensMenu ? openShortcuts : fab.onPress;
   const fabSpin = useSharedValue(0);
   const fabStyle = useAnimatedStyle(() => ({
@@ -178,7 +170,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             <Animated.View style={fabStyle}>
-              <FabIcon size={23} color="#FFFFFF" strokeWidth={2} />
+              <AppIcon name={fab.icon} size={23} color="#FFFFFF" emphasis />
             </Animated.View>
           </LiquidGlass>
         ) : (
@@ -189,7 +181,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             <Animated.View style={fabStyle}>
-              <FabIcon size={23} color="#FFFFFF" strokeWidth={2} />
+              <AppIcon name={fab.icon} size={23} color="#FFFFFF" emphasis />
             </Animated.View>
           </LinearGradient>
         )}

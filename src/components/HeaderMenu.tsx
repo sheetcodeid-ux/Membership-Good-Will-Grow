@@ -2,15 +2,15 @@ import React from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { BottomSheet } from "@expo/ui";
-import { Bell, Bookmark, ChevronRight, Search, type LucideIcon } from "lucide-react-native";
 import { AppText } from "./ui/AppText";
 import { PressableScale } from "./ui/PressableScale";
+import { AppIcon, type AppIconName } from "./ui/AppIcon";
 import { brand, ink } from "../theme/colors";
 
-const items: { icon: LucideIcon; label: string; hint: string; href: string }[] = [
-  { icon: Search, label: "Cari Member", hint: "Temukan dan ikuti member lain", href: "/search-member" },
-  { icon: Bookmark, label: "Bookmark", hint: "Postingan yang kamu simpan", href: "/bookmark" },
-  { icon: Bell, label: "Notifikasi", hint: "Aktivitas terbaru untukmu", href: "/notifications" },
+const items: { icon: AppIconName; label: string; hint: string; href: string }[] = [
+  { icon: "search", label: "Cari Member", hint: "Temukan dan ikuti member lain", href: "/search-member" },
+  { icon: "bookmark", label: "Bookmark", hint: "Postingan yang kamu simpan", href: "/bookmark" },
+  { icon: "bell", label: "Notifikasi", hint: "Aktivitas terbaru untukmu", href: "/notifications" },
 ];
 
 /**
@@ -35,7 +35,7 @@ export function HeaderMenu({ open, onClose }: { open: boolean; onClose: () => vo
           Menu
         </AppText>
 
-        {items.map(({ icon: Icon, label, hint, href }) => (
+        {items.map(({ icon, label, hint, href }) => (
           <PressableScale
             key={label}
             scaleTo={0.99}
@@ -61,7 +61,7 @@ export function HeaderMenu({ open, onClose }: { open: boolean; onClose: () => vo
                 justifyContent: "center",
               }}
             >
-              <Icon size={18} color={brand[700]} strokeWidth={2} />
+              <AppIcon name={icon} size={18} color={brand[700]} emphasis />
             </View>
             <View style={{ flex: 1, gap: 1 }}>
               <AppText variant="bodySemibold" color={ink[900]}>
@@ -71,7 +71,7 @@ export function HeaderMenu({ open, onClose }: { open: boolean; onClose: () => vo
                 {hint}
               </AppText>
             </View>
-            <ChevronRight size={16} color={ink[300]} strokeWidth={2.2} />
+            <AppIcon name="chevronRight" size={16} color={ink[300]} />
           </PressableScale>
         ))}
       </View>

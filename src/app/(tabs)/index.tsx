@@ -16,11 +16,11 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { MoreHorizontal, Gift, X } from "lucide-react-native";
 import { AppText } from "../../components/ui/AppText";
 import { Avatar } from "../../components/ui/Avatar";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
+import { AppIcon } from "../../components/ui/AppIcon";
 import { LiquidGlass } from "../../components/ui/LiquidGlass";
 import { PostCard } from "../../components/PostCard";
 import { HeaderMenu } from "../../components/HeaderMenu";
@@ -224,7 +224,7 @@ export default function HomeScreen() {
                   menuButtonStyle,
                 ]}
               >
-                <MoreHorizontal size={17} color={brand[800]} />
+                <AppIcon name="more" size={17} color={brand[800]} emphasis />
               </Animated.View>
             </PressableScale>
           </View>
@@ -291,7 +291,7 @@ export default function HomeScreen() {
                 justifyContent: "center",
               }}
             >
-              <Gift size={15} color={gold[600]} />
+              <AppIcon name="gift" size={15} color={gold[600]} emphasis />
             </View>
             <AppText
               color={brand[700]}
@@ -300,7 +300,7 @@ export default function HomeScreen() {
               Lengkapi profil anda, dapatkan reward menarik
             </AppText>
             <PressableScale onPress={() => setShowProfileBanner(false)} hitSlop={12}>
-              <X size={16} color={ink[400]} />
+              <AppIcon name="close" size={16} color={ink[400]} />
             </PressableScale>
           </PressableScale>
         </Animated.View>
