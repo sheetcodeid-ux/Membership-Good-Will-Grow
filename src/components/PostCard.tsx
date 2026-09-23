@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,12 +18,14 @@ import { ImagePlaceholder } from "./ui/ImagePlaceholder";
 import { PressableScale } from "./ui/PressableScale";
 import { AppIcon } from "./ui/AppIcon";
 import { BrandLogo } from "./BrandLogo";
+import { PostMenuSheet } from "./PostMenuSheet";
 import { brand, ink, danger } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { useResponsive } from "../theme/responsive";
 import { radius, space } from "../theme/scale";
 import { useFeedStore } from "../store/feedStore";
 import { useSocialStore } from "../store/socialStore";
+import { outlets } from "../data/mock";
 import type { FeedPost } from "../data/types";
 
 /**
@@ -82,9 +84,15 @@ function CheckInCard({
   brandId?: string;
   s: (n: number) => number;
 }) {
+  // Posts carry the outlet's name, not its id, so the row is matched by
+  // name and brand. A check-in for an outlet that has since closed simply
+  // stops being a link rather than landing on an empty screen.
+  const outlet = outlets.find((o) => o.brandId === brandId && o.name === outletName);
+
   return (
     <PressableScale
       scaleTo={0.99}
+      onPress={outlet ? () => router.push(`/outlet/${outlet.id}`) : undefined}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -133,7 +141,7 @@ function CheckInCard({
             {outletName}
           </UiText>
         </View>
-        <AppIcon name="chevronRight" size={s(18)} color={brand[700]} />
+        {outlet ? <AppIcon name="chevronRight" size={s(18)} color={brand[700]} /> : null}
       </LinearGradient>
     </PressableScale>
   );
@@ -148,6 +156,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
   const toggleLike = useFeedStore((s) => s.toggleLike);
   const toggleBookmark = useSocialStore((s) => s.toggleBookmark);
   const bookmarked = useSocialStore((s) => s.isBookmarked(post.id));
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const openProfile = () => router.push(`/profile/${post.authorHandle.replace("@", "")}`);
   const openComments = () => router.push(`/comments/${post.id}`);
@@ -245,8 +254,8 @@ function PostCardBase({ post }: { post: FeedPost }) {
           </View>
         </View>
 
-        <PressableScale hitSlop={10} rippleBorderless>
-          <AppIcon name="more" size={r.s(18)} color={ink[300]} />
+        <PressableScale hitSlop={10} rippleBorderless onPress={() => setMenuOpen(true)}>
+          <AppIcon name="more" size={r.s(18)} color={ink[400]} />
         </PressableScale>
       </View>
 
@@ -361,6 +370,16 @@ function PostCardBase({ post }: { post: FeedPost }) {
           />
         </ReactionButton>
       </View>
+
+      {menuOpen ? (
+        <PostMenuSheet
+          postId={post.id}
+          bookmarked={bookmarked}
+          onClose={() => setMenuOpen(false)}
+          onToggleBookmark={() => toggleBookmark(post.id)}
+          onOpenAuthor={openProfile}
+        />
+      ) : null}
     </View>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FlatList, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Button } from "../components/ui";
@@ -117,6 +118,7 @@ export default function BookmarkScreen() {
             return (
               <PressableScale
                 scaleTo={0.99}
+                onPress={() => router.push(`/collection/${item.id}`)}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
