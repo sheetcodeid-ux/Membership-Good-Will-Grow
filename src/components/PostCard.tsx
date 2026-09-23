@@ -77,17 +77,18 @@ function ReactionButton({
 
 function CheckInCard({
   outletName,
+  outletId,
   brandId,
   s,
 }: {
   outletName: string;
+  outletId?: string;
   brandId?: string;
   s: (n: number) => number;
 }) {
-  // Posts carry the outlet's name, not its id, so the row is matched by
-  // name and brand. A check-in for an outlet that has since closed simply
-  // stops being a link rather than landing on an empty screen.
-  const outlet = outlets.find((o) => o.brandId === brandId && o.name === outletName);
+  // A check-in for an outlet that has since closed stops being a link rather
+  // than landing on an empty screen.
+  const outlet = outlets.find((o) => o.id === outletId);
 
   return (
     <PressableScale
@@ -263,14 +264,21 @@ function PostCardBase({ post }: { post: FeedPost }) {
         {post.caption}
       </UiText>
 
-      <GestureDetector gesture={mediaGesture}>
-        <View
-          style={{
-            marginTop: space.md,
-            borderRadius: radius.lg,
-            overflow: "hidden",
-          }}
-        >
+      {/*
+        The gesture wraps the picture only. When the check-in chip moved on
+        top of the image it landed inside this detector, so its own press
+        never fired — the media's single tap claimed it and opened comments
+        instead of the outlet. The chip is a sibling laid over the media now.
+      */}
+      <View
+        style={{
+          marginTop: space.md,
+          borderRadius: radius.lg,
+          overflow: "hidden",
+        }}
+      >
+        <GestureDetector gesture={mediaGesture}>
+          <View>
           <ImagePlaceholder
             label="Foto Post"
             radius={radius.lg}
@@ -290,13 +298,22 @@ function PostCardBase({ post }: { post: FeedPost }) {
             pointerEvents="none"
           />
 
-          {post.type === "checkin" && post.outletName ? (
-            <View
-              style={{ position: "absolute", left: space.md, right: space.md, bottom: space.md }}
-            >
-              <CheckInCard outletName={post.outletName} brandId={post.brandId} s={r.s} />
-            </View>
-          ) : null}
+          </View>
+        </GestureDetector>
+
+        {post.type === "checkin" && post.outletName ? (
+          <View
+            style={{ position: "absolute", left: space.md, right: space.md, bottom: space.md }}
+          >
+            <CheckInCard
+              outletName={post.outletName}
+              outletId={post.outletId}
+              brandId={post.brandId}
+              s={r.s}
+            />
+          </View>
+        ) : null}
+      </View>
 
           {/* Heart thrown by a double tap, then cleared. */}
           <Animated.View
@@ -316,8 +333,6 @@ function PostCardBase({ post }: { post: FeedPost }) {
           >
             <AppIcon name="heart" size={r.s(96)} color="#FFFFFF" emphasis />
           </Animated.View>
-        </View>
-      </GestureDetector>
 
       <View
         style={{

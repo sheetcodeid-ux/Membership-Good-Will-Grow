@@ -114,6 +114,13 @@ export interface FeedPost {
   caption: string;
   type: "post" | "checkin";
   outletName?: string;
+  /**
+   * The outlet this check-in points at. The display name is the brand and
+   * the branch run together ("Ayam Goreng Busari Veteran") while the outlet
+   * record holds them apart ("Ayam Goreng Busari" / "Veteran"), so the name
+   * cannot be matched back to a record and the id has to be stored.
+   */
+  outletId?: string;
   brandId?: string;
   likes: number;
   comments: number;
