@@ -5,6 +5,8 @@ import type {
   WeekDay,
   MenuCategory,
   MenuItem,
+  MenuOptionGroup,
+  Coupon,
   Promo,
   FeedPost,
   FeedComment,
@@ -227,16 +229,84 @@ export const categories: MenuCategory[] = [
   { id: "kue", name: "Kue", icon: "cake" },
 ];
 
-export const toppingPool = [
-  { id: "peanut", name: "Peanut Crumb", price: 3636 },
-  { id: "rainbow-jelly", name: "Rainbow Jelly", price: 5454 },
-  { id: "grass-jelly", name: "Grass Jelly", price: 4545 },
-  { id: "jelly-pearl", name: "Jelly Pearl", price: 4545 },
-  { id: "choco-crunch", name: "Choco Crunch", price: 3636 },
-  { id: "oreo-crumb", name: "Oreo Crumb", price: 3636 },
-  { id: "boba-mango", name: "Popping Boba Mangga", price: 5454 },
-  { id: "ice-cream-vanila", name: "Ice Cream Vanila", price: 5454 },
-];
+/* Shared option groups. Options with maxQty 1 render as a toggle in the
+   product sheet; the rest render as a stepper. */
+
+const addedSyrup: MenuOptionGroup = {
+  id: "syrup",
+  name: "Added Syrup",
+  selection: "multi",
+  options: [
+    { id: "syrup-vanilla", name: "Vanilla Syrup", price: 2727 },
+    { id: "syrup-caramel", name: "Caramel Syrup", price: 2727 },
+    { id: "syrup-coconut", name: "Coconut Syrup", price: 3000 },
+    { id: "syrup-hazelnut", name: "Hazelnut Syrup", price: 2727 },
+    { id: "syrup-brown-sugar", name: "Brown Sugar Syrup", price: 3000 },
+  ],
+};
+
+const toppingGroup: MenuOptionGroup = {
+  id: "topping",
+  name: "Topping",
+  selection: "multi",
+  hint: "Bisa pilih lebih dari 1 item",
+  options: [
+    { id: "top-peanut", name: "Peanut Crumb", price: 3636 },
+    { id: "top-rainbow-jelly", name: "Rainbow Jelly", price: 5454 },
+    { id: "top-grass-jelly", name: "Grass Jelly", price: 4545 },
+    { id: "top-jelly-pearl", name: "Jelly Pearl", price: 4545 },
+    { id: "top-choco-crunch", name: "Choco Crunch", price: 3636 },
+    { id: "top-redvelvet", name: "Redvelvet Crumb", price: 3636 },
+    { id: "top-oreo", name: "Oreo Crumb", price: 3636 },
+    { id: "top-boba-mangga", name: "Popping Boba Mangga", price: 5454 },
+    { id: "top-ice-cream", name: "Ice Cream Vanila", price: 5454 },
+    { id: "top-seaweed", name: "Seawed Jelly", price: 5454, maxQty: 1 },
+    { id: "top-choco-chip", name: "Choco Chip", price: 3636, maxQty: 1 },
+  ],
+};
+
+const extraEspresso: MenuOptionGroup = {
+  id: "espresso",
+  name: "Extra Espresso",
+  selection: "multi",
+  hint: "Bisa pilih lebih dari 1 item",
+  options: [
+    { id: "esp-arabika", name: "Extra Espresso Arabika", price: 4545 },
+    { id: "esp-robusta", name: "Extra Espresso Robusta", price: 3000 },
+  ],
+};
+
+function sweetness(itemName: string): MenuOptionGroup {
+  return {
+    id: "sweetness",
+    name: `Tingkat Manis ${itemName}`,
+    selection: "single",
+    options: [
+      { id: "sweet-normal", name: "Normal", price: 0 },
+      { id: "sweet-kurang", name: "Kurang Manis", price: 0 },
+      { id: "sweet-no", name: "No Sugar", price: 0 },
+      { id: "sweet-extra", name: "Extra Manis", price: 0 },
+    ],
+  };
+}
+
+/** Variant group: its selected option carries the item's base price. */
+function variant(price: number, name = "Original"): MenuOptionGroup {
+  return {
+    id: "varian",
+    name: "Varian",
+    selection: "single",
+    options: [{ id: "var-original", name, price }],
+  };
+}
+
+function drinkOptions(price: number, itemName: string): MenuOptionGroup[] {
+  return [variant(price), addedSyrup, toppingGroup, extraEspresso, sweetness(itemName)];
+}
+
+function plainOptions(price: number): MenuOptionGroup[] {
+  return [variant(price)];
+}
 
 export const menuItems: MenuItem[] = [
   {
@@ -245,9 +315,9 @@ export const menuItems: MenuItem[] = [
     categoryId: "coffee",
     name: "Coffee Creamy",
     description: "Espresso + Susu + Creamer lembut",
-    price: 18181,
+    price: 15454,
     isBestSeller: true,
-    toppings: toppingPool,
+    optionGroups: drinkOptions(15454, "Coffee Creamy"),
   },
   {
     id: "americano-arabika",
@@ -256,7 +326,7 @@ export const menuItems: MenuItem[] = [
     name: "Americano Arabika",
     description: "Espresso Arabika + Air",
     price: 21818,
-    toppings: toppingPool.slice(0, 4),
+    optionGroups: drinkOptions(21818, "Americano Arabika"),
   },
   {
     id: "arabika-coffee-milk",
@@ -265,7 +335,7 @@ export const menuItems: MenuItem[] = [
     name: "Arabika Coffee Milk",
     description: "Espresso Arabika + Susu",
     price: 30000,
-    toppings: toppingPool,
+    optionGroups: drinkOptions(30000, "Arabika Coffee Milk"),
   },
   {
     id: "arenga-coffee",
@@ -275,7 +345,7 @@ export const menuItems: MenuItem[] = [
     description: "Espresso + Susu + Brown Sugar",
     price: 34545,
     isBestSeller: true,
-    toppings: toppingPool,
+    optionGroups: drinkOptions(34545, "Arenga Coffee"),
   },
   {
     id: "caffe-latte",
@@ -284,7 +354,7 @@ export const menuItems: MenuItem[] = [
     name: "Caffe Latte",
     description: "Espresso + Susu + Sedikit Foam",
     price: 30000,
-    toppings: toppingPool.slice(0, 5),
+    optionGroups: drinkOptions(30000, "Caffe Latte"),
   },
   {
     id: "matcha-latte",
@@ -293,7 +363,7 @@ export const menuItems: MenuItem[] = [
     name: "Matcha Latte",
     description: "Bubuk matcha premium + Susu",
     price: 28000,
-    toppings: toppingPool.slice(0, 4),
+    optionGroups: [variant(28000), addedSyrup, toppingGroup, sweetness("Matcha Latte")],
   },
   {
     id: "choco-hazelnut",
@@ -302,49 +372,7 @@ export const menuItems: MenuItem[] = [
     name: "Choco Hazelnut",
     description: "Coklat premium + Hazelnut",
     price: 27000,
-    toppings: toppingPool.slice(0, 4),
-  },
-  {
-    id: "nasi-ayam-geprek",
-    brandId: "ayam-busari",
-    categoryId: "food",
-    name: "Nasi Ayam Geprek Chili Padi",
-    description: "Ayam goreng + sambal chili padi + lalapan",
-    price: 25000,
-    isBestSeller: true,
-  },
-  {
-    id: "nasi-ayam-bakar",
-    brandId: "ayam-busari",
-    categoryId: "food",
-    name: "Nasi Ayam Bakar Madu",
-    description: "Ayam bakar bumbu madu + lalapan + sambal",
-    price: 27000,
-  },
-  {
-    id: "croissant-butter",
-    brandId: "lesung-pipi",
-    categoryId: "kue",
-    name: "Croissant Butter",
-    description: "Croissant mentega berlapis, renyah di luar",
-    price: 22000,
-    isBestSeller: true,
-  },
-  {
-    id: "sourdough-classic",
-    brandId: "lesung-pipi",
-    categoryId: "kue",
-    name: "Sourdough Classic",
-    description: "Roti sourdough fermentasi alami",
-    price: 32000,
-  },
-  {
-    id: "kentang-goreng",
-    brandId: "nordu",
-    categoryId: "snack",
-    name: "Kentang Goreng Saus Sambal",
-    description: "Kentang goreng renyah + saus sambal rumahan",
-    price: 18000,
+    optionGroups: [variant(27000), addedSyrup, toppingGroup, sweetness("Choco Hazelnut")],
   },
   {
     id: "dimsum-ayam",
@@ -354,6 +382,7 @@ export const menuItems: MenuItem[] = [
     description: "4 pcs siomay ayam + saus sambal",
     price: 20000,
     isBestSeller: true,
+    optionGroups: plainOptions(20000),
   },
   {
     id: "dimsum-udang",
@@ -362,6 +391,7 @@ export const menuItems: MenuItem[] = [
     name: "Dimsum Udang",
     description: "4 pcs siomay udang + saus",
     price: 24000,
+    optionGroups: plainOptions(24000),
   },
   {
     id: "kue-lapis",
@@ -370,6 +400,47 @@ export const menuItems: MenuItem[] = [
     name: "Kue Lapis Legit",
     description: "Lapis legit klasik, potong tebal",
     price: 28000,
+    optionGroups: plainOptions(28000),
+  },
+  {
+    id: "nasi-ayam-geprek",
+    brandId: "ayam-busari",
+    categoryId: "food",
+    name: "Nasi Ayam Geprek Chili Padi",
+    description: "Ayam goreng + sambal chili padi + lalapan",
+    price: 25000,
+    isBestSeller: true,
+    optionGroups: [
+      variant(25000),
+      {
+        id: "level",
+        name: "Level Pedas",
+        selection: "single",
+        options: [
+          { id: "level-1", name: "Level 1", price: 0 },
+          { id: "level-3", name: "Level 3", price: 0 },
+          { id: "level-5", name: "Level 5", price: 0 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "nasi-ayam-bakar",
+    brandId: "ayam-busari",
+    categoryId: "food",
+    name: "Nasi Ayam Bakar Madu",
+    description: "Ayam bakar bumbu madu + lalapan + sambal",
+    price: 27000,
+    optionGroups: plainOptions(27000),
+  },
+  {
+    id: "kentang-goreng",
+    brandId: "nordu",
+    categoryId: "snack",
+    name: "Kentang Goreng Saus Sambal",
+    description: "Kentang goreng renyah + saus sambal rumahan",
+    price: 18000,
+    optionGroups: plainOptions(18000),
   },
   {
     id: "tumbler-cw",
@@ -378,7 +449,16 @@ export const menuItems: MenuItem[] = [
     name: "Tumbler Good Will Grow",
     description: "Tumbler stainless 500ml edisi member",
     price: 95000,
+    optionGroups: plainOptions(95000),
   },
+];
+
+export const coupons: Coupon[] = [
+  { id: "cp-1", brandId: "ayam-busari", title: "Hot Hour Deals - Pontianak", daysLeft: 1, used: false },
+  { id: "cp-2", brandId: "cattu", title: "VIP Member Reward - Cattu Coffee", daysLeft: 1, used: false },
+  { id: "cp-3", brandId: "nordu", title: "Sale 40%", daysLeft: 3, used: false },
+  { id: "cp-4", brandId: "nordu", title: "Arenga Coffee Rp 19.000", daysLeft: 3, used: false },
+  { id: "cp-5", brandId: "lesung-pipi", title: "Gratis 1 Kue Lapis", daysLeft: 5, used: false },
 ];
 
 export const promos: Promo[] = [

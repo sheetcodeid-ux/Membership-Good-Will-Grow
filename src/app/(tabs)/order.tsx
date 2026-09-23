@@ -15,7 +15,7 @@ import { shadow } from "../../theme/shadows";
 import { formatRupiah } from "../../utils/format";
 import { categories, getOutlet, menuItems } from "../../data/mock";
 import { MAX_ORDER_DISTANCE_KM, useOrderStore } from "../../store/orderStore";
-import { useCartStore } from "../../store/cartStore";
+import { defaultSelections, useCartStore } from "../../store/cartStore";
 
 /* Metrics measured off the reference screenshot at 360pt width. */
 const GUTTER = 14;
@@ -343,7 +343,7 @@ export default function OrderScreen() {
                     {formatRupiah(item.price)}
                   </AppText>
                   <PressableScale
-                    onPress={() => addLine(item, 1, [])}
+                    onPress={() => addLine(item, 1, defaultSelections(item.optionGroups))}
                     hitSlop={14}
                     style={{
                       width: 16,
@@ -365,7 +365,7 @@ export default function OrderScreen() {
 
       {couponVisible ? (
         <View style={{ position: "absolute", right: 11, bottom: insets.bottom + 70 }}>
-          <PressableScale onPress={() => router.push("/promo")} scaleTo={0.96}>
+          <PressableScale onPress={() => router.push("/coupons")} scaleTo={0.96}>
             <ImagePlaceholder
               label="Sticker Kupon"
               radius={12}

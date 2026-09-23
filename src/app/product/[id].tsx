@@ -1,142 +1,260 @@
 import React, { useMemo, useState } from "react";
-import { View, ScrollView } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { X } from "lucide-react-native";
-import { AppText, Button, Divider, QuantityStepper, Input } from "../../components/ui";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { SlideInDown } from "react-native-reanimated";
+import { ChefHat, ShoppingCart } from "lucide-react-native";
+import { AppText } from "../../components/ui/AppText";
+import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
-import { MediaTile } from "../../components/ui/MediaTile";
-import { brand, ink } from "../../theme/colors";
-import { getMenuItem, getBrand } from "../../data/mock";
+import { QuantityStepper } from "../../components/ui/QuantityStepper";
+import { brand, ink, surface, warning } from "../../theme/colors";
+import { shadow } from "../../theme/shadows";
 import { formatRupiah } from "../../utils/format";
-import { useCartStore } from "../../store/cartStore";
+import { getMenuItem } from "../../data/mock";
+import { defaultSelections, unitPrice, useCartStore } from "../../store/cartStore";
+import type { MenuOption, MenuOptionGroup } from "../../data/types";
 
-export default function ProductDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+/** Hollow ring / filled dot used by every single-select row. */
+function Radio({ selected }: { selected: boolean }) {
+  return (
+    <View
+      style={{
+        width: 19,
+        height: 19,
+        borderRadius: 10,
+        borderWidth: 1.8,
+        borderColor: selected ? brand[900] : ink[300],
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {selected ? (
+        <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: brand[900] }} />
+      ) : null}
+    </View>
+  );
+}
+
+function OptionCard({
+  option,
+  group,
+  qty,
+  onChange,
+  leadingIcon,
+}: {
+  option: MenuOption;
+  group: MenuOptionGroup;
+  qty: number;
+  onChange: (qty: number) => void;
+  leadingIcon?: React.ReactNode;
+}) {
+  // A single-select group, or a multi-select option capped at one, is a toggle.
+  const isToggle = group.selection === "single" || option.maxQty === 1;
+  return (
+    <Pressable
+      onPress={() => (isToggle ? onChange(qty > 0 ? (group.selection === "single" ? 1 : 0) : 1) : undefined)}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        paddingHorizontal: 13,
+        height: 44,
+        ...(shadow.xs as object),
+      }}
+    >
+      {leadingIcon}
+      <AppText variant="bodyMedium" numberOfLines={1} style={{ flex: 1 }}>
+        {option.name}
+      </AppText>
+      <AppText variant="bodyMedium" color={ink[700]}>
+        {formatRupiah(option.price)}
+      </AppText>
+      {isToggle ? (
+        <Radio selected={qty > 0} />
+      ) : (
+        <QuantityStepper value={qty} onChange={onChange} size={24} max={option.maxQty ?? 10} />
+      )}
+    </Pressable>
+  );
+}
+
+export default function ProductSheet() {
+  const { id, lineId } = useLocalSearchParams<{ id: string; lineId?: string }>();
+  const { height } = useWindowDimensions();
   const item = getMenuItem(id);
-  const brandInfo = getBrand(item?.brandId);
-  const [qty, setQty] = useState(1);
-  const [toppingQty, setToppingQty] = useState<Record<string, number>>({});
-  const [notes, setNotes] = useState("");
+
+  const lines = useCartStore((s) => s.lines);
   const addLine = useCartStore((s) => s.addLine);
+  const updateLine = useCartStore((s) => s.updateLine);
 
-  const toppingsTotal = useMemo(() => {
-    if (!item?.toppings) return 0;
-    return item.toppings.reduce((sum, t) => sum + t.price * (toppingQty[t.id] ?? 0), 0);
-  }, [toppingQty, item]);
+  // Opened from the cart's Edit button, the sheet starts from that line.
+  const editing = useMemo(() => lines.find((l) => l.lineId === lineId), [lines, lineId]);
 
-  const total = item ? (item.price + toppingsTotal) * qty : 0;
+  const [selections, setSelections] = useState<Record<string, number>>(
+    () => editing?.selections ?? (item ? defaultSelections(item.optionGroups) : {})
+  );
+  const [qty, setQty] = useState(editing?.qty ?? 1);
 
-  if (!item) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <AppText>Menu tidak ditemukan.</AppText>
-      </View>
-    );
-  }
+  if (!item) return null;
+
+  const setOption = (group: MenuOptionGroup, option: MenuOption, next: number) => {
+    setSelections((prev) => {
+      const draft = { ...prev };
+      if (group.selection === "single") {
+        for (const o of group.options) delete draft[o.id];
+        draft[option.id] = 1;
+      } else if (next <= 0) {
+        delete draft[option.id];
+      } else {
+        draft[option.id] = next;
+      }
+      return draft;
+    });
+  };
+
+  const total = unitPrice(item, selections) * qty;
 
   const submit = () => {
-    const toppingIds: string[] = [];
-    Object.entries(toppingQty).forEach(([tid, q]) => {
-      for (let i = 0; i < q; i++) toppingIds.push(tid);
-    });
-    addLine(item, qty, toppingIds, notes || undefined);
+    if (editing) updateLine(editing.lineId, qty, selections, editing.note);
+    else addLine(item, qty, selections);
     router.back();
   };
 
+  const [variantGroup, ...restGroups] = item.optionGroups;
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#FFFFFF", borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: "hidden" }}>
-      <View style={{ alignItems: "center", paddingTop: 10 }}>
-        <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: ink[200] }} />
-      </View>
+    <View style={{ flex: 1 }}>
+      <StatusBar style="light" />
 
-      <View style={{ flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: 20, paddingTop: 6 }}>
-        <PressableScale
-          onPress={() => router.back()}
-          style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: ink[50], alignItems: "center", justifyContent: "center" }}
+      <Pressable style={StyleSheet.absoluteFill} onPress={() => router.back()}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(10,14,26,0.5)" }]} />
+      </Pressable>
+
+      <View style={{ flex: 1, justifyContent: "flex-end" }} pointerEvents="box-none">
+        <Animated.View
+          entering={SlideInDown.duration(300)}
+          style={{
+            height: height * 0.92,
+            backgroundColor: surface,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            overflow: "hidden",
+          }}
         >
-          <X size={18} color={ink[700]} />
-        </PressableScale>
-      </View>
-
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 4, gap: 20, paddingBottom: 40 }}>
-        <View style={{ flexDirection: "row", gap: 16, alignItems: "center" }}>
-          <MediaTile
-            colors={brandInfo?.gradient ?? [brand[600], brand[400]]}
-            icon={item.categoryId === "food" ? "drumstick" : item.categoryId === "pastry" ? "cake" : "coffee"}
-            size={80}
-            radius={20}
-            iconSize={34}
-          />
-          <View style={{ flex: 1, gap: 4 }}>
-            <AppText variant="h3">{item.name}</AppText>
-            <AppText variant="caption" color={ink[500]}>{item.description}</AppText>
-            <AppText variant="titleLg" color={brand[700]}>{formatRupiah(item.price)}</AppText>
+          <View style={{ alignItems: "center", paddingVertical: 8 }}>
+            <View style={{ width: 38, height: 4, borderRadius: 2, backgroundColor: ink[200] }} />
           </View>
-        </View>
 
-        <Divider />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 24 }}
+          >
+            <ImagePlaceholder
+              label="Foto Produk"
+              radius={0}
+              iconSize={36}
+              style={{ width: "100%", aspectRatio: 1 }}
+            />
 
-        {item.toppings && item.toppings.length > 0 ? (
-          <View style={{ gap: 14 }}>
-            <View style={{ gap: 4 }}>
-              <AppText variant="titleLg">Topping CW</AppText>
-              <View
-                style={{
-                  alignSelf: "flex-start",
-                  backgroundColor: "#FFF4E0",
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                  borderRadius: 10,
-                }}
-              >
-                <AppText variant="caption" color="#D6860A">
-                  Bisa pilih lebih dari 1 item
-                </AppText>
-              </View>
-            </View>
+            <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 8 }}>
+              <AppText variant="h3">{item.name}</AppText>
 
-            {item.toppings.map((t) => (
-              <View key={t.id} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ flex: 1 }}>
-                  <AppText variant="bodyMedium">{t.name}</AppText>
-                  <AppText variant="caption" color={ink[500]}>{formatRupiah(t.price)}</AppText>
+              {variantGroup ? (
+                <View style={{ gap: 8 }}>
+                  {variantGroup.options.map((option) => (
+                    <OptionCard
+                      key={option.id}
+                      option={option}
+                      group={variantGroup}
+                      qty={selections[option.id] ?? 0}
+                      onChange={(n) => setOption(variantGroup, option, n)}
+                      leadingIcon={<ChefHat size={16} color={brand[700]} />}
+                    />
+                  ))}
                 </View>
-                <QuantityStepper
-                  value={toppingQty[t.id] ?? 0}
-                  onChange={(v) => setToppingQty((prev) => ({ ...prev, [t.id]: v }))}
-                />
+              ) : null}
+
+              {restGroups.map((group) => (
+                <View key={group.id} style={{ gap: 8, marginTop: 10 }}>
+                  <AppText variant="bodySemibold">{group.name}</AppText>
+                  {group.hint ? (
+                    <View
+                      style={{
+                        alignSelf: "flex-start",
+                        borderWidth: 1.2,
+                        borderColor: warning[500],
+                        borderRadius: 7,
+                        paddingHorizontal: 9,
+                        paddingVertical: 4,
+                      }}
+                    >
+                      <AppText variant="micro" color={warning[600]}>
+                        {group.hint}
+                      </AppText>
+                    </View>
+                  ) : null}
+                  {group.options.map((option) => (
+                    <OptionCard
+                      key={option.id}
+                      option={option}
+                      group={group}
+                      qty={selections[option.id] ?? 0}
+                      onChange={(n) => setOption(group, option, n)}
+                    />
+                  ))}
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+
+          <View
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderTopLeftRadius: 18,
+              borderTopRightRadius: 18,
+              ...(shadow.lg as object),
+            }}
+          >
+            <SafeAreaView edges={["bottom"]}>
+              <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, gap: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ flex: 1 }}>
+                    <AppText variant="caption" color={ink[500]}>
+                      Total
+                    </AppText>
+                    <AppText variant="h3" color={brand[800]}>
+                      {formatRupiah(total)}
+                    </AppText>
+                  </View>
+                  <QuantityStepper value={qty} onChange={setQty} min={1} size={30} />
+                </View>
+
+                <PressableScale
+                  onPress={submit}
+                  scaleTo={0.98}
+                  style={{
+                    height: 46,
+                    borderRadius: 23,
+                    backgroundColor: brand[900],
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 10,
+                  }}
+                >
+                  <AppText variant="titleLg" color="#FFFFFF">
+                    {editing ? "Simpan Perubahan" : "Tambah ke Keranjang"}
+                  </AppText>
+                  <ShoppingCart size={17} color="#FFFFFF" />
+                </PressableScale>
               </View>
-            ))}
+            </SafeAreaView>
           </View>
-        ) : null}
-
-        <Divider />
-
-        <Input
-          label="Catatan (opsional)"
-          placeholder="Contoh: less sugar, extra ice"
-          value={notes}
-          onChangeText={setNotes}
-        />
-      </ScrollView>
-
-      <View
-        style={{
-          gap: 14,
-          padding: 20,
-          paddingBottom: 28,
-          borderTopWidth: 1,
-          borderTopColor: ink[100],
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <View>
-            <AppText variant="caption" color={ink[500]}>Total</AppText>
-            <AppText variant="h3" color={brand[700]}>{formatRupiah(total)}</AppText>
-          </View>
-          <QuantityStepper value={qty} onChange={setQty} min={1} />
-        </View>
-        <Button label="Tambah ke Keranjang" size="lg" fullWidth onPress={submit} />
+        </Animated.View>
       </View>
     </View>
   );

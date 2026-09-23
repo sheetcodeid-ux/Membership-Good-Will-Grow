@@ -6,6 +6,7 @@ import { Check } from "lucide-react-native";
 import { AppText, Button, Screen } from "../components/ui";
 import { success, ink, brand } from "../theme/colors";
 import { useCartStore } from "../store/cartStore";
+import { useOrderStore } from "../store/orderStore";
 import { getOutlet, outletFullName } from "../data/mock";
 import { formatRupiah } from "../utils/format";
 import { computeBreakdown } from "../utils/pricing";
@@ -16,7 +17,8 @@ export default function OrderSuccessScreen() {
   const opacity = useSharedValue(0);
   const cart = useCartStore();
   const points = useMemberStore((s) => s.points);
-  const outlet = cart.outletId ? getOutlet(cart.outletId) : undefined;
+  const outletId = useOrderStore((s) => s.outletId);
+  const outlet = getOutlet(outletId);
   const breakdown = computeBreakdown(cart.subtotal(), cart.usePoints, points);
 
   useEffect(() => {

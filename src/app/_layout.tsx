@@ -62,12 +62,9 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="product/[id]"
-            options={{ presentation: "modal", animation: "slide_from_bottom" }}
+            options={{ presentation: "transparentModal", animation: "fade" }}
           />
-          <Stack.Screen
-            name="cart"
-            options={{ presentation: "modal", animation: "slide_from_bottom" }}
-          />
+
           <Stack.Screen
             name="comments/[postId]"
             options={{ presentation: "transparentModal", animation: "fade" }}

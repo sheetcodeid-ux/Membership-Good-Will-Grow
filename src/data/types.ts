@@ -42,10 +42,23 @@ export interface MenuCategory {
   icon: CategoryIconName;
 }
 
-export interface ToppingOption {
+/** One choice inside an option group. */
+export interface MenuOption {
   id: string;
   name: string;
   price: number;
+  /** 1 renders a toggle; anything higher renders a stepper. */
+  maxQty?: number;
+}
+
+export interface MenuOptionGroup {
+  id: string;
+  name: string;
+  /** "single" picks exactly one option; "multi" keeps a quantity per option. */
+  selection: "single" | "multi";
+  /** Yellow badge under the heading, e.g. "Bisa pilih lebih dari 1 item". */
+  hint?: string;
+  options: MenuOption[];
 }
 
 export interface MenuItem {
@@ -54,17 +67,28 @@ export interface MenuItem {
   categoryId: string;
   name: string;
   description: string;
+  /** Price shown in the menu list; equals the first variant's price. */
   price: number;
   isBestSeller?: boolean;
-  toppings?: ToppingOption[];
+  optionGroups: MenuOptionGroup[];
 }
 
 export interface CartLine {
   lineId: string;
   menuItem: MenuItem;
   qty: number;
-  toppingIds: string[];
-  notes?: string;
+  /** Option id -> chosen quantity. Single-select groups store exactly 1. */
+  selections: Record<string, number>;
+  note?: string;
+}
+
+export interface Coupon {
+  id: string;
+  brandId?: string;
+  title: string;
+  /** Days before the coupon expires, as the ticket card prints it. */
+  daysLeft: number;
+  used: boolean;
 }
 
 export interface Promo {

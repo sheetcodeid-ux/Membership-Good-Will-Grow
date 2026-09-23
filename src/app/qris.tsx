@@ -1,99 +1,210 @@
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { Download, RefreshCw } from "lucide-react-native";
-import { Screen, ScreenHeader, AppText, Button, Card } from "../components/ui";
-import { brand, danger, ink } from "../theme/colors";
+import { AppText } from "../components/ui/AppText";
+import { AppHeader } from "../components/ui/AppHeader";
+import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
+import { PressableScale } from "../components/ui/PressableScale";
+import { brand, danger, ink, surface } from "../theme/colors";
+import { shadow } from "../theme/shadows";
+import { formatRupiah } from "../utils/format";
+import { computeBreakdown } from "../utils/pricing";
 import { useCartStore } from "../store/cartStore";
 import { useMemberStore } from "../store/memberStore";
-import { computeBreakdown } from "../utils/pricing";
-import { formatRupiah } from "../utils/format";
+import { useOrderStore } from "../store/orderStore";
 
-function QrPlaceholder() {
-  const cells = 9;
-  const seed = 13;
+const PAY_WINDOW_SECONDS = 10 * 60;
+
+const steps = [
+  "Buka aplikasi mobile banking atau e-wallet",
+  "Pilih menu scan QR atau bayar dengan QRIS",
+  "Scan QR Code di atas",
+  "Konfirmasi pembayaran",
+  "Pembayaran akan diverifikasi otomatis",
+];
+
+export default function QrisScreen() {
+  const subtotal = useCartStore((s) => s.subtotal());
+  const usePoints = useCartStore((s) => s.usePoints);
+  const points = useMemberStore((s) => s.points);
+  const breakdown = computeBreakdown(subtotal, usePoints, points);
+
+  const [remaining, setRemaining] = useState(PAY_WINDOW_SECONDS);
+
+  useEffect(() => {
+    const id = setInterval(() => setRemaining((v) => (v > 0 ? v - 1 : 0)), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Minted when the order was confirmed, so it stays put while the clock ticks.
+  const receipt = useOrderStore((s) => s.receipt);
+
+  const mmss = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(
+    remaining % 60
+  ).padStart(2, "0")}`;
+
   return (
-    <View
-      style={{
-        width: 220,
-        height: 220,
-        backgroundColor: "#FFFFFF",
-        borderRadius: 16,
-        padding: 12,
-        flexDirection: "row",
-        flexWrap: "wrap",
-      }}
-    >
-      {Array.from({ length: cells * cells }).map((_, i) => {
-        const on = (i * seed + Math.floor(i / cells) * 7) % 5 < 2;
-        const isCorner =
-          (i < cells * 3 && i % cells < 3) ||
-          (i < cells * 3 && i % cells >= cells - 3) ||
-          (i >= cells * (cells - 3) && i % cells < 3);
-        return (
+    <View style={{ flex: 1, backgroundColor: surface }}>
+      <StatusBar style="dark" />
+      <AppHeader title="Pembayaran" />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32, gap: 14 }}
+      >
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: 6 }}>
+          <AppText variant="bodySemibold" color={ink[800]}>
+            Waktu tersisa:
+          </AppText>
+          <AppText variant="bodySemibold" color={danger[500]}>
+            {mmss}
+          </AppText>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 15,
+            padding: 16,
+            alignItems: "center",
+            gap: 14,
+            ...(shadow.xs as object),
+          }}
+        >
+          <AppText variant="h3">Scan QR Code untuk Bayar</AppText>
+
           <View
-            key={i}
             style={{
-              width: `${100 / cells}%`,
-              height: `${100 / cells}%`,
-              padding: 1,
+              alignSelf: "stretch",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              backgroundColor: brand[50],
+              borderRadius: 10,
+              paddingVertical: 12,
             }}
           >
-            <View
-              style={{
-                flex: 1,
-                borderRadius: 1,
-                backgroundColor: isCorner || on ? ink[900] : "transparent",
-              }}
-            />
+            <AppText variant="body" color={ink[500]}>
+              Total Pembayaran:
+            </AppText>
+            <AppText variant="h3" color={brand[800]}>
+              {formatRupiah(breakdown.finalTotal)}
+            </AppText>
           </View>
-        );
-      })}
+
+          <ImagePlaceholder
+            label="QR Code"
+            radius={8}
+            iconSize={32}
+            style={{ width: "88%", aspectRatio: 1 }}
+          />
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            <ImagePlaceholder radius={4} iconSize={12} style={{ width: 92, height: 24 }} />
+            <ImagePlaceholder radius={4} iconSize={12} style={{ width: 34, height: 24 }} />
+          </View>
+        </View>
+
+        <View style={{ alignItems: "center", gap: 10 }}>
+          <PressableScale
+            onPress={() => {}}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 9,
+              height: 42,
+              paddingHorizontal: 24,
+              borderRadius: 21,
+              backgroundColor: brand[900],
+            }}
+          >
+            <Download size={16} color="#FFFFFF" />
+            <AppText variant="titleLg" color="#FFFFFF">
+              Download QR Code
+            </AppText>
+          </PressableScale>
+
+          <PressableScale
+            onPress={() => router.replace("/order-success")}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 9,
+              height: 40,
+              paddingHorizontal: 22,
+              borderRadius: 20,
+              borderWidth: 1.5,
+              borderColor: brand[700],
+            }}
+          >
+            <RefreshCw size={15} color={brand[700]} />
+            <AppText variant="titleLg" color={brand[700]}>
+              Check Status
+            </AppText>
+          </PressableScale>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 15,
+            padding: 14,
+            gap: 12,
+            ...(shadow.xs as object),
+          }}
+        >
+          <AppText variant="h3">Detail Pembayaran</AppText>
+          <Field label="Total Pembayaran">
+            <AppText variant="h3" color={brand[800]}>
+              {formatRupiah(breakdown.finalTotal)}
+            </AppText>
+          </Field>
+          <Field label="Order Number">
+            <AppText variant="body" color={ink[800]}>
+              {receipt?.orderNumber ?? "-"}
+            </AppText>
+          </Field>
+          <Field label="Nomor Nota">
+            <AppText variant="body" color={ink[800]}>
+              {receipt?.nota ?? "-"}
+            </AppText>
+          </Field>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: "#EAF3FC",
+            borderWidth: 1.2,
+            borderColor: "#BBD8F2",
+            borderRadius: 15,
+            padding: 14,
+            gap: 8,
+          }}
+        >
+          <AppText variant="h3" color="#1F6FB2">
+            Cara Pembayaran
+          </AppText>
+          {steps.map((step, index) => (
+            <AppText key={step} variant="body" color="#2A7BC0">
+              {index + 1}. {step}
+            </AppText>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
-export default function QrisScreen() {
-  const [seconds, setSeconds] = useState(600);
-  const cart = useCartStore();
-  const points = useMemberStore((s) => s.points);
-  const breakdown = computeBreakdown(cart.subtotal(), cart.usePoints, points);
-
-  useEffect(() => {
-    const t = setInterval(() => setSeconds((s) => Math.max(0, s - 1)), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
-
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Screen scroll>
-      <ScreenHeader title="Pembayaran" />
-      <View style={{ paddingHorizontal: 20, gap: 20, alignItems: "center" }}>
-        <AppText variant="bodyMedium">
-          Waktu tersisa: <AppText variant="bodySemibold" color={danger[500]}>{mm}:{ss}</AppText>
-        </AppText>
-
-        <Card style={{ alignItems: "center", gap: 16, width: "100%" }}>
-          <AppText variant="titleLg">Scan QR Code untuk Bayar</AppText>
-          <View style={{ backgroundColor: ink[50], borderRadius: 16, padding: 16, width: "100%", alignItems: "center" }}>
-            <AppText variant="caption" color={ink[500]}>Total Pembayaran</AppText>
-            <AppText variant="h2" color={brand[700]}>{formatRupiah(breakdown.finalTotal)}</AppText>
-          </View>
-          <QrPlaceholder />
-          <AppText variant="caption" color={ink[400]}>QRIS · Standar Pembayaran Nasional</AppText>
-        </Card>
-
-        <Button label="Download QR Code" variant="secondary" fullWidth icon={<Download size={16} color={brand[700]} />} />
-        <Button
-          label="Cek Status"
-          variant="outline"
-          fullWidth
-          icon={<RefreshCw size={16} color={brand[700]} />}
-          onPress={() => router.replace("/order-success")}
-        />
-      </View>
-    </Screen>
+    <View style={{ gap: 3 }}>
+      <AppText variant="caption" color={ink[400]}>
+        {label}
+      </AppText>
+      {children}
+    </View>
   );
 }

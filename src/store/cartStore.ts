@@ -1,73 +1,106 @@
 import { create } from "zustand";
-import type { CartLine, MenuItem, ServiceType } from "../data/types";
-import { toppingPool } from "../data/mock";
+import type { CartLine, MenuItem, MenuOptionGroup } from "../data/types";
+
+/** Every single-select group starts on its first option, matching the sheet. */
+export function defaultSelections(groups: MenuOptionGroup[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const g of groups) {
+    if (g.selection === "single" && g.options[0]) out[g.options[0].id] = 1;
+  }
+  return out;
+}
+
+/** Price of one unit: the chosen options, added up. */
+export function unitPrice(item: MenuItem, selections: Record<string, number>) {
+  let total = 0;
+  for (const group of item.optionGroups) {
+    for (const option of group.options) {
+      total += option.price * (selections[option.id] ?? 0);
+    }
+  }
+  return total;
+}
+
+/** Names of the picked add-ons, for the cart and order summary. Free choices
+ *  such as the sweetness level are left out so the line stays short. */
+export function selectionSummary(item: MenuItem, selections: Record<string, number>) {
+  const parts: string[] = [];
+  for (const group of item.optionGroups) {
+    for (const option of group.options) {
+      const qty = selections[option.id] ?? 0;
+      if (qty > 0 && option.price > 0) {
+        parts.push(qty > 1 ? `${option.name} x${qty}` : option.name);
+      }
+    }
+  }
+  return parts;
+}
 
 interface CartState {
-  outletId?: string;
-  fulfillment: ServiceType;
   lines: CartLine[];
-  pickupMethod: "self" | "table";
-  tableNote: string;
   usePoints: boolean;
-  setOutlet: (outletId: string) => void;
-  setFulfillment: (type: ServiceType) => void;
-  setPickupMethod: (m: "self" | "table") => void;
-  setTableNote: (note: string) => void;
-  toggleUsePoints: () => void;
-  addLine: (menuItem: MenuItem, qty: number, toppingIds: string[], notes?: string) => void;
-  updateLineQty: (lineId: string, qty: number) => void;
+  /** Free-text note attached to the whole order at checkout. */
+  orderNote: string;
+  pickup: "self" | "table";
+  tableNumber: string;
+  couponId?: string;
+  addLine: (menuItem: MenuItem, qty: number, selections: Record<string, number>, note?: string) => void;
+  updateLine: (lineId: string, qty: number, selections: Record<string, number>, note?: string) => void;
+  setLineQty: (lineId: string, qty: number) => void;
+  setLineNote: (lineId: string, note: string) => void;
   removeLine: (lineId: string) => void;
   clear: () => void;
+  toggleUsePoints: () => void;
+  setOrderNote: (note: string) => void;
+  setPickup: (pickup: "self" | "table") => void;
+  setTableNumber: (value: string) => void;
+  setCoupon: (couponId?: string) => void;
   lineTotal: (line: CartLine) => number;
   subtotal: () => number;
   itemCount: () => number;
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
-  outletId: undefined,
-  fulfillment: "dine_in",
   lines: [],
-  pickupMethod: "table",
-  tableNote: "",
   usePoints: false,
-  setOutlet: (outletId) => set({ outletId }),
-  setFulfillment: (fulfillment) => set({ fulfillment }),
-  setPickupMethod: (pickupMethod) => set({ pickupMethod }),
-  setTableNote: (tableNote) => set({ tableNote }),
-  toggleUsePoints: () => set((state) => ({ usePoints: !state.usePoints })),
-  addLine: (menuItem, qty, toppingIds, notes) =>
+  orderNote: "",
+  pickup: "self",
+  tableNumber: "",
+  couponId: undefined,
+  addLine: (menuItem, qty, selections, note) =>
     set((state) => ({
       lines: [
         ...state.lines,
-        {
-          lineId: `${menuItem.id}-${Date.now()}`,
-          menuItem,
-          qty,
-          toppingIds,
-          notes,
-        },
+        { lineId: `${menuItem.id}-${Date.now()}`, menuItem, qty, selections, note },
       ],
     })),
-  updateLineQty: (lineId, qty) =>
+  updateLine: (lineId, qty, selections, note) =>
+    set((state) => ({
+      lines: state.lines.map((l) =>
+        l.lineId === lineId ? { ...l, qty, selections, note } : l
+      ),
+    })),
+  setLineQty: (lineId, qty) =>
     set((state) => ({
       lines:
         qty <= 0
           ? state.lines.filter((l) => l.lineId !== lineId)
           : state.lines.map((l) => (l.lineId === lineId ? { ...l, qty } : l)),
     })),
+  setLineNote: (lineId, note) =>
+    set((state) => ({
+      lines: state.lines.map((l) => (l.lineId === lineId ? { ...l, note } : l)),
+    })),
   removeLine: (lineId) =>
     set((state) => ({ lines: state.lines.filter((l) => l.lineId !== lineId) })),
-  clear: () => set({ lines: [], outletId: undefined }),
-  lineTotal: (line) => {
-    const toppingsPrice = line.toppingIds.reduce((sum, id) => {
-      const t = toppingPool.find((tp) => tp.id === id);
-      return sum + (t?.price ?? 0);
-    }, 0);
-    return (line.menuItem.price + toppingsPrice) * line.qty;
-  },
-  subtotal: () => {
-    const { lines, lineTotal } = get();
-    return lines.reduce((sum, l) => sum + lineTotal(l), 0);
-  },
+  clear: () =>
+    set({ lines: [], orderNote: "", tableNumber: "", couponId: undefined, usePoints: false }),
+  toggleUsePoints: () => set((state) => ({ usePoints: !state.usePoints })),
+  setOrderNote: (orderNote) => set({ orderNote }),
+  setPickup: (pickup) => set({ pickup }),
+  setTableNumber: (tableNumber) => set({ tableNumber }),
+  setCoupon: (couponId) => set({ couponId }),
+  lineTotal: (line) => unitPrice(line.menuItem, line.selections) * line.qty,
+  subtotal: () => get().lines.reduce((sum, l) => sum + get().lineTotal(l), 0),
   itemCount: () => get().lines.reduce((sum, l) => sum + l.qty, 0),
 }));
