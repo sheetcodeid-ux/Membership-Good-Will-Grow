@@ -16,8 +16,26 @@ import type { Coupon } from "../data/types";
 /* Ticket metrics, taken as ratios off the reference card (2.87 : 1). */
 const CARD_H = 114;
 const PHOTO_W = 118;
-/** Diameter of the bites punched out of the coloured panel's left edge. */
-const NOTCH = 10;
+/** How far the seam swings in and out, and the length of one full swing. */
+const WAVE_AMP = 8;
+const WAVE_PERIOD = CARD_H / 7.5;
+
+/**
+ * The seam is a wave, not holes punched in a straight edge: the coloured
+ * panel bulges out and is bitten back in equal measure. Each half period is
+ * one smooth S, which makes the lobes read as rounded rather than as teeth.
+ */
+function seamPath(amp: number, period: number, height: number) {
+  const half = period / 2;
+  let d = "M 0 0";
+  let x = 0;
+  for (let y = 0; y < height; y += half) {
+    const next = x === 0 ? amp : 0;
+    d += ` C ${x} ${y + half * 0.52}, ${next} ${y + half * 0.48}, ${next} ${y + half}`;
+    x = next;
+  }
+  return `${d} L 0 ${height} Z`;
+}
 
 /** Two overlapping tickets, drawn for the empty state. */
 function EmptyTickets({ size = 120 }: { size?: number }) {
@@ -51,28 +69,32 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
       scaleTo={0.99}
       style={{
         height: CARD_H,
-        flexDirection: "row",
         borderRadius: 16,
         overflow: "hidden",
         backgroundColor: "#FFFFFF",
         ...(shadow.xs as object),
       }}
     >
-      <View style={{ width: PHOTO_W }}>
-        <ImagePlaceholder radius={0} iconSize={22} style={{ flex: 1 }} />
-        <View style={{ position: "absolute", top: 8, left: 8 }}>
-          <BrandLogo brandId={coupon.brandId} size={18} />
-        </View>
+      <ImagePlaceholder
+        radius={0}
+        iconSize={22}
+        style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: PHOTO_W }}
+      />
+      <View style={{ position: "absolute", top: 8, left: 8 }}>
+        <BrandLogo brandId={coupon.brandId} size={18} />
       </View>
 
-      {/* Clipping the panel means only the right half of each circle shows,
-          so the notches read as bites rather than floating dots. */}
       <View
         style={{
-          flex: 1,
+          position: "absolute",
+          // Starts a wave's width early so the panel can bulge into the photo.
+          left: PHOTO_W - WAVE_AMP,
+          right: 0,
+          top: 0,
+          bottom: 0,
           backgroundColor: brand[900],
           overflow: "hidden",
-          paddingLeft: 15,
+          paddingLeft: WAVE_AMP + 15,
           paddingRight: 14,
           paddingTop: 11,
           paddingBottom: 12,
@@ -99,28 +121,14 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
           {coupon.used ? "Sudah Digunakan" : "Belum Digunakan"}
         </AppText>
 
-        <View
+        <Svg
+          width={WAVE_AMP}
+          height={CARD_H}
           pointerEvents="none"
-          style={{
-            position: "absolute",
-            left: -NOTCH / 2,
-            top: 0,
-            bottom: 0,
-            justifyContent: "space-around",
-          }}
+          style={{ position: "absolute", left: 0, top: 0 }}
         >
-          {Array.from({ length: 7 }).map((_, i) => (
-            <View
-              key={i}
-              style={{
-                width: NOTCH,
-                height: NOTCH,
-                borderRadius: NOTCH / 2,
-                backgroundColor: surface,
-              }}
-            />
-          ))}
-        </View>
+          <Path d={seamPath(WAVE_AMP, WAVE_PERIOD, CARD_H)} fill={surface} />
+        </Svg>
       </View>
     </PressableScale>
   );
