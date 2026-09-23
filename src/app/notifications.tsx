@@ -153,11 +153,6 @@ function NotificationCard({
             >
               {item.title}
             </UiText>
-            {unread ? (
-              <View style={{ width: 14, alignItems: "center" }}>
-                <SignalDot size={8} ringSize={14} inline />
-              </View>
-            ) : null}
           </View>
           <UiText token="caption" color={ink[500]}>
             {item.body}
@@ -167,13 +162,22 @@ function NotificationCard({
           </UiText>
         </View>
 
-        {/* Only the ones that lead somewhere get the mark that says so, and
-            it centres against the whole card rather than riding the top of
-            it: the row is flex-start so the avatar aligns with the title,
-            which pinned the chevron up beside the first line. */}
-        {item.href ? (
-          <View style={{ alignSelf: "center" }}>
-            <AppIcon name="chevronRight" size={17} color={ink[300]} />
+        {/* The unread dot and the chevron share one column on the card's
+            centre line. Leaving the dot up in the title row put the two
+            marks on different lines at different heights, which read as
+            scattered rather than as a pair. */}
+        {unread || item.href ? (
+          <View
+            style={{
+              alignSelf: "center",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 18,
+              gap: space.xs,
+            }}
+          >
+            {unread ? <SignalDot size={8} ringSize={14} inline /> : null}
+            {item.href ? <AppIcon name="chevronRight" size={17} color={ink[300]} /> : null}
           </View>
         ) : null}
       </PressableScale>
