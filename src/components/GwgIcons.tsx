@@ -29,108 +29,100 @@ export function HomeGlyph({ size = 24, color = "#000", active = false }: GlyphPr
         d="M11.02 2.94a1.6 1.6 0 0 1 1.96 0l7.64 5.95c.39.3.62.77.62 1.26V18.8a2.4 2.4 0 0 1-2.4 2.4H5.16a2.4 2.4 0 0 1-2.4-2.4v-8.65c0-.49.23-.96.62-1.26Z"
         fill={active ? color : "none"}
         stroke={color}
-        strokeWidth={active ? 0 : 1.75}
+        strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
       <Path
         d="M9.5 21.2v-3.9a2.5 2.5 0 0 1 5 0v3.9"
         fill={active ? "#FFFFFF" : "none"}
         stroke={active ? "#FFFFFF" : color}
-        strokeWidth={active ? 0 : 1.75}
+        strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
     </Svg>
   );
 }
 
-/** Takeaway cup with a lid and a sleeve — a coffee house, not a shop. */
+/** Takeaway cup: tapered body, a lid with a lip, and a sleeve. */
 export function OrderGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M9.1 2.3c0 1-1.1 1.4-1.1 2.4M12.5 2.3c0 1-1.1 1.4-1.1 2.4M15.9 2.3c0 1-1.1 1.4-1.1 2.4"
+        d="M9.4 1.9c0 1.1-1.2 1.5-1.2 2.6M12.9 1.9c0 1.1-1.2 1.5-1.2 2.6M16.4 1.9c0 1.1-1.2 1.5-1.2 2.6"
         stroke={color}
-        strokeWidth={1.5}
+        strokeWidth={1.6}
         strokeLinecap="round"
         fill="none"
       />
       <Path
-        d="M4.9 6.5h14.2a1.5 1.5 0 0 1 1.48 1.76l-.19 1.1a1.5 1.5 0 0 1-1.48 1.24H5.09a1.5 1.5 0 0 1-1.48-1.24l-.19-1.1A1.5 1.5 0 0 1 4.9 6.5Z"
+        d="M4.1 6.2h15.8a1.7 1.7 0 0 1 1.7 1.9l-.16 1.3a1.7 1.7 0 0 1-1.69 1.5H4.24a1.7 1.7 0 0 1-1.69-1.5L2.4 8.1a1.7 1.7 0 0 1 1.7-1.9Z"
         fill={active ? color : "none"}
         stroke={color}
-        strokeWidth={active ? 0 : 1.6}
+        strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
       <Path
-        d="M5.6 11.9h12.8l-1.29 8.32a2 2 0 0 1-1.98 1.68H8.87a2 2 0 0 1-1.98-1.68Z"
+        d="M4.9 12.1h14.2l-1.2 8.1a2.2 2.2 0 0 1-2.18 1.9H8.28a2.2 2.2 0 0 1-2.18-1.9Z"
         fill={active ? color : "none"}
         stroke={color}
-        strokeWidth={active ? 0 : 1.6}
+        strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
       <Path
-        d="M6.35 14.8h11.3"
-        stroke={active ? "#FFFFFF" : color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M6.9 18.1h10.2"
-        stroke={active ? "#FFFFFF" : color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
+        d="M5.55 15.1h12.9l-.5 3.4H6.05Z"
+        fill={active ? "#FFFFFF" : "none"}
+        stroke={active ? "none" : color}
+        strokeWidth={1.7}
+        strokeLinejoin="round"
       />
     </Svg>
   );
 }
 
-/** Medal on a ribbon: earned standing, not a generic tick in a shield. */
+/** Medal with ribbon tails: standing that was earned, hung on its ribbon. */
 export function MemberGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M7.4 2.4 11 8.3M16.6 2.4 13 8.3"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        fill="none"
+        d="M6.6 1.9h3.5l2.7 5.3-2.1 1.6Zm10.8 0h-3.5l-2.7 5.3 2.1 1.6Z"
+        fill={color}
       />
       <Circle
         cx={12}
-        cy={15.1}
-        r={6.5}
+        cy={15.2}
+        r={6.9}
         fill={active ? color : "none"}
         stroke={color}
-        strokeWidth={active ? 0 : 1.75}
+        strokeWidth={active ? 0 : 1.9}
       />
       <Path
-        d="M12 11.5l1.16 2.35 2.59.38-1.87 1.83.44 2.58L12 17.42l-2.32 1.22.44-2.58-1.87-1.83 2.59-.38Z"
+        d="M12 11.1l1.3 2.62 2.9.42-2.1 2.04.5 2.88L12 17.7l-2.6 1.36.5-2.88-2.1-2.04 2.9-.42Z"
         fill={active ? "#FFFFFF" : "none"}
         stroke={active ? "none" : color}
-        strokeWidth={1.4}
+        strokeWidth={1.6}
         strokeLinejoin="round"
       />
     </Svg>
   );
 }
 
-/** Bust that fills its frame; a ring around it only shrinks the figure. */
+/** Bust with a full head and a broad shoulder line, readable at tab size. */
 export function ProfileGlyph({ size = 24, color = "#000", active = false }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Circle
         cx={12}
-        cy={7.6}
-        r={4.3}
+        cy={7.3}
+        r={4.6}
         fill={active ? color : "none"}
         stroke={color}
-        strokeWidth={active ? 0 : 1.75}
+        strokeWidth={active ? 0 : 1.9}
       />
       <Path
-        d="M3.9 20.6c0-4.02 3.63-6.9 8.1-6.9s8.1 2.88 8.1 6.9a1.5 1.5 0 0 1-1.5 1.5H5.4a1.5 1.5 0 0 1-1.5-1.5Z"
+        d="M3.4 21.1c0-4.42 3.85-7.5 8.6-7.5s8.6 3.08 8.6 7.5a1 1 0 0 1-1 1H4.4a1 1 0 0 1-1-1Z"
         fill={active ? color : "none"}
         stroke={color}
-        strokeWidth={active ? 0 : 1.75}
+        strokeWidth={active ? 0 : 1.9}
         strokeLinejoin="round"
       />
     </Svg>
@@ -138,21 +130,21 @@ export function ProfileGlyph({ size = 24, color = "#000", active = false }: Glyp
 }
 
 /**
- * Feather as the reference draws it: one leaf, a soft point at the tip, a
- * notch cut out of the lower edge and a spine running through it. No barbs —
+ * Feather as the reference draws it: one plump leaf tilted to the right, its
+ * lower edge notched, with a short stem trailing from the base. No barbs —
  * at 24pt they close up into noise.
  */
 export function ComposeGlyph({ size = 24, color = "#000" }: GlyphProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
-        d="M20.6 3.3c.9 4.9-.6 9.3-3.9 12.1-2.2 1.9-5 2.9-8 3.1l-2.4 2.4a1.05 1.05 0 0 1-1.5-1.48l2.4-2.4c.2-3 1.2-5.8 3.1-8 2.8-3.3 7.2-4.8 12.1-3.9Z"
+        d="M21 3c.6 4.6-.5 8.3-3.1 11-2.2 2.3-5.2 3.5-8.5 3.6l-2.2.05 1.5-1.6c.2-3.4 1.4-6.4 3.7-8.6C15.1 4.8 17.4 3.5 21 3Z"
         fill={color}
       />
       <Path
-        d="M18.4 5.5 7.3 18.5"
-        stroke="#FFFFFF"
-        strokeWidth={1.35}
+        d="M9.4 16.1 3.4 21.4"
+        stroke={color}
+        strokeWidth={2.1}
         strokeLinecap="round"
       />
     </Svg>

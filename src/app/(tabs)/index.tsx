@@ -17,13 +17,14 @@ import { Avatar } from "../../components/ui/Avatar";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { AppIcon } from "../../components/ui/AppIcon";
+import { SignalDot } from "../../components/ui/SignalDot";
 import { LiquidGlass } from "../../components/ui/LiquidGlass";
 import { PostCard } from "../../components/PostCard";
 import { PostCardSkeleton } from "../../components/ui/Skeleton";
 import { HeaderMenu } from "../../components/HeaderMenu";
 import { PromoCarousel } from "../../components/PromoCarousel";
 import { FeedFilter, type FeedFilterOption } from "../../components/FeedFilter";
-import { brand, danger, gold, ink, surface } from "../../theme/colors";
+import { brand, gold, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
 import { useResponsive } from "../../theme/responsive";
 import { radius, space } from "../../theme/scale";
@@ -66,21 +67,7 @@ function GlassButton({
       }}
     >
       {children}
-      {badge ? (
-        <View
-          style={{
-            position: "absolute",
-            top: 5,
-            right: 5,
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: danger[500],
-            borderWidth: 1.4,
-            borderColor: "#FFFFFF",
-          }}
-        />
-      ) : null}
+      {badge ? <SignalDot /> : null}
     </PressableScale>
   );
 }
@@ -252,7 +239,7 @@ export default function HomeScreen() {
         ]}
         pointerEvents="box-none"
       >
-        <View style={{ width: r.contentWidth, alignSelf: "center" }} pointerEvents="box-none">
+        <View style={{ width: "100%", maxWidth: Math.max(r.contentWidth, 520), alignSelf: "center" }} pointerEvents="box-none">
         <Animated.View style={insetStyle} pointerEvents="box-none">
         <LiquidGlass radius={0} interactive style={{ ...(shadow.sm as object) }}>
           {/* Opaque layer that takes over as the bar lands. */}
@@ -280,9 +267,28 @@ export default function HomeScreen() {
               <Avatar name={name} size={32} />
             </PressableScale>
 
-            {/* Brand lockup supplied later. */}
-            <View style={{ flex: 1, alignItems: "center" }}>
-              <ImagePlaceholder radius={radius.sm} iconSize={16} style={{ width: 104, height: 26 }} />
+            <View style={{ flex: 1 }} />
+
+            {/* Absolutely centred: the avatar on one side and two buttons on
+                the other leave uneven space, so a flex box would sit the
+                lockup left of the true centre. */}
+            <View
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              pointerEvents="none"
+            >
+              <ImagePlaceholder
+                radius={radius.sm}
+                iconSize={16}
+                style={{ width: 104, height: 26 }}
+              />
             </View>
 
             <View style={{ flexDirection: "row", alignItems: "center", gap: space.xs + 2 }}>
