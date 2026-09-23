@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 
 /**
@@ -30,9 +31,18 @@ export interface Responsive {
   gutter: number;
 }
 
+/**
+ * Sizes derived from the window.
+ *
+ * Memoised on the dimensions. It used to build a fresh object — and a fresh
+ * `s` function — on every render, so anything holding on to it (a dependency
+ * array, a memoised child taking `s` as a prop) was invalidated every time
+ * its parent rendered, for a value that only changes when the window does.
+ */
 export function useResponsive(): Responsive {
   const { width, height } = useWindowDimensions();
 
+  return useMemo(() => {
   const isCompact = width < 360;
   const isTablet = width >= 600;
 
@@ -54,6 +64,7 @@ export function useResponsive(): Responsive {
     contentWidth,
     gutter,
   };
+  }, [width, height]);
 }
 
 /**
