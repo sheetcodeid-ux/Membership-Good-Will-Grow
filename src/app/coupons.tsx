@@ -15,26 +15,24 @@ import type { Coupon } from "../data/types";
 
 /* Ticket metrics, taken as ratios off the reference card (2.87 : 1). */
 const CARD_H = 114;
-const PHOTO_W = 118;
-/** How far the seam swings in and out, and the length of one full swing. */
-const WAVE_AMP = 8;
-const WAVE_PERIOD = CARD_H / 7.5;
+const SEAM_X = 118;
+/** Radius of each scallop; the seam swings a full diameter across. */
+const LOBE_R = 4;
 
 /**
- * The seam is a wave, not holes punched in a straight edge: the coloured
- * panel bulges out and is bitten back in equal measure. Each half period is
- * one smooth S, which makes the lobes read as rounded rather than as teeth.
+ * The seam is a row of alternating half circles, so the coloured panel bulges
+ * towards the photo and is bitten back in equal measure and never shows a
+ * straight edge. Drawing it as a filled path (rather than painting notches on
+ * top) leaves the bites genuinely transparent, so the photo shows through.
  */
-function seamPath(amp: number, period: number, height: number) {
-  const half = period / 2;
-  let d = "M 0 0";
-  let x = 0;
-  for (let y = 0; y < height; y += half) {
-    const next = x === 0 ? amp : 0;
-    d += ` C ${x} ${y + half * 0.52}, ${next} ${y + half * 0.48}, ${next} ${y + half}`;
-    x = next;
+function seamPath(r: number, height: number) {
+  let d = `M ${r} 0`;
+  let sweep = 1;
+  for (let y = 0; y < height; y += 2 * r) {
+    d += ` a ${r} ${r} 0 0 ${sweep} 0 ${2 * r}`;
+    sweep = sweep === 1 ? 0 : 1;
   }
-  return `${d} L 0 ${height} Z`;
+  return `${d} L ${2 * r} ${height + 2 * r} L ${2 * r} 0 Z`;
 }
 
 /** Two overlapping tickets, drawn for the empty state. */
@@ -75,26 +73,34 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
         ...(shadow.xs as object),
       }}
     >
+      {/* The artwork runs under the seam so the scallops reveal it. */}
       <ImagePlaceholder
         radius={0}
         iconSize={22}
-        style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: PHOTO_W }}
+        style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: SEAM_X + LOBE_R }}
       />
       <View style={{ position: "absolute", top: 8, left: 8 }}>
         <BrandLogo brandId={coupon.brandId} size={18} />
       </View>
 
+      <Svg
+        width={2 * LOBE_R}
+        height={CARD_H}
+        pointerEvents="none"
+        style={{ position: "absolute", left: SEAM_X - LOBE_R, top: 0 }}
+      >
+        <Path d={seamPath(LOBE_R, CARD_H)} fill={brand[900]} />
+      </Svg>
+
       <View
         style={{
           position: "absolute",
-          // Starts a wave's width early so the panel can bulge into the photo.
-          left: PHOTO_W - WAVE_AMP,
+          left: SEAM_X + LOBE_R,
           right: 0,
           top: 0,
           bottom: 0,
           backgroundColor: brand[900],
-          overflow: "hidden",
-          paddingLeft: WAVE_AMP + 15,
+          paddingLeft: 13,
           paddingRight: 14,
           paddingTop: 11,
           paddingBottom: 12,
@@ -120,15 +126,6 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
         >
           {coupon.used ? "Sudah Digunakan" : "Belum Digunakan"}
         </AppText>
-
-        <Svg
-          width={WAVE_AMP}
-          height={CARD_H}
-          pointerEvents="none"
-          style={{ position: "absolute", left: 0, top: 0 }}
-        >
-          <Path d={seamPath(WAVE_AMP, WAVE_PERIOD, CARD_H)} fill={surface} />
-        </Svg>
       </View>
     </PressableScale>
   );
