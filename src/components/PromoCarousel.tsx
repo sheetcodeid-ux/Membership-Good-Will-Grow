@@ -16,6 +16,12 @@ import type { PromoBanner } from "../data/banners";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
+/**
+ * The banner's lower corners. Two points tighter than the bar that overlaps
+ * them, so the two curves read as nested rather than as one mis-set radius.
+ */
+const BANNER_RADIUS = radius.xl - 2;
+
 /** Indicator that tracks the scroll offset rather than the settled page. */
 function Dot({ index, progress }: { index: number; progress: SharedValue<number> }) {
   const style = useAnimatedStyle(() => {
@@ -62,15 +68,15 @@ export function PromoCarousel({
         // than the clipping one because clipping would crop it away.
         ...(shadow.glass as object),
         backgroundColor: ink[100],
-        borderBottomLeftRadius: radius.xl,
-        borderBottomRightRadius: radius.xl,
+        borderBottomLeftRadius: BANNER_RADIUS,
+        borderBottomRightRadius: BANNER_RADIUS,
       }}
     >
       <View
         style={{
           flex: 1,
-          borderBottomLeftRadius: radius.xl,
-          borderBottomRightRadius: radius.xl,
+          borderBottomLeftRadius: BANNER_RADIUS,
+          borderBottomRightRadius: BANNER_RADIUS,
           overflow: "hidden",
         }}
       >

@@ -62,11 +62,15 @@ function TabButton({
   const progress = useSharedValue(focused ? 1 : 0);
   progress.value = withSpring(focused ? 1 : 0, { damping: 17, stiffness: 210 });
 
+  // ink[200] rather than white: on a glass bar a white pill turns into a
+  // solid chip, since white is also what the wash is made of. A grey at low
+  // alpha reads as a recess in the glass instead, which is what keeps the
+  // blur visible through the selected tab.
   const pillStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      ["rgba(255,255,255,0)", "rgba(255,255,255,0.42)"]
+      ["rgba(214,218,228,0)", "rgba(214,218,228,0.58)"]
     ),
     transform: [{ scale: 0.94 + progress.value * 0.06 }],
   }));

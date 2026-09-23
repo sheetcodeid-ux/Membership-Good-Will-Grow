@@ -43,12 +43,11 @@ const filters: FeedFilterOption[] = [
 
 const PILL_HEIGHT = 52;
 /**
- * The bar's corner at rest. Deliberately tighter than the cards below it: on
- * a 52pt bar a card-sized radius turns the ends into half-circles, which
- * reads as a pill floating on the banner rather than a bar resting against
- * it. Small enough to be a chamfer, not a curve.
+ * The bar's corner, the same on all four at rest. It matches the cards below
+ * it, so the bar reads as part of the same stack rather than a control
+ * pasted over the banner.
  */
-const BAR_RADIUS = 8;
+const BAR_RADIUS = radius.lg;
 
 /** Round control inside the glass bar, with an optional unread dot. */
 function GlassButton({
