@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -37,11 +37,23 @@ export default function CommentsSheet() {
   const [text, setText] = useState("");
   const toggleCommentLike = useFeedStore((s) => s.toggleCommentLike);
 
-  const send = () => {
-    if (!text.trim()) return;
-    addComment(postId, text.trim());
+  /**
+   * Two taps inside one JS tick both read the same `text`, because React has
+   * not re-rendered with the cleared value yet — which posted the comment
+   * twice. The latch is set synchronously so the second tap of a burst sees
+   * it, and released on the next tick once the state has settled.
+   */
+  const sending = useRef(false);
+  const send = useCallback(() => {
+    const value = text.trim();
+    if (!value || sending.current) return;
+    sending.current = true;
+    addComment(postId, value);
     setText("");
-  };
+    setTimeout(() => {
+      sending.current = false;
+    }, 0);
+  }, [text, addComment, postId]);
 
   return (
     <View style={{ flex: 1 }}>

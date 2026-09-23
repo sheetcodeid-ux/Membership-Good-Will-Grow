@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import { AppIcon, type AppIconName } from "../components/ui/AppIcon";
 import {
   KeyboardAvoidingView,
@@ -62,8 +62,15 @@ export default function PostEditorScreen() {
 
   const canPost = caption.trim().length > 0 || hasPhoto;
 
+  /**
+   * Same double-submit latch as the comment composer. The navigation away
+   * does not land until after the tick, so a second tap in the same burst
+   * would have posted twice before the screen went anywhere.
+   */
+  const posting = useRef(false);
   const submit = () => {
-    if (!canPost) return;
+    if (!canPost || posting.current) return;
+    posting.current = true;
     addPost(
       caption.trim(),
       isCheckIn ? outletFullName(selectedOutlet) : undefined,
@@ -71,6 +78,9 @@ export default function PostEditorScreen() {
     );
     router.dismissAll();
     router.replace("/(tabs)");
+    setTimeout(() => {
+      posting.current = false;
+    }, 0);
   };
 
   return (

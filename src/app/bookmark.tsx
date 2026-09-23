@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { FlatList, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -31,11 +31,18 @@ export default function BookmarkScreen() {
 
   const saved = posts.filter((p) => bookmarkedIds.includes(p.id));
 
+  /** Same double-submit latch as the comment composer; see there. */
+  const saving = useRef(false);
   const submitCollection = () => {
-    if (!name.trim()) return;
-    createCollection(name.trim());
+    const value = name.trim();
+    if (!value || saving.current) return;
+    saving.current = true;
+    createCollection(value);
     setName("");
     setDialogOpen(false);
+    setTimeout(() => {
+      saving.current = false;
+    }, 0);
   };
 
   return (

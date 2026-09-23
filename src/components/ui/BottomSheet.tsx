@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, View, useWindowDimensions } from "react-native";
+import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { SlideInDown } from "react-native-reanimated";
 import { AppText } from "./AppText";
@@ -19,7 +19,14 @@ interface BottomSheetProps {
   children: React.ReactNode;
 }
 
-/** Dim backdrop plus a rounded card that slides up from the bottom edge. */
+/**
+ * Dim backdrop plus a rounded card that slides up from the bottom edge.
+ *
+ * Wrapped in a Modal, which is the only way it can cover the tab bar. The
+ * sheet is rendered inside a screen, and the navigator draws the tab bar
+ * over every screen — so an absolutely-positioned sheet came up *underneath*
+ * the tabs and the profile banner, and its lower options were unreachable.
+ */
 export function BottomSheet({
   title,
   onClose,
@@ -32,7 +39,15 @@ export function BottomSheet({
   const { height } = useWindowDimensions();
 
   return (
-    <View style={StyleSheet.absoluteFill}>
+    <Modal
+      transparent
+      visible
+      animationType="none"
+      statusBarTranslucent
+      // Android's hardware back should dismiss a sheet, not the screen under it.
+      onRequestClose={onClose}
+    >
+      <View style={StyleSheet.absoluteFill}>
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
         <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(10,14,26,0.5)" }]} />
       </Pressable>
@@ -79,6 +94,7 @@ export function BottomSheet({
           <SafeAreaView edges={["bottom"]}>{children}</SafeAreaView>
         </Animated.View>
       </View>
-    </View>
+      </View>
+    </Modal>
   );
 }
