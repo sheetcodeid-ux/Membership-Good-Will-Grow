@@ -1,3 +1,5 @@
+import { CONTACT } from "./contact";
+
 /**
  * Terms text. Mirrors the reference's thirteen clauses; the brand name is ours
  * and every contact detail is a placeholder for Good Will Grow to fill in —
@@ -83,7 +85,7 @@ export const termsSections: TermsSection[] = [
       "Permintaan langsung dari Anda untuk penghapusan akun.",
     ],
     footnotes: [
-      "Untuk menghapus akun, Anda dapat mengajukan permintaan melalui aplikasi atau email ke: [email Good Will Grow].",
+      `Untuk menghapus akun, Anda dapat mengajukan permintaan melalui aplikasi atau email ke: ${CONTACT.emailLabel}.`,
     ],
   },
   {
@@ -110,9 +112,9 @@ export const termsSections: TermsSection[] = [
       "Jika Anda memiliki pertanyaan, keluhan, atau permintaan terkait syarat dan ketentuan, hubungi kami di:",
     ],
     bullets: [
-      "Telepon: [nomor telepon Good Will Grow]",
-      "Email: [email Good Will Grow]",
-      "Alamat: [alamat Good Will Grow]",
+      `Telepon: ${CONTACT.phoneLabel}`,
+      `Email: ${CONTACT.emailLabel}`,
+      `Alamat: ${CONTACT.addressLabel}`,
     ],
   },
 ];

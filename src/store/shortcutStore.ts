@@ -30,15 +30,15 @@ export const requiredShortcuts: ShortcutItem[] = [
 /** Everything the member may pin on top of the required two. */
 export const availableShortcuts: ShortcutItem[] = [
   { id: "histori-poin", label: "Histori Poin", description: "Riwayat penambahan & penggunaan poin", href: "/points-history", icon: "star" },
-  { id: "voucher-saya", label: "Voucher Saya", description: "Riwayat & status voucher kamu", href: "/coupons", icon: "gift" },
-  { id: "riwayat-kupon", label: "Riwayat Pembelian Kupon", description: "Histori transaksi pembelian kupon", href: "/coupons", icon: "ticket-check" },
+  { id: "voucher-saya", label: "Voucher Saya", description: "Voucher yang sudah kamu klaim", href: "/vouchers", icon: "gift" },
+  { id: "riwayat-kupon", label: "Riwayat Pembelian Kupon", description: "Histori transaksi pembelian kupon", href: "/coupon-purchases", icon: "ticket-check" },
   { id: "notifikasi", label: "Notifikasi", description: "Lihat semua notifikasi", href: "/notifications", icon: "bell" },
   { id: "bookmark", label: "Bookmark", description: "Postingan yang kamu simpan", href: "/bookmark", icon: "bookmark" },
   { id: "cari-member", label: "Cari Member", description: "Temukan dan ikuti member lain", href: "/search-member", icon: "search" },
   { id: "pengikut", label: "Pengikut", description: "Daftar member yang mengikuti kamu", href: "/profile/amaliaputri", icon: "users" },
   { id: "mengikuti", label: "Mengikuti", description: "Member yang kamu ikuti", href: "/profile/amaliaputri", icon: "user-plus" },
   { id: "blokir", label: "Daftar Blokir Pengguna", description: "Member yang kamu blokir", href: "/blocked", icon: "ban" },
-  { id: "detail-profil", label: "Detail Profil", description: "Lihat & lengkapi data profil kamu", href: "/profile/amaliaputri", icon: "user" },
+  { id: "detail-profil", label: "Detail Profil", description: "Lihat & lengkapi data profil kamu", href: "/profile-detail", icon: "user" },
   { id: "edit-profil", label: "Edit Profil", description: "Perbarui data profil kamu", href: "/edit-profile", icon: "pencil" },
   { id: "atur-pin", label: "Atur PIN", description: "Ubah PIN keamanan akun", href: "/create-pin", icon: "lock" },
   { id: "pengaturan", label: "Pengaturan", description: "Notifikasi, akun, & preferensi", href: "/settings", icon: "settings" },

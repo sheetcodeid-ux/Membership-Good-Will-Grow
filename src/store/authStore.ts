@@ -1,13 +1,30 @@
 import { create } from "zustand";
 
-interface AuthState {
+export type Gender = "male" | "female";
+
+/** Everything Detail Profil prints and Edit Profil writes back. */
+export interface ProfileFields {
+  name: string;
+  username: string;
+  email: string;
+  /** Stored as the member typed it, e.g. "12/08/1998". */
+  birthDate: string;
+  gender?: Gender;
+  province: string;
+  regency: string;
+  district: string;
+  village: string;
+  address: string;
+  bio: string;
+}
+
+interface AuthState extends ProfileFields {
   hasOnboarded: boolean;
   isLoggedIn: boolean;
   hasPin: boolean;
   phone: string;
-  name: string;
-  username: string;
-  bio: string;
+  /** Code the member shares from the Account card and Kode Referal. */
+  referralCode: string;
   completeOnboarding: () => void;
   setPhone: (phone: string) => void;
   loginSuccess: () => void;
@@ -15,15 +32,25 @@ interface AuthState {
   unlock: () => void;
   logout: () => void;
   updateName: (name: string) => void;
+  updateProfile: (patch: Partial<ProfileFields>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   hasOnboarded: false,
   isLoggedIn: false,
   hasPin: false,
-  phone: "",
+  phone: "81234567890",
+  referralCode: "GWGRW7QX",
   name: "Amalia Putri",
   username: "amaliaputri",
+  email: "",
+  birthDate: "",
+  gender: "female",
+  province: "",
+  regency: "",
+  district: "",
+  village: "",
+  address: "",
   bio: "",
   completeOnboarding: () => set({ hasOnboarded: true }),
   setPhone: (phone) => set({ phone }),
@@ -32,4 +59,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   unlock: () => set({ isLoggedIn: true }),
   logout: () => set({ isLoggedIn: false }),
   updateName: (name) => set({ name }),
+  updateProfile: (patch) => set(patch),
 }));
+
+/** Renders a stored number the way Indonesian members write it: 08xx…. */
+export function localPhone(phone: string) {
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (digits.startsWith("62")) return `0${digits.slice(2)}`;
+  if (digits.startsWith("0")) return digits;
+  return `0${digits}`;
+}
