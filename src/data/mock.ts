@@ -619,9 +619,9 @@ export const feedPosts: FeedPost[] = [
 ];
 
 export const feedComments: FeedComment[] = [
-  { id: "c1", postId: "post-1", authorName: "Bagus", time: "3 menit lalu", text: "Wah jadi laper, mau order juga ah" },
-  { id: "c2", postId: "post-1", authorName: "Sinta", time: "2 menit lalu", text: "Sambalnya nampol banget emang" },
-  { id: "c3", postId: "post-2", authorName: "Wulan", time: "10 menit lalu", text: "Sering kerja disana juga, cozy!" },
+  { id: "c1", postId: "post-1", authorName: "Bagus", time: "3 menit lalu", text: "Wah jadi laper, mau order juga ah", likes: 4 },
+  { id: "c2", postId: "post-1", authorName: "Sinta", time: "2 menit lalu", text: "Sambalnya nampol banget emang", likes: 2, liked: true },
+  { id: "c3", postId: "post-2", authorName: "Wulan", time: "10 menit lalu", text: "Sering kerja disana juga, cozy!", likes: 1 },
 ];
 
 export const memberTiers: MemberTier[] = [
@@ -809,6 +809,74 @@ export const notifications: NotificationItem[] = [
     read: true,
     kind: "order",
   },
+  {
+    id: "n4",
+    title: "Dinda Ayu menyukai postinganmu",
+    body: '"Kopi pagi di Nordu Mega Mall, wajib coba!"',
+    time: "10 menit lalu",
+    read: false,
+    kind: "post-like",
+    actorName: "Dinda Ayu",
+    href: "/comments/post-1",
+  },
+  {
+    id: "n5",
+    title: "Rizky Pratama menyukai komentarmu",
+    body: '"Sambalnya nampol banget emang"',
+    time: "25 menit lalu",
+    read: false,
+    kind: "comment-like",
+    actorName: "Rizky Pratama",
+    href: "/comments/post-1",
+  },
+  {
+    id: "n6",
+    title: "Siska Miranda mengomentari postinganmu",
+    body: '"Wah jadi laper, mau order juga ah"',
+    time: "1 jam lalu",
+    read: true,
+    kind: "comment",
+    actorName: "Siska Miranda",
+    href: "/comments/post-1",
+  },
+  {
+    id: "n7",
+    title: "Fajar Nugraha menyebut kamu",
+    body: "Kamu disebut dalam sebuah komentar di postingan Lesung Pipi Gajah Mada.",
+    time: "3 jam lalu",
+    read: true,
+    kind: "mention",
+    actorName: "Fajar Nugraha",
+    href: "/comments/post-3",
+  },
+  {
+    id: "n8",
+    title: "Tokepin mulai mengikuti kamu",
+    body: "Lihat profilnya dan ikuti balik.",
+    time: "5 jam lalu",
+    read: false,
+    kind: "follow",
+    actorName: "Tokepin",
+    href: "/profile/tokepin",
+  },
+  {
+    id: "n9",
+    title: "mariawati menyukai check-in kamu",
+    body: '"Croissant butter Lesung Pipi masih hangat"',
+    time: "8 jam lalu",
+    read: true,
+    kind: "like",
+    actorName: "mariawati",
+    href: "/comments/post-3",
+  },
+  {
+    id: "n10",
+    title: "Kartu member kamu naik level",
+    body: "Selamat! Level kamu kini Signature. Nikmati benefit barunya.",
+    time: "2 hari lalu",
+    read: true,
+    kind: "member",
+  }
 ];
 
 export function getBrand(id?: string) {

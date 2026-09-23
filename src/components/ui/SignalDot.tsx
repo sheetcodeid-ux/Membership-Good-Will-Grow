@@ -18,7 +18,20 @@ import { danger } from "../../theme/colors";
  * it sits on. Rendered only when there is something to read — an idle pulse
  * with nothing behind it trains people to ignore it.
  */
-export function SignalDot({ size = 9, ringSize = 22 }: { size?: number; ringSize?: number }) {
+export function SignalDot({
+  size = 9,
+  ringSize = 22,
+  /**
+   * Absolute by default, to sit on the corner of the button it marks. In a
+   * row of text there is no corner to sit on and it lands on the words, so
+   * inline lays it out as an ordinary sibling instead.
+   */
+  inline = false,
+}: {
+  size?: number;
+  ringSize?: number;
+  inline?: boolean;
+}) {
   const pulse = useSharedValue(0);
 
   useEffect(() => {
@@ -40,9 +53,13 @@ export function SignalDot({ size = 9, ringSize = 22 }: { size?: number; ringSize
   return (
     <View
       style={{
-        position: "absolute",
-        top: -ringSize / 2 + size / 2 + 4,
-        right: -ringSize / 2 + size / 2 + 4,
+        ...(inline
+          ? { marginLeft: 2 }
+          : {
+              position: "absolute" as const,
+              top: -ringSize / 2 + size / 2 + 4,
+              right: -ringSize / 2 + size / 2 + 4,
+            }),
         width: ringSize,
         height: ringSize,
         alignItems: "center",

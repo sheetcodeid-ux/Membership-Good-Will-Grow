@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { ScrollView, SectionList, View } from "react-native";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -9,31 +10,42 @@ import { AppHeader } from "../components/ui/AppHeader";
 import { EmptyState } from "../components/ui/EmptyState";
 import { FilterChip } from "../components/ui/FilterChip";
 import { PressableScale } from "../components/ui/PressableScale";
+import { Avatar } from "../components/ui/Avatar";
 import { SignalDot } from "../components/ui/SignalDot";
-import { brand, gold, ink, surface } from "../theme/colors";
+import { brand, danger, gold, ink, surface } from "../theme/colors";
 import { radius, space } from "../theme/scale";
 import { shadow } from "../theme/shadows";
 import { useResponsive } from "../theme/responsive";
 import { useNotificationStore } from "../store/notificationStore";
-import type { NotificationItem } from "../data/types";
+import type { NotificationItem, NotificationKind } from "../data/types";
 
-const categories = [
+/**
+ * Each chip names the kinds it shows. The list used to be labels alone, with
+ * only "Semua" and "Info" wired to anything, so seven of the nine opened an
+ * empty screen — a filter that lies about what it has.
+ */
+const categories: { key: string; label: string; kinds?: NotificationKind[] }[] = [
   { key: "all", label: "Semua" },
-  { key: "disukai", label: "Disukai" },
-  { key: "postingan-disukai", label: "Postingan Disukai" },
-  { key: "komentar-disukai", label: "Komentar Disukai" },
-  { key: "komentar", label: "Komentar" },
-  { key: "mention", label: "Mention Baru" },
-  { key: "pengikut", label: "Pengikut Baru" },
-  { key: "info", label: "Info" },
-  { key: "lainnya", label: "Lainnya" },
+  { key: "disukai", label: "Disukai", kinds: ["like", "post-like", "comment-like"] },
+  { key: "postingan-disukai", label: "Postingan Disukai", kinds: ["post-like"] },
+  { key: "komentar-disukai", label: "Komentar Disukai", kinds: ["comment-like"] },
+  { key: "komentar", label: "Komentar", kinds: ["comment"] },
+  { key: "mention", label: "Mention", kinds: ["mention"] },
+  { key: "pengikut", label: "Pengikut Baru", kinds: ["follow"] },
+  { key: "info", label: "Info", kinds: ["promo", "order", "member", "system"] },
 ];
 
-const iconFor: Record<NotificationItem["kind"], AppIconName> = {
+const iconFor: Record<NotificationKind, AppIconName> = {
   promo: "gift",
   order: "order",
   member: "crown",
   system: "info",
+  like: "heart",
+  "post-like": "heart",
+  "comment-like": "heart",
+  comment: "comment",
+  mention: "atSign",
+  follow: "userPlus",
 };
 
 /**
@@ -43,11 +55,17 @@ const iconFor: Record<NotificationItem["kind"], AppIconName> = {
  * settings screen; the gradient is what lets the eye sort a promo from an
  * order before reading either.
  */
-const tileFor: Record<NotificationItem["kind"], [string, string]> = {
+const tileFor: Record<NotificationKind, [string, string]> = {
   promo: [gold[300], gold[600]],
   order: [brand[500], brand[700]],
   member: [gold[500], "#B4752A"],
   system: [ink[300], ink[500]],
+  like: [danger[500], danger[600]],
+  "post-like": [danger[500], danger[600]],
+  "comment-like": [danger[500], danger[600]],
+  comment: [brand[400], brand[600]],
+  mention: ["#5B8DEF", brand[700]],
+  follow: ["#3FA37A", "#2E7D5B"],
 };
 
 function NotificationCard({
@@ -80,20 +98,50 @@ function NotificationCard({
           ...(shadow.xs as object),
         }}
       >
-        <LinearGradient
-          colors={tileFor[item.kind]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: radius.md,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AppIcon name={iconFor[item.kind]} size={21} color="#FFFFFF" />
-        </LinearGradient>
+        {/* A member's notification leads with their face and carries the
+            kind as a small badge; the app's own notifications have no face
+            to show, so the tile is the mark. */}
+        <View style={{ width: 44, height: 44 }}>
+          {item.actorName ? (
+            <Avatar name={item.actorName} size={44} />
+          ) : (
+            <LinearGradient
+              colors={tileFor[item.kind]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: radius.md,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <AppIcon name={iconFor[item.kind]} size={21} color="#FFFFFF" />
+            </LinearGradient>
+          )}
+          {item.actorName ? (
+            <LinearGradient
+              colors={tileFor[item.kind]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                position: "absolute",
+                right: -2,
+                bottom: -2,
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: "#FFFFFF",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <AppIcon name={iconFor[item.kind]} size={10} color="#FFFFFF" emphasis />
+            </LinearGradient>
+          ) : null}
+        </View>
 
         <View style={{ flex: 1, gap: 3 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm }}>
@@ -105,7 +153,7 @@ function NotificationCard({
             >
               {item.title}
             </UiText>
-            {unread ? <SignalDot size={8} /> : null}
+            {unread ? <SignalDot size={8} ringSize={14} inline /> : null}
           </View>
           <UiText token="caption" color={ink[500]}>
             {item.body}
@@ -114,6 +162,11 @@ function NotificationCard({
             {item.time}
           </UiText>
         </View>
+
+        {/* Only the ones that lead somewhere get the mark that says so. */}
+        {item.href ? (
+          <AppIcon name="chevronRight" size={17} color={ink[300]} />
+        ) : null}
       </PressableScale>
     </Animated.View>
   );
@@ -133,9 +186,8 @@ export default function NotificationsScreen() {
    * for is the first thing on it.
    */
   const sections = useMemo(() => {
-    // Only "Info" maps onto the seeded data; the social categories stay
-    // empty until those events exist.
-    const visible = category === "all" || category === "info" ? items : [];
+    const kinds = categories.find((c) => c.key === category)?.kinds;
+    const visible = kinds ? items.filter((n) => kinds.includes(n.kind)) : items;
     const fresh = visible.filter((n) => !n.read);
     const seen = visible.filter((n) => n.read);
     return [
@@ -220,7 +272,14 @@ export default function NotificationsScreen() {
           </View>
         )}
         renderItem={({ item, index }) => (
-          <NotificationCard item={item} index={index} onPress={() => markRead(item.id)} />
+          <NotificationCard
+            item={item}
+            index={index}
+            onPress={() => {
+              markRead(item.id);
+              if (item.href) router.push(item.href as never);
+            }}
+          />
         )}
         ListEmptyComponent={
           <EmptyState

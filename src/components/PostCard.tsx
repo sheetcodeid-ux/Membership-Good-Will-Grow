@@ -389,6 +389,8 @@ function PostCardBase({ post }: { post: FeedPost }) {
       {menuOpen ? (
         <PostMenuSheet
           postId={post.id}
+          authorName={post.authorName}
+          caption={post.caption}
           bookmarked={bookmarked}
           onClose={() => setMenuOpen(false)}
           onToggleBookmark={() => toggleBookmark(post.id)}

@@ -158,6 +158,8 @@ export interface FeedComment {
   authorName: string;
   time: string;
   text: string;
+  likes: number;
+  liked?: boolean;
 }
 
 export interface MemberTier {
@@ -219,11 +221,35 @@ export interface OrderRecord {
   note?: string;
 }
 
+/**
+ * What a notification is about.
+ *
+ * The first four are the app talking to the member; the rest are other
+ * members talking to them. The filter chips on the screen map onto these
+ * one for one — they used to list seven categories that no notification
+ * could ever carry, so every one of them opened an empty screen.
+ */
+export type NotificationKind =
+  | "promo"
+  | "order"
+  | "member"
+  | "system"
+  | "like"
+  | "post-like"
+  | "comment-like"
+  | "comment"
+  | "mention"
+  | "follow";
+
 export interface NotificationItem {
   id: string;
   title: string;
   body: string;
   time: string;
   read: boolean;
-  kind: "promo" | "order" | "member" | "system";
+  kind: NotificationKind;
+  /** Who triggered it, for the social kinds. Drives the avatar. */
+  actorName?: string;
+  /** Where tapping it goes. */
+  href?: string;
 }

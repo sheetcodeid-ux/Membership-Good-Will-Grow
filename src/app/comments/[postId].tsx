@@ -35,19 +35,7 @@ export default function CommentsSheet() {
   const addComment = useFeedStore((s) => s.addComment);
   const name = useAuthStore((s) => s.name);
   const [text, setText] = useState("");
-  /**
-   * Liking a comment is local for now — the feed store has no field for it.
-   * The affordance still has to be there: a comment list where the only
-   * possible action is adding another comment reads as a form, not a
-   * conversation.
-   */
-  const [liked, setLiked] = useState<Set<string>>(new Set());
-  const toggleLike = (id: string) =>
-    setLiked((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(id)) next.add(id);
-      return next;
-    });
+  const toggleCommentLike = useFeedStore((s) => s.toggleCommentLike);
 
   const send = () => {
     if (!text.trim()) return;
@@ -169,16 +157,21 @@ export default function CommentsSheet() {
                     <UiText token="label" color={ink[400]}>
                       {item.time}
                     </UiText>
-                    <PressableScale onPress={() => toggleLike(item.id)} rippleBorderless scaleTo={0.9}>
+                    <PressableScale
+                      onPress={() => toggleCommentLike(item.id)}
+                      rippleBorderless
+                      scaleTo={0.9}
+                      hitSlop={8}
+                    >
                       <View style={{ flexDirection: "row", alignItems: "center", gap: space.xs }}>
                         <AppIcon
                           name="heart"
                           size={14}
-                          color={liked.has(item.id) ? danger[500] : ink[400]}
-                          emphasis={liked.has(item.id)}
+                          color={item.liked ? danger[500] : ink[400]}
+                          emphasis={item.liked}
                         />
-                        <UiText token="label" color={liked.has(item.id) ? danger[500] : ink[400]}>
-                          Suka
+                        <UiText token="label" color={item.liked ? danger[500] : ink[400]}>
+                          {item.likes > 0 ? `${item.likes} suka` : "Suka"}
                         </UiText>
                       </View>
                     </PressableScale>

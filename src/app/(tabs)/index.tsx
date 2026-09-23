@@ -92,6 +92,8 @@ export default function HomeScreen() {
    */
   const pillRestY = useSharedValue(0);
   const posts = useFeedStore((s) => s.posts);
+  const hiddenPostIds = useFeedStore((s) => s.hiddenPostIds);
+  const unhidePost = useFeedStore((s) => s.unhidePost);
   const loading = useFeedStore((s) => s.loading);
   const refreshing = useFeedStore((s) => s.refreshing);
   const load = useFeedStore((s) => s.load);
@@ -104,11 +106,17 @@ export default function HomeScreen() {
     load();
   }, [load]);
 
+  /** Everything the feed could show: hidden and reported posts are out. */
+  const shown = useMemo(
+    () => posts.filter((p) => !hiddenPostIds.includes(p.id)),
+    [posts, hiddenPostIds]
+  );
+
   const visiblePosts = useMemo(() => {
-    if (filter === "post") return posts.filter((p) => p.type === "post");
-    if (filter === "checkin") return posts.filter((p) => p.type === "checkin");
-    return posts;
-  }, [posts, filter]);
+    if (filter === "post") return shown.filter((p) => p.type === "post");
+    if (filter === "checkin") return shown.filter((p) => p.type === "checkin");
+    return shown;
+  }, [shown, filter]);
 
   // Counts sit on the chips so the filter says what it will show.
   const options = useMemo<FeedFilterOption[]>(
@@ -117,11 +125,11 @@ export default function HomeScreen() {
         ...f,
         count:
           f.key === "all"
-            ? posts.length
-            : posts.filter((p) => (f.key === "post" ? p.type === "post" : p.type === "checkin"))
+            ? shown.length
+            : shown.filter((p) => (f.key === "post" ? p.type === "post" : p.type === "checkin"))
                 .length,
       })),
-    [posts]
+    [shown]
   );
 
   const openMenu = useCallback(() => setMenuOpen(true), []);
@@ -296,6 +304,38 @@ export default function HomeScreen() {
             <View style={{ paddingHorizontal: r.gutter, marginTop: space.md }}>
               <FeedFilter options={options} value={filter} onChange={setFilter} />
             </View>
+
+            {/* Hiding a post is one tap and silent otherwise, so the way
+                back has to be visible — not buried in a settings screen. */}
+            {hiddenPostIds.length && !loading ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: space.md,
+                  marginHorizontal: r.gutter,
+                  marginTop: space.md,
+                  paddingVertical: space.md,
+                  paddingHorizontal: space.lg,
+                  borderRadius: radius.lg,
+                  backgroundColor: ink[100],
+                }}
+              >
+                <AppIcon name="eye" size={18} color={ink[500]} />
+                <UiText token="caption" color={ink[600]} style={{ flex: 1 }}>
+                  {hiddenPostIds.length} post disembunyikan
+                </UiText>
+                <PressableScale
+                  onPress={() => hiddenPostIds.forEach(unhidePost)}
+                  scaleTo={0.95}
+                  hitSlop={8}
+                >
+                  <UiText token="label" color={brand[700]}>
+                    Tampilkan lagi
+                  </UiText>
+                </PressableScale>
+              </View>
+            ) : null}
 
             {loading ? (
               <View style={{ gap: space.md, marginTop: space.lg }}>

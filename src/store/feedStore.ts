@@ -11,6 +11,17 @@ interface FeedState {
   load: () => void;
   refresh: () => Promise<void>;
   toggleLike: (postId: string) => void;
+  /**
+   * Liking a comment used to be local state in the sheet, so it was lost the
+   * moment the sheet closed. It belongs here with everything else the feed
+   * remembers.
+   */
+  toggleCommentLike: (commentId: string) => void;
+  /** Hidden posts stay in the store; the feed filters them out. */
+  hiddenPostIds: string[];
+  hidePost: (postId: string) => void;
+  unhidePost: (postId: string) => void;
+  reportPost: (postId: string, reason: string) => void;
   addComment: (postId: string, text: string) => void;
   commentsFor: (postId: string) => FeedComment[];
   addPost: (caption: string, outletName?: string, brandId?: string) => void;
@@ -22,6 +33,7 @@ const FETCH_MS = 700;
 export const useFeedStore = create<FeedState>((set, get) => ({
   posts: initialPosts,
   comments: initialComments,
+  hiddenPostIds: [],
   loading: true,
   refreshing: false,
   load: () => {
@@ -41,6 +53,34 @@ export const useFeedStore = create<FeedState>((set, get) => ({
           : p
       ),
     })),
+  toggleCommentLike: (commentId) =>
+    set((state) => ({
+      comments: state.comments.map((c) =>
+        c.id === commentId
+          ? { ...c, liked: !c.liked, likes: c.liked ? c.likes - 1 : c.likes + 1 }
+          : c
+      ),
+    })),
+  /**
+   * Hiding and reporting both take the post out of the feed. Reporting adds
+   * nothing else for now — there is no backend to send it to — so it is the
+   * same state change behind a different confirmation, rather than a button
+   * that appears to work and does nothing.
+   */
+  hidePost: (postId) =>
+    set((state) => ({
+      hiddenPostIds: state.hiddenPostIds.includes(postId)
+        ? state.hiddenPostIds
+        : [...state.hiddenPostIds, postId],
+    })),
+  unhidePost: (postId) =>
+    set((state) => ({ hiddenPostIds: state.hiddenPostIds.filter((id) => id !== postId) })),
+  reportPost: (postId) =>
+    set((state) => ({
+      hiddenPostIds: state.hiddenPostIds.includes(postId)
+        ? state.hiddenPostIds
+        : [...state.hiddenPostIds, postId],
+    })),
   addComment: (postId, text) =>
     set((state) => ({
       comments: [
@@ -51,6 +91,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
           authorName: "Kamu",
           time: "Baru saja",
           text,
+          likes: 0,
         },
       ],
       posts: state.posts.map((p) =>
