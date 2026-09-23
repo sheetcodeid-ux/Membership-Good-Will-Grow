@@ -3,12 +3,15 @@ import { View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { UiText } from "./ui/Text";
 import { Avatar } from "./ui/Avatar";
 import { ImagePlaceholder } from "./ui/ImagePlaceholder";
@@ -136,6 +139,34 @@ function PostCardBase({ post }: { post: FeedPost }) {
   const openProfile = () => router.push(`/profile/${post.authorHandle.replace("@", "")}`);
   const openComments = () => router.push(`/comments/${post.id}`);
 
+  const burst = useSharedValue(0);
+  const burstStyle = useAnimatedStyle(() => ({
+    opacity: burst.value,
+    transform: [{ scale: 0.6 + burst.value * 0.55 }],
+  }));
+
+  const like = () => {
+    if (!post.liked) toggleLike(post.id);
+  };
+
+  // A double tap likes and throws a heart; a single tap still opens comments,
+  // but only once the double tap has been ruled out.
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onEnd(() => {
+      runOnJS(like)();
+      burst.value = withSequence(
+        withTiming(1, { duration: 130 }),
+        withDelay(280, withTiming(0, { duration: 220 }))
+      );
+    });
+
+  const singleTap = Gesture.Tap()
+    .numberOfTaps(1)
+    .onEnd(() => runOnJS(openComments)());
+
+  const mediaGesture = Gesture.Exclusive(doubleTap, singleTap);
+
   return (
     <View
       style={{
@@ -190,7 +221,7 @@ function PostCardBase({ post }: { post: FeedPost }) {
         {post.caption}
       </UiText>
 
-      <PressableScale onPress={openComments} scaleTo={0.995} rippleColor={null}>
+      <GestureDetector gesture={mediaGesture}>
         <View
           style={{
             marginTop: space.md,
@@ -204,8 +235,27 @@ function PostCardBase({ post }: { post: FeedPost }) {
             iconSize={r.s(32)}
             style={{ height: r.s(240) }}
           />
+
+          {/* Heart thrown by a double tap, then cleared. */}
+          <Animated.View
+            style={[
+              {
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                alignItems: "center",
+                justifyContent: "center",
+              },
+              burstStyle,
+            ]}
+            pointerEvents="none"
+          >
+            <AppIcon name="heart" size={r.s(96)} color="#FFFFFF" emphasis />
+          </Animated.View>
         </View>
-      </PressableScale>
+      </GestureDetector>
 
       {post.type === "checkin" && post.outletName ? (
         <CheckInCard outletName={post.outletName} s={r.s} />

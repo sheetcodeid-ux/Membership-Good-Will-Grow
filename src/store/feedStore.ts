@@ -5,15 +5,34 @@ import type { FeedPost, FeedComment } from "../data/types";
 interface FeedState {
   posts: FeedPost[];
   comments: FeedComment[];
+  /** True until the first load settles, so the feed can show its skeleton. */
+  loading: boolean;
+  refreshing: boolean;
+  load: () => void;
+  refresh: () => Promise<void>;
   toggleLike: (postId: string) => void;
   addComment: (postId: string, text: string) => void;
   commentsFor: (postId: string) => FeedComment[];
   addPost: (caption: string, outletName?: string, brandId?: string) => void;
 }
 
+/** Stands in for a network round trip until the API exists. */
+const FETCH_MS = 700;
+
 export const useFeedStore = create<FeedState>((set, get) => ({
   posts: initialPosts,
   comments: initialComments,
+  loading: true,
+  refreshing: false,
+  load: () => {
+    if (!get().loading) return;
+    setTimeout(() => set({ loading: false }), FETCH_MS);
+  },
+  refresh: async () => {
+    set({ refreshing: true });
+    await new Promise((resolve) => setTimeout(resolve, FETCH_MS));
+    set({ refreshing: false });
+  },
   toggleLike: (postId) =>
     set((state) => ({
       posts: state.posts.map((p) =>

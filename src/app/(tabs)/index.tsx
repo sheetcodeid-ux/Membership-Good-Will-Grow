@@ -1,11 +1,13 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { RefreshControl, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   FadeInDown,
   FadeOutDown,
+  interpolate,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -15,6 +17,7 @@ import { Avatar } from "../../components/ui/Avatar";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { AppIcon } from "../../components/ui/AppIcon";
 import { PostCard } from "../../components/PostCard";
+import { PostCardSkeleton } from "../../components/ui/Skeleton";
 import { HeaderMenu } from "../../components/HeaderMenu";
 import { SectionHeader } from "../../components/SectionHeader";
 import { PromoCarousel } from "../../components/PromoCarousel";
@@ -26,16 +29,13 @@ import { HIT_SIZE, radius, space } from "../../theme/scale";
 import { useFeedStore } from "../../store/feedStore";
 import { useAuthStore } from "../../store/authStore";
 import { useNotificationStore } from "../../store/notificationStore";
-
 const filters: FeedFilterOption[] = [
   { key: "all", label: "Semua", icon: "home" },
   { key: "post", label: "Post", icon: "comment" },
   { key: "checkin", label: "Check-In", icon: "pin" },
 ];
-
 /** Banner slots the marketing team fills in later. */
 const banners = ["Banner Promo 1", "Banner Promo 2", "Banner Promo 3"];
-
 /** Round control sized to the minimum touch target. */
 function IconButton({
   name,
@@ -48,7 +48,6 @@ function IconButton({
 }) {
   const scale = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-
   return (
     <PressableScale
       onPress={() => {
@@ -99,7 +98,6 @@ function IconButton({
     </PressableScale>
   );
 }
-
 export default function HomeScreen() {
   const r = useResponsive();
   const insets = useSafeAreaInsets();
@@ -107,18 +105,19 @@ export default function HomeScreen() {
   const [showProfileBanner, setShowProfileBanner] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const posts = useFeedStore((s) => s.posts);
+  const loading = useFeedStore((s) => s.loading);
+  const refreshing = useFeedStore((s) => s.refreshing);
+  const load = useFeedStore((s) => s.load);
+  const refresh = useFeedStore((s) => s.refresh);
   const name = useAuthStore((s) => s.name);
   const username = useAuthStore((s) => s.username);
   const unread = useNotificationStore((s) => s.items.some((n) => !n.read));
-
   const firstName = name.split(" ")[0];
-
   const visiblePosts = useMemo(() => {
     if (filter === "post") return posts.filter((p) => p.type === "post");
     if (filter === "checkin") return posts.filter((p) => p.type === "checkin");
     return posts;
   }, [posts, filter]);
-
   // Counts sit on the chips so the filter says what it will show.
   const options = useMemo<FeedFilterOption[]>(
     () =>
@@ -132,13 +131,25 @@ export default function HomeScreen() {
       })),
     [posts]
   );
-
   const openMenu = useCallback(() => setMenuOpen(true), []);
-
+  useEffect(() => {
+    load();
+  }, [load]);
+  /** Drives the header, which tightens as the feed travels under it. */
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
+  });
+  const greetingStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, 40], [1, 0], "clamp"),
+    height: interpolate(scrollY.value, [0, 40], [18, 0], "clamp"),
+  }));
+  const avatarStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(scrollY.value, [0, 60], [1, 0.82], "clamp") }],
+  }));
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-
       {/* Header stays put while the feed moves under it, so the way back to
           your own profile and to notifications never scrolls away. */}
       <View
@@ -166,26 +177,37 @@ export default function HomeScreen() {
               onPress={() => router.push(`/profile/${username}` as never)}
               rippleBorderless
             >
-              <Avatar name={name} size={44} />
+              <Animated.View style={avatarStyle}>
+                <Avatar name={name} size={44} />
+              </Animated.View>
             </PressableScale>
-
             <View style={{ flex: 1 }}>
-              <UiText token="caption" color={ink[400]}>
-                Selamat datang,
-              </UiText>
+              <Animated.View style={greetingStyle}>
+                <UiText token="caption" color={ink[400]} numberOfLines={1}>
+                  Selamat datang,
+                </UiText>
+              </Animated.View>
               <UiText token="titleLg" numberOfLines={1}>
                 {firstName}
               </UiText>
             </View>
-
             <IconButton name="bell" badge={unread} onPress={() => router.push("/notifications")} />
             <IconButton name="more" onPress={openMenu} />
           </View>
         </SafeAreaView>
       </View>
-
-      <ScrollView
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={brand[700]}
+            colors={[brand[700]]}
+          />
+        }
         contentContainerStyle={{
           paddingBottom: insets.bottom + r.s(170),
           alignItems: "center",
@@ -201,18 +223,15 @@ export default function HomeScreen() {
                 onAction={() => router.push("/promo")}
               />
             </View>
-
             <PromoCarousel
               slides={banners}
               gutter={r.gutter}
               height={Math.min(220, Math.max(150, r.height * 0.21))}
             />
           </View>
-
           <View style={{ marginTop: space.xl, paddingHorizontal: r.gutter }}>
             <FeedFilter options={options} value={filter} onChange={setFilter} />
           </View>
-
           {showProfileBanner ? (
             <Animated.View
               entering={FadeInDown.duration(320).springify().damping(18)}
@@ -263,16 +282,17 @@ export default function HomeScreen() {
               </PressableScale>
             </Animated.View>
           ) : null}
-
           <View style={{ paddingHorizontal: r.gutter, marginTop: space.xl }}>
             <SectionHeader
               title="Postingan Terbaru"
-              subtitle={`${visiblePosts.length} postingan dari komunitas`}
+              subtitle={loading ? "Memuat…" : `${visiblePosts.length} postingan dari komunitas`}
             />
           </View>
-
           <View style={{ gap: space.md }}>
-            {visiblePosts.map((post, i) => (
+            {loading
+              ? [0, 1].map((i) => <PostCardSkeleton key={i} gutter={r.gutter} />)
+              : null}
+            {loading ? null : visiblePosts.map((post, i) => (
               <Animated.View
                 // Keying on the filter replays the stagger when the list changes.
                 key={`${filter}-${post.id}`}
@@ -286,9 +306,7 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
-      </ScrollView>
-
-
+      </Animated.ScrollView>
       <HeaderMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </View>
   );
