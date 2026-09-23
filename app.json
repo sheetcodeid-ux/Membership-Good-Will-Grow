@@ -5,6 +5,14 @@
     "owner": "sheetcodes-team",
     "scheme": "goodwillgrow",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 6000
+    },
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

@@ -53,6 +53,12 @@ jobs:
       - name: Daftarkan project EAS
         run: eas init --account sheetcodes-team --non-interactive
 
+      # Menuliskan updates.url milik project ini, yang butuh project id dari
+      # langkah sebelumnya. Tanpa ini aplikasi tidak tahu ke mana harus
+      # menanyakan pembaruan.
+      - name: Siapkan EAS Update
+        run: eas update:configure --non-interactive
+
       - name: Build
         run: eas build --platform android --profile ${{ inputs.profile }} --non-interactive --wait
 
