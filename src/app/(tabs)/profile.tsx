@@ -38,9 +38,12 @@ const CARD_H = 80;
 const HERO_H = CARD_TOP + 61.5;
 const STRIP_H = 33;
 const EDGE = 13.5;
-const CARD_R = 15;
-// How far the gold strip tucks up behind the card (measured on the reference).
-const STRIP_TUCK = 8;
+// Measured on the reference: the card's corners are tighter than the
+// strip's, and the strip reaches up behind the card to where the card's
+// bottom corners begin to curve, so no page shows beside them.
+const CARD_R = 12;
+const STRIP_R = 15;
+const STRIP_TUCK = CARD_R;
 const INK_TEXT = "#202020";
 const WARN = "#A34500";
 const STRIP_INK = "#702B00";
@@ -203,8 +206,8 @@ export default function AccountScreen() {
             // on the page.
             style={{
               marginTop: -STRIP_TUCK,
-              borderBottomLeftRadius: CARD_R,
-              borderBottomRightRadius: CARD_R,
+              borderBottomLeftRadius: STRIP_R,
+              borderBottomRightRadius: STRIP_R,
               ...(shadow.xs as object),
             }}
           >
@@ -218,8 +221,8 @@ export default function AccountScreen() {
                 paddingTop: STRIP_TUCK,
                 paddingLeft: 15.5,
                 paddingRight: 15,
-                borderBottomLeftRadius: CARD_R,
-                borderBottomRightRadius: CARD_R,
+                borderBottomLeftRadius: STRIP_R,
+                borderBottomRightRadius: STRIP_R,
                 overflow: "hidden",
                 flexDirection: "row",
                 alignItems: "center",

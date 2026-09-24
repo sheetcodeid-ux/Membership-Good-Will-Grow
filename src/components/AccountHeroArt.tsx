@@ -3,6 +3,7 @@ import Svg, {
   Circle,
   ClipPath,
   Defs,
+  Ellipse,
   G,
   LinearGradient,
   Path,
@@ -51,6 +52,9 @@ function gearPath(teeth: number, outer: number, inner: number, hole: number) {
   return `M${pts.join("L")}ZM${hole} 0A${hole} ${hole} 0 1 0 ${-hole} 0A${hole} ${hole} 0 1 0 ${hole} 0Z`;
 }
 const GEAR = gearPath(8, 8.2, 6.3, 1.8);
+const SHIELD =
+  "M-1.3 -14.4C-0.5 -14.9 0.5 -14.9 1.3 -14.4C5 -12.3 8.8 -11.3 12.3 -11C13.1 -10.9 13.6 -10.4 13.6 -9.6V-2.4C13.6 6.6 7.6 12.6 1.3 15.1C0.4 15.4 -0.4 15.4 -1.3 15.1C-7.6 12.6 -13.6 6.6 -13.6 -2.4V-9.6C-13.6 -10.4 -13.1 -10.9 -12.3 -11C-8.8 -11.3 -5 -12.3 -1.3 -14.4Z";
+const TICK = "M-5.4 0.4L-1.6 4.2L5.6 -3.4";
 const SHACKLE = "M-3.9 -1.2V-4.6a3.9 3.9 0 0 1 7.8 0V-1.2";
 
 type Building = [
@@ -192,6 +196,36 @@ function Row({
   );
 }
 
+/**
+ * A floating glass orb: its underside offset below, a face lit from the top
+ * left, a rim catching the light and a specular glint.
+ */
+function Orb({ cx, cy, r }: { cx: number; cy: number; r: number }) {
+  return (
+    <>
+      <Circle cx={cx + 0.6} cy={cy + 1.8} r={r} fill="#86A5EE" />
+      <Circle cx={cx} cy={cy} r={r} fill="url(#bubble)" />
+      <Circle
+        cx={cx}
+        cy={cy}
+        r={r - 0.5}
+        fill="none"
+        stroke="url(#phRim)"
+        strokeWidth={1}
+      />
+      <Ellipse
+        cx={cx - r * 0.42}
+        cy={cy - r * 0.5}
+        rx={r * 0.26}
+        ry={r * 0.13}
+        fill="#FFFFFF"
+        opacity={0.9}
+        transform={`rotate(-38 ${cx - r * 0.42} ${cy - r * 0.5})`}
+      />
+    </>
+  );
+}
+
 function Sparkle({ x, y, s }: { x: number; y: number; s: number }) {
   const k = s * 0.18;
   return (
@@ -245,25 +279,42 @@ export function AccountHeroArt({
           <Stop offset="0" stopColor="#F5F8FF" />
           <Stop offset="1" stopColor="#BCD0FF" />
         </LinearGradient>
-        <RadialGradient id="phHead" cx="0.36" cy="0.3" r="0.8">
-          <Stop offset="0" stopColor="#C4D6FF" />
-          <Stop offset="1" stopColor={brand[500]} />
-        </RadialGradient>
-        <LinearGradient id="phBust" x1="0.2" y1="0" x2="0.6" y2="1">
-          <Stop offset="0" stopColor="#A9C2FF" />
-          <Stop offset="1" stopColor={brand[500]} />
+        <LinearGradient
+          id="shieldFace"
+          x1="-12"
+          y1="-15"
+          x2="10"
+          y2="15"
+          gradientUnits="userSpaceOnUse"
+        >
+          <Stop offset="0" stopColor="#9FBBFF" />
+          <Stop offset="0.5" stopColor="#4F75D4" />
+          <Stop offset="1" stopColor={brand[600]} />
+        </LinearGradient>
+        <LinearGradient
+          id="shieldInset"
+          x1="-9"
+          y1="-11"
+          x2="8"
+          y2="12"
+          gradientUnits="userSpaceOnUse"
+        >
+          <Stop offset="0" stopColor={brand[600]} />
+          <Stop offset="1" stopColor="#6F93EA" />
         </LinearGradient>
         <LinearGradient id="phBar" x1="0" y1="0" x2="1" y2="0">
           <Stop offset="0" stopColor="#9DB8F7" />
           <Stop offset="1" stopColor="#C3D5FF" />
         </LinearGradient>
-        <RadialGradient id="bubble" cx="0.34" cy="0.28" r="0.85">
-          <Stop offset="0" stopColor="#F2F6FF" />
-          <Stop offset="1" stopColor="#A9C3FB" />
+        <RadialGradient id="bubble" cx="0.36" cy="0.3" r="0.78">
+          <Stop offset="0" stopColor="#FFFFFF" />
+          <Stop offset="0.55" stopColor="#CFDDFF" />
+          <Stop offset="1" stopColor="#9DB8F7" />
         </RadialGradient>
         <LinearGradient id="bubbleBar" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#CBDBFF" />
-          <Stop offset="1" stopColor="#A5BFFA" />
+          <Stop offset="0" stopColor="#E2EBFF" />
+          <Stop offset="0.6" stopColor="#B9CEFD" />
+          <Stop offset="1" stopColor="#9FBAF8" />
         </LinearGradient>
         <LinearGradient
           id="gearFace"
@@ -288,16 +339,16 @@ export function AccountHeroArt({
           <Stop offset="1" stopColor={brand[400]} />
         </RadialGradient>
         <LinearGradient
-          id="lockGold"
-          x1="0"
+          id="lockBody"
+          x1="-6.7"
           y1="-2.3"
-          x2="0"
+          x2="4"
           y2="8.1"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0" stopColor="#FFEB7A" />
-          <Stop offset="0.5" stopColor="#FFD21A" />
-          <Stop offset="1" stopColor="#F2B600" />
+          <Stop offset="0" stopColor="#A9C2FF" />
+          <Stop offset="0.5" stopColor="#5277D2" />
+          <Stop offset="1" stopColor={brand[600]} />
         </LinearGradient>
         <LinearGradient
           id="lockSteel"
@@ -420,11 +471,47 @@ export function AccountHeroArt({
             rx="1.6"
             fill={brand[800]}
           />
-          <Circle cx="250" cy="66" r="8" fill="url(#phHead)" />
-          <Path
-            d="M235 87C235 79 242 74.5 250 74.5S265 79 265 87Z"
-            fill="url(#phBust)"
-          />
+          {/* a shield with a tick — the account is protected — raised
+              off the glass: its side, a lit face, an inset rim, a tick
+              with its own shadow */}
+          <G transform="translate(250 69)">
+            <Path d={SHIELD} fill={brand[800]} transform="translate(0.9 1.3)" />
+            <Path d={SHIELD} fill="url(#shieldFace)" />
+            <Path
+              d={SHIELD}
+              fill="none"
+              stroke="url(#shieldInset)"
+              strokeWidth={1.1}
+              opacity={0.55}
+              transform="scale(0.78)"
+            />
+            <Path
+              d="M-9.8 -8.2C-6.8 -8.6 -3.6 -9.6 -0.8 -11.2"
+              fill="none"
+              stroke="#FFFFFF"
+              strokeWidth={1.2}
+              strokeLinecap="round"
+              opacity={0.75}
+            />
+            <Path
+              d={TICK}
+              fill="none"
+              stroke={brand[950]}
+              strokeOpacity={0.35}
+              strokeWidth={3.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              transform="translate(0.5 0.9)"
+            />
+            <Path
+              d={TICK}
+              fill="none"
+              stroke="#FFFFFF"
+              strokeWidth={3.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </G>
           <Rect
             x="236"
             y="94"
@@ -443,7 +530,17 @@ export function AccountHeroArt({
           />
         </G>
 
-        {/* password bubble */}
+        {/* password bubble: a thick slab — its underside shows below the
+            lit face — with a gloss band and raised asterisks */}
+        <Rect
+          x="174"
+          y="24.8"
+          width="54"
+          height="21"
+          rx="10.5"
+          fill="#7F9FE8"
+        />
+        <Path d="M186 44.8L184.5 51.3L193 44.8Z" fill="#7F9FE8" />
         <Rect
           x="174"
           y="22.5"
@@ -452,26 +549,42 @@ export function AccountHeroArt({
           rx="10.5"
           fill="url(#bubbleBar)"
         />
-        <Path d="M186 42.5L184.5 49L193 42.5Z" fill="#A5BFFA" />
+        <Path d="M186 42.5L184.5 49L193 42.5Z" fill="#A3BDF9" />
+        <Rect
+          x="180"
+          y="24.2"
+          width="42"
+          height="4.6"
+          rx="2.3"
+          fill="#FFFFFF"
+          opacity={0.55}
+        />
         {[188, 201, 214].map((x) => (
-          <G key={x} transform={`translate(${x} 33)`}>
-            {[0, 60, -60].map((a) => (
-              <Rect
-                key={a}
-                x="-0.9"
-                y="-4.6"
-                width="1.8"
-                height="9.2"
-                rx="0.9"
-                fill="#FFFFFF"
-                transform={`rotate(${a})`}
-              />
+          <G key={x} transform={`translate(${x} 33.5)`}>
+            {[
+              ["0.45", "0.8", "#6A8BDC"],
+              ["0", "0", "#FFFFFF"],
+            ].map(([dx, dy, fill]) => (
+              <G key={fill} transform={`translate(${dx} ${dy})`}>
+                {[0, 60, -60].map((a) => (
+                  <Rect
+                    key={a}
+                    x="-1"
+                    y="-4.7"
+                    width="2"
+                    height="9.4"
+                    rx="1"
+                    fill={fill}
+                    transform={`rotate(${a})`}
+                  />
+                ))}
+              </G>
             ))}
           </G>
         ))}
 
         {/* gear: extruded towards the lower right, face lit from above */}
-        <Circle cx="202" cy="56" r="12.6" fill="url(#bubble)" />
+        <Orb cx={202} cy={56} r={12.6} />
         <G transform="translate(201.4 55.3)">
           {[1, 2, 3, 4, 5].map((k) => (
             <Path
@@ -487,8 +600,8 @@ export function AccountHeroArt({
           <Circle r="1.8" fill={brand[900]} />
         </G>
 
-        {/* lock: steel shackle, gold body with its side showing */}
-        <Circle cx="308" cy="59.5" r="15.5" fill="url(#bubble)" />
+        {/* lock: steel shackle, blue body with its side showing */}
+        <Orb cx={308} cy={59.5} r={15.5} />
         <G transform="translate(307.4 60.2)">
           <Path
             d={SHACKLE}
@@ -511,7 +624,7 @@ export function AccountHeroArt({
             width="13.4"
             height="10.4"
             rx="2.8"
-            fill="#B98100"
+            fill={brand[900]}
           />
           <Rect
             x="-6.7"
@@ -519,7 +632,7 @@ export function AccountHeroArt({
             width="13.4"
             height="10.4"
             rx="2.8"
-            fill="url(#lockGold)"
+            fill="url(#lockBody)"
           />
           <Rect
             x="-5.1"
@@ -530,14 +643,14 @@ export function AccountHeroArt({
             fill="#FFFFFF"
             opacity={0.6}
           />
-          <Circle cx="0" cy="2.1" r="1.5" fill="#7A3A00" />
+          <Circle cx="0" cy="2.1" r="1.5" fill={brand[950]} />
           <Rect
             x="-0.6"
             y="2.4"
             width="1.2"
             height="3"
             rx="0.6"
-            fill="#7A3A00"
+            fill={brand[950]}
           />
         </G>
 
