@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
@@ -50,6 +57,14 @@ const CARD_R = 12;
 const STRIP_R = 15;
 const STRIP_TUCK = CARD_R;
 const INK_TEXT = "#202020";
+// Top bar that fades in on scroll (measured on the reference): pale yellow,
+// ending 24.5dp below the title's centre. The fade is spread over 44dp of
+// scrolling — a gentle dissolve, yet complete by the time the card slides
+// under the title.
+const BAR_BG = "#FFEE80";
+const BAR_H = HEADER_H / 2 + 24.5;
+const BAR_FADE_FROM = 8;
+const BAR_FADE_TO = 52;
 // Space between the referral strip and the reward card.
 const REWARD_GAP = 14;
 const WARN = "#A34500";
@@ -68,11 +83,26 @@ export default function AccountScreen() {
   const logout = useAuthStore((s) => s.logout);
   const [confirmLogout, setConfirmLogout] = useState(false);
 
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
+  });
+  const barStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollY.value,
+      [BAR_FADE_FROM, BAR_FADE_TO],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
 
-      <ScrollView
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
       >
@@ -85,24 +115,6 @@ export default function AccountScreen() {
             width={r.width}
             height={HERO_H + top + HERO_ART_OVERHANG}
           />
-        </View>
-
-        <View style={{ position: "absolute", left: 0, right: 0, top }}>
-          <View
-            style={{
-              height: HEADER_H,
-              justifyContent: "center",
-              paddingHorizontal: r.gutter,
-            }}
-          >
-            <UiText
-              token="titleLg"
-              color={INK_TEXT}
-              style={{ fontFamily: fontFamilies.bold }}
-            >
-              Akun Saya
-            </UiText>
-          </View>
         </View>
 
         <View
@@ -453,7 +465,39 @@ export default function AccountScreen() {
             Good Will Grow v1.0.0
           </UiText>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+
+      {/* The title stays put; as the page scrolls, a bar fades in behind
+          it — as in the reference, where the title sits in the same place
+          over the scene and over the bar, so only the background changes. */}
+      <View
+        pointerEvents="none"
+        style={{ position: "absolute", left: 0, right: 0, top: 0 }}
+      >
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            { height: top + BAR_H, backgroundColor: BAR_BG },
+            barStyle,
+          ]}
+        />
+        <View
+          style={{
+            marginTop: top,
+            height: HEADER_H,
+            justifyContent: "center",
+            paddingHorizontal: r.gutter,
+          }}
+        >
+          <UiText
+            token="titleLg"
+            color={INK_TEXT}
+            style={{ fontFamily: fontFamilies.bold }}
+          >
+            Akun Saya
+          </UiText>
+        </View>
+      </View>
 
       {confirmLogout ? (
         <ConfirmDialog
