@@ -28,7 +28,7 @@ import {
   VoucherGlyph,
   WhatsAppGlyph,
 } from "../../components/AccountIcons";
-import { brand, danger, gold, ink, surface } from "../../theme/colors";
+import { brand, danger, gold, goldRamp, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
 import { radius, space } from "../../theme/scale";
 import { useResponsive } from "../../theme/responsive";
@@ -36,7 +36,11 @@ import { CONTACT, openEmail, openWhatsApp } from "../../data/contact";
 import { localPhone, useAuthStore } from "../../store/authStore";
 import { coupons, orders } from "../../data/mock";
 
-const HERO_H = 200;
+/**
+ * Tall enough that the scene still has a band to live in once the identity
+ * card has overlapped it. At 200 the hills crested behind the card.
+ */
+const HERO_H = 230;
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
@@ -56,7 +60,7 @@ export default function AccountScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -71,7 +75,7 @@ export default function AccountScreen() {
 
         <SafeAreaView edges={["top"]} style={{ position: "absolute", left: 0, right: 0 }}>
           <View style={{ height: 48, justifyContent: "center", paddingHorizontal: r.gutter }}>
-            <UiText token="h3" color="#FFFFFF">
+            <UiText token="h2" color={brand[900]}>
               Akun Saya
             </UiText>
           </View>
@@ -82,7 +86,7 @@ export default function AccountScreen() {
             paddingHorizontal: r.gutter,
             // The identity card overlaps the scene, which is what ties the
             // two together instead of stacking them.
-            marginTop: -(HERO_H - 96),
+            marginTop: -(HERO_H - 124),
           }}
         >
           {/* Identity. Tapping it opens the detail; the pencil goes straight
@@ -92,13 +96,13 @@ export default function AccountScreen() {
             onPress={() => router.push("/profile-detail")}
             style={{
               backgroundColor: "#FFFFFF",
-              borderTopLeftRadius: radius.lg,
-              borderTopRightRadius: radius.lg,
+              borderTopLeftRadius: radius.xl,
+              borderTopRightRadius: radius.xl,
               padding: space.lg,
               flexDirection: "row",
               alignItems: "center",
               gap: space.md,
-              ...(shadow.md as object),
+              ...(shadow.lg as object),
             }}
           >
             <Avatar name={name} size={56} />
@@ -131,31 +135,44 @@ export default function AccountScreen() {
               part of who you are here, not another menu row. */}
           <PressableScale onPress={copyCode} scaleTo={0.99}>
             <LinearGradient
-              colors={[gold[300], gold[500]]}
+              colors={[goldRamp[0], goldRamp[1], goldRamp[2]]}
+              locations={[0, 0.45, 1]}
               start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={{
-                borderBottomLeftRadius: radius.lg,
-                borderBottomRightRadius: radius.lg,
+                marginHorizontal: space.xs,
+                borderBottomLeftRadius: radius.xl,
+                borderBottomRightRadius: radius.xl,
                 paddingHorizontal: space.lg,
-                paddingVertical: space.md,
+                paddingTop: space.md + 2,
+                paddingBottom: space.md,
                 flexDirection: "row",
                 alignItems: "center",
                 gap: space.sm,
+                overflow: "hidden",
               }}
             >
-              <QrGlyph size={17} color="#7A5514" detail={gold[300]} />
-              <UiText token="captionMedium" color="#5E3F0C">
+              {/* A highlight across the top third, the way a real gold face
+                  catches light. Without it the strip is flat colour. */}
+              <LinearGradient
+                colors={["rgba(255,255,255,0.55)", "rgba(255,255,255,0)"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{ position: "absolute", left: 0, right: 0, top: 0, height: 18 }}
+                pointerEvents="none"
+              />
+              <QrGlyph size={17} color="#6B2A00" detail={goldRamp[1]} />
+              <UiText token="captionMedium" color="#702B00">
                 Kode Referal
               </UiText>
               <View style={{ flex: 1 }} />
-              <UiText token="bodySemibold" color="#3F2A06">
+              <UiText token="bodySemibold" color="#4A1D00">
                 {referralCode}
               </UiText>
               <AppIcon
                 name={copied ? "check" : "copy"}
                 size={16}
-                color={copied ? "#2E7D5B" : "#5E3F0C"}
+                color={copied ? "#1F6B45" : "#702B00"}
               />
             </LinearGradient>
           </PressableScale>

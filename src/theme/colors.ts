@@ -26,6 +26,14 @@ export const ink = {
   950: "#0A0E1A",
 } as const;
 
+/**
+ * The gold the reference actually uses is a vivid yellow, not a tan — its
+ * strip samples at #FFDD00 with a #FBE565 highlight and a #E7C218 shadow.
+ * The old ramp topped out at #EAC584, which is why anything built from it
+ * came out looking beige rather than gold.
+ */
+export const goldRamp = ["#FFE879", "#FFDD00", "#F0B400"] as const;
+
 export const gold = {
   50: "#FBF3E3",
   100: "#F6E4BE",
