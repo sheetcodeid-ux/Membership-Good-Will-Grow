@@ -47,6 +47,7 @@ export default function AccountScreen() {
   const r = useResponsive();
   const name = useAuthStore((s) => s.name);
   const phone = useAuthStore((s) => s.phone);
+  const email = useAuthStore((s) => s.email);
   const referralCode = useAuthStore((s) => s.referralCode);
   const logout = useAuthStore((s) => s.logout);
   const [copied, setCopied] = useState(false);
@@ -89,28 +90,64 @@ export default function AccountScreen() {
             marginTop: -(HERO_H - 124),
           }}
         >
-          {/* Identity. Tapping it opens the detail; the pencil goes straight
-              to editing, because those are different intentions. */}
+          {/*
+            Identity, with the referral strip tucked behind its lower edge.
+
+            The strip is a rounded card in its own right that the identity
+            card lands on top of, not a panel welded to its underside — which
+            is why the identity card keeps all four of its corners. Squaring
+            the two off against each other, as the first attempt did, made
+            them one tall block instead of two cards.
+          */}
           <PressableScale
             scaleTo={0.99}
             onPress={() => router.push("/profile-detail")}
             style={{
               backgroundColor: "#FFFFFF",
-              borderTopLeftRadius: radius.xl,
-              borderTopRightRadius: radius.xl,
+              borderRadius: radius.xl,
               padding: space.lg,
               flexDirection: "row",
               alignItems: "center",
               gap: space.md,
+              zIndex: 2,
               ...(shadow.lg as object),
             }}
           >
-            <Avatar name={name} size={56} />
-            <View style={{ flex: 1, gap: 2 }}>
+            <Avatar name={name} size={58} />
+            <View style={{ flex: 1, gap: 1 }}>
               <UiText token="h3" color={brand[900]} numberOfLines={1}>
                 {name}
               </UiText>
-              <UiText token="caption" color={ink[500]}>
+              {/* An unverified address is the one thing on this card that
+                  needs doing, so it carries the warning rather than sitting
+                  quietly in grey like the rest. */}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: space.xs }}>
+                <UiText
+                  token="caption"
+                  color={email ? ink[500] : "#B4550A"}
+                  numberOfLines={1}
+                  style={{ flexShrink: 1 }}
+                >
+                  {email || "Tambahkan email"}
+                </UiText>
+                {!email ? (
+                  <View
+                    style={{
+                      width: 15,
+                      height: 15,
+                      borderRadius: 8,
+                      backgroundColor: "#C2570B",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <UiText token="label" color="#FFFFFF" style={{ fontSize: 10, lineHeight: 13 }}>
+                      !
+                    </UiText>
+                  </View>
+                ) : null}
+              </View>
+              <UiText token="caption" color={ink[600]}>
                 {localPhone(phone)}
               </UiText>
             </View>
@@ -136,16 +173,24 @@ export default function AccountScreen() {
           <PressableScale onPress={copyCode} scaleTo={0.99}>
             <LinearGradient
               colors={[goldRamp[0], goldRamp[1], goldRamp[2]]}
-              locations={[0, 0.45, 1]}
+              // Top to bottom, and reaching full gold early: sampling the
+              // reference strip gives a near-flat #FFDD00 with a sheen along
+              // its upper edge. Running the ramp across instead washed the
+              // left half out to cream.
+              locations={[0, 0.34, 1]}
               start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+              end={{ x: 0, y: 1 }}
               style={{
-                marginHorizontal: space.xs,
-                borderBottomLeftRadius: radius.xl,
-                borderBottomRightRadius: radius.xl,
+                // Pulled up under the card, then padded back down, so only
+                // its lower band shows and its top corners stay hidden. The
+                // band that shows is about 34pt — measured off the
+                // reference, where the strip is a sliver under the card
+                // rather than a second card of its own.
+                marginTop: -radius.xl,
+                paddingTop: radius.xl + space.xs,
+                borderRadius: radius.lg,
                 paddingHorizontal: space.lg,
-                paddingTop: space.md + 2,
-                paddingBottom: space.md,
+                paddingBottom: space.sm,
                 flexDirection: "row",
                 alignItems: "center",
                 gap: space.sm,
@@ -154,26 +199,28 @@ export default function AccountScreen() {
             >
               {/* A highlight across the top third, the way a real gold face
                   catches light. Without it the strip is flat colour. */}
-              <LinearGradient
-                colors={["rgba(255,255,255,0.55)", "rgba(255,255,255,0)"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={{ position: "absolute", left: 0, right: 0, top: 0, height: 18 }}
-                pointerEvents="none"
-              />
-              <QrGlyph size={17} color="#6B2A00" detail={goldRamp[1]} />
-              <UiText token="captionMedium" color="#702B00">
+              <QrGlyph size={18} color="#6B2A00" detail={goldRamp[1]} />
+              <UiText token="bodySemibold" color="#702B00">
                 Kode Referal
               </UiText>
               <View style={{ flex: 1 }} />
               <UiText token="bodySemibold" color="#4A1D00">
                 {referralCode}
               </UiText>
-              <AppIcon
-                name={copied ? "check" : "copy"}
-                size={16}
-                color={copied ? "#1F6B45" : "#702B00"}
-              />
+              {/* The dark disc is what tells you the strip is a control and
+                  not a caption printed on the card. */}
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: copied ? "#1F6B45" : "#7A3300",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <AppIcon name={copied ? "check" : "copy"} size={14} color="#FFFFFF" />
+              </View>
             </LinearGradient>
           </PressableScale>
 

@@ -32,7 +32,7 @@ export const ink = {
  * The old ramp topped out at #EAC584, which is why anything built from it
  * came out looking beige rather than gold.
  */
-export const goldRamp = ["#FFE879", "#FFDD00", "#F0B400"] as const;
+export const goldRamp = ["#FFEB70", "#FFDD00", "#F2BE00"] as const;
 
 export const gold = {
   50: "#FBF3E3",
