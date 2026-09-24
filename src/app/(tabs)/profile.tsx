@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import * as Clipboard from "expo-clipboard";
 import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { PressableScale } from "../../components/ui/PressableScale";
@@ -17,28 +16,32 @@ import { AccountMenu, AccountSection } from "../../components/AccountMenu";
 import { Glyph } from "../../components/icons/Glyph";
 // Sign-out keeps its previous mark on purpose.
 import { LogoutSolid } from "../../components/AccountSolidIcons";
-import { BANNER_RADIUS } from "../../components/PromoCarousel";
-import {
-  danger,
-  gold,
-  goldRamp,
-  iconGrey,
-  ink,
-  surface,
-  brand,
-} from "../../theme/colors";
+import { danger, gold, iconGrey, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
+import { fontFamilies } from "../../theme/typography";
 import { radius, space } from "../../theme/scale";
 import { useResponsive } from "../../theme/responsive";
 import { CONTACT, openEmail, openWhatsApp } from "../../data/contact";
 import { intlPhone, useAuthStore } from "../../store/authStore";
 import { coupons, orders } from "../../data/mock";
 
-/**
- * Tall enough that the scene still has a band to live in once the identity
- * card has overlapped it. At 200 the hills crested behind the card.
+/*
+ * Measured off the reference account screen (360dp wide, values in dp below
+ * the status bar). The title's centre sits 32 down; the identity card starts
+ * at 65 and is 80 tall; the scene behind them ends in a straight edge 61.5
+ * into the card; the referral strip shows 33 below the card. Card and strip
+ * sit 13.5 in from the screen edge.
  */
-const HERO_H = 230;
+const HEADER_H = 64;
+const CARD_TOP = 65;
+const CARD_H = 80;
+const HERO_H = CARD_TOP + 61.5;
+const STRIP_H = 33;
+const EDGE = 13.5;
+const CARD_R = 15;
+const INK_TEXT = "#202020";
+const WARN = "#A34500";
+const STRIP_INK = "#702B00";
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
@@ -48,14 +51,7 @@ export default function AccountScreen() {
   const email = useAuthStore((s) => s.email);
   const referralCode = useAuthStore((s) => s.referralCode);
   const logout = useAuthStore((s) => s.logout);
-  const [copied, setCopied] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
-
-  const copyCode = async () => {
-    await Clipboard.setStringAsync(referralCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1600);
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
@@ -66,18 +62,9 @@ export default function AccountScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
       >
         {/* Inside the list, not pinned over it: the scene belongs to the top
-            of the page and should leave with it. Pinned, it stayed put while
-            the rows slid over it. */}
-        {/* The same bottom corner the promo banner carries on Home. Square
-            here, the scene read as a screenshot pasted behind the page. */}
-        <View
-          style={{
-            height: HERO_H + insets.top,
-            borderBottomLeftRadius: BANNER_RADIUS,
-            borderBottomRightRadius: BANNER_RADIUS,
-            overflow: "hidden",
-          }}
-        >
+            of the page and should leave with it. It ends in a straight edge,
+            as the reference's does — the card covers where a corner would be. */}
+        <View style={{ height: HERO_H + insets.top, overflow: "hidden" }}>
           <AccountHeroArt width={r.width} height={HERO_H + insets.top} />
         </View>
 
@@ -87,179 +74,186 @@ export default function AccountScreen() {
         >
           <View
             style={{
-              height: 48,
+              height: HEADER_H,
               justifyContent: "center",
               paddingHorizontal: r.gutter,
             }}
           >
-            <UiText token="h2" color={brand[900]}>
+            <UiText
+              token="titleLg"
+              color={INK_TEXT}
+              style={{ fontFamily: fontFamilies.bold }}
+            >
               Akun Saya
             </UiText>
           </View>
         </SafeAreaView>
 
         <View
-          style={{
-            paddingHorizontal: r.gutter,
-            // The identity card overlaps the scene, which is what ties the
-            // two together instead of stacking them.
-            marginTop: -(HERO_H - 124),
-          }}
+          style={{ paddingHorizontal: EDGE, marginTop: -(HERO_H - CARD_TOP) }}
         >
           {/*
-            Identity and referral as one block, not two cards.
-
-            They used to be a rounded strip slid under a rounded card, offset
-            by a point. Where the two curves crossed the seam showed, and the
-            strip read as something laid over the card rather than part of
-            it. One clip now gives the pair a single outline: round at the
-            four outer corners, straight across the seam. The shadow sits on
-            its own parent because a view cannot both cast one and clip.
+            Identity card on top of the referral strip, as in the reference:
+            the card keeps all four corners and a hairline border instead of
+            a shadow, and the strip runs underneath it, flush with its sides,
+            showing a 33dp band below. The strip carries the only shadow.
           */}
-          <View
+          <PressableScale
+            scaleTo={0.995}
+            onPress={() => router.push("/profile-detail")}
             style={{
-              borderRadius: radius.xl,
+              height: CARD_H,
+              backgroundColor: "#FFFFFF",
+              borderRadius: CARD_R,
+              borderWidth: 1,
+              borderColor: "#E6E6E6",
+              paddingLeft: 15.5,
+              paddingRight: 12.5,
+              flexDirection: "row",
+              alignItems: "center",
               zIndex: 2,
-              ...(shadow.lg as object),
             }}
           >
+            <Avatar name={name} size={48} initialsSize={12} />
             <View
+              // Baselines measured at 242 / 278 / 311 on the 2x reference: the block
+              // sits 4.5 below plain centring, with 18 and 16.5 between lines.
               style={{
-                borderRadius: radius.xl,
-                overflow: "hidden",
-                backgroundColor: "#FFFFFF",
+                flex: 1,
+                marginLeft: 18.5,
+                justifyContent: "center",
+                paddingTop: 6.5,
               }}
             >
-              <PressableScale
-                scaleTo={0.995}
-                onPress={() => router.push("/profile-detail")}
+              <UiText
+                token="titleLg"
+                color={INK_TEXT}
+                numberOfLines={1}
+                // 18 extra-bold: the reference name is 27px tall with a 5px
+                // stroke at 2x; 16 bold measured 24 and 4.
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  // 12 round a 52pt avatar: the reference card measures 79pt
-                  // tall, and 16 round 58 was making it 93.
-                  padding: space.md,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: space.md,
+                  fontSize: 18,
+                  fontFamily: fontFamilies.extrabold,
+                  lineHeight: 23,
                 }}
               >
-                <Avatar name={name} size={52} />
-                <View style={{ flex: 1, gap: 1 }}>
-                  <UiText token="h3" color={brand[900]} numberOfLines={1}>
-                    {name}
-                  </UiText>
-                  {/* An unverified address is the one thing on this card that
-                  needs doing, so it carries the warning rather than sitting
-                  quietly in grey like the rest. */}
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: space.xs,
-                    }}
-                  >
-                    <UiText
-                      token="caption"
-                      color={email ? ink[500] : "#B4550A"}
-                      numberOfLines={1}
-                      style={{ flexShrink: 1 }}
-                    >
-                      {email || "Tambahkan email"}
-                    </UiText>
-                    {!email ? (
-                      <View
-                        style={{
-                          width: 15,
-                          height: 15,
-                          borderRadius: 8,
-                          backgroundColor: "#C2570B",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <UiText
-                          token="label"
-                          color="#FFFFFF"
-                          style={{ fontSize: 10, lineHeight: 13 }}
-                        >
-                          !
-                        </UiText>
-                      </View>
-                    ) : null}
-                  </View>
-                  <UiText token="caption" color={ink[600]}>
-                    {intlPhone(phone)}
-                  </UiText>
-                </View>
-                <PressableScale
-                  onPress={() => router.push("/edit-profile")}
-                  rippleBorderless
-                  hitSlop={12}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 17,
-                    backgroundColor: "transparent",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                {name}
+              </UiText>
+              {/* The warning sits in a fixed column at the right of the text,
+                  not against the end of the words: a long address is cut
+                  with an ellipsis before it, a short one leaves a gap. */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <UiText
+                  token="caption"
+                  color={email ? INK_TEXT : WARN}
+                  numberOfLines={1}
+                  style={{ flexShrink: 1, fontSize: 12, lineHeight: 17 }}
                 >
-                  <Glyph name="pencil" size={17} color={iconGrey} />
-                </PressableScale>
-              </PressableScale>
-
-              {/* Referral rides under the card as one piece with it — the code is
-              part of who you are here, not another menu row. */}
-              <PressableScale onPress={copyCode} scaleTo={1}>
-                <LinearGradient
-                  colors={[goldRamp[0], goldRamp[1], goldRamp[2]]}
-                  // Top to bottom, and reaching full gold early: sampling the
-                  // reference strip gives a near-flat #FFDD00 with a sheen along
-                  // its upper edge. Running the ramp across instead washed the
-                  // left half out to cream.
-                  locations={[0, 0.22, 1]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  // Square: the clip above supplies the block's bottom corners,
-                  // and a radius of its own would draw a second curve inside it.
-                  style={{
-                    paddingHorizontal: space.lg,
-                    paddingVertical: space.sm,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: space.sm,
-                  }}
-                >
-                  <Glyph name="qr" size={17} color="#6B2A00" />
-                  <UiText token="bodySemibold" color="#702B00">
-                    Kode Referal
-                  </UiText>
-                  <View style={{ flex: 1 }} />
-                  <UiText token="bodySemibold" color="#4A1D00">
-                    {referralCode}
-                  </UiText>
-                  {/* The dark disc is what tells you the strip is a control and
-                  not a caption printed on the card. */}
-                  <View
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 12,
-                      backgroundColor: copied ? "#1F6B45" : "#7A3300",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Glyph
-                      name={copied ? "check" : "copy"}
-                      size={14}
-                      color="#FFFFFF"
-                    />
-                  </View>
-                </LinearGradient>
-              </PressableScale>
+                  {email || "Tambahkan email"}
+                </UiText>
+                <View style={{ flex: 1, minWidth: 8 }} />
+                {!email ? (
+                  <Glyph name="alertCircle" size={12.5} color={WARN} />
+                ) : null}
+              </View>
+              <UiText
+                token="caption"
+                color="#4C4C4C"
+                style={{ fontSize: 12, lineHeight: 17, marginTop: -0.5 }}
+              >
+                {intlPhone(phone)}
+              </UiText>
             </View>
-          </View>
+            <PressableScale
+              onPress={() => router.push("/edit-profile")}
+              rippleBorderless
+              hitSlop={14}
+              style={{
+                marginLeft: 18.5,
+                width: 16,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Glyph name="pencil" size={16} color={iconGrey} />
+            </PressableScale>
+          </PressableScale>
+
+          {/* Referral strip: flat gold for its first half, then fading to
+              near-white at the right edge — sampled straight off the
+              reference. The whole strip leads to the referral page, which
+              has the copy and share actions. */}
+          <PressableScale
+            onPress={() => router.push("/referral")}
+            scaleTo={1}
+            style={{
+              marginTop: -CARD_R,
+              borderRadius: CARD_R,
+              ...(shadow.xs as object),
+            }}
+          >
+            <LinearGradient
+              colors={["#FFDD00", "#FFDD00", "#FFFDEF"]}
+              locations={[0, 0.5, 1]}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={{
+                height: STRIP_H + CARD_R,
+                paddingTop: CARD_R,
+                paddingLeft: 15.5,
+                paddingRight: 15,
+                borderRadius: CARD_R,
+                overflow: "hidden",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Glyph name="star" size={17} color={STRIP_INK} />
+              <UiText
+                token="label"
+                color={STRIP_INK}
+                style={{
+                  marginLeft: 10,
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.bold,
+                  letterSpacing: 0,
+                }}
+              >
+                Kode Referal
+              </UiText>
+              <View style={{ flex: 1 }} />
+              <UiText
+                token="captionMedium"
+                color={STRIP_INK}
+                style={{
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.semibold,
+                }}
+              >
+                {referralCode}
+              </UiText>
+              <View
+                style={{
+                  marginLeft: 9.5,
+                  width: 17.5,
+                  height: 17.5,
+                  borderRadius: 8.75,
+                  backgroundColor: STRIP_INK,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Glyph name="arrowRight" size={11} color="#FFF9D5" />
+              </View>
+            </LinearGradient>
+          </PressableScale>
 
           {/* The one thing the screen actively asks for, given its own card
               with a button rather than being buried in a list. */}

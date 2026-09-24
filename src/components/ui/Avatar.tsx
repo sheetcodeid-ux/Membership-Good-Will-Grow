@@ -7,6 +7,8 @@ interface AvatarProps {
   uri?: string;
   name?: string;
   size?: number;
+  /** Initials size in points; defaults to 38% of the circle. */
+  initialsSize?: number;
 }
 
 const palette = [brand[600], brand[400], "#B9852A", "#0F8A3C", "#C21A40"];
@@ -16,7 +18,12 @@ function colorFor(name: string) {
   return palette[idx];
 }
 
-export function Avatar({ uri, name = "?", size = 44 }: AvatarProps) {
+export function Avatar({
+  uri,
+  name = "?",
+  size = 44,
+  initialsSize,
+}: AvatarProps) {
   if (uri) {
     return (
       <Image
@@ -43,7 +50,11 @@ export function Avatar({ uri, name = "?", size = 44 }: AvatarProps) {
         justifyContent: "center",
       }}
     >
-      <AppText variant="bodySemibold" color="#FFFFFF" style={{ fontSize: size * 0.38 }}>
+      <AppText
+        variant="bodySemibold"
+        color="#FFFFFF"
+        style={{ fontSize: initialsSize ?? size * 0.38 }}
+      >
         {initials}
       </AppText>
     </View>

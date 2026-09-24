@@ -495,3 +495,8 @@ def bowl7():
     return [SC(line(a0,a1),HW), SC(line((a0[0]+o[0],a0[1]+o[1]),(a1[0]+o[0],a1[1]+o[1])),HW),
             C_("M3.8 11.2C3.8 7.8 7.4 5.6 12 5.6S20.2 7.8 20.2 11.2Z"), C_(_rim(12.6,1.7,22.3,8.4))]
 APP.update({"bowl":bowl7})
+
+def arrow_right():
+    """Arrow pointing right: the forward mark in a call-to-action disc."""
+    return [SC(line((4.0,12),(19.4,12)),SW), SC(line((13.0,5.6),(19.4,12),(13.0,18.4)),SW)]
+APP.update({"arrowRight":arrow_right})
