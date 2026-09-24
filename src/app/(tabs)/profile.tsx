@@ -14,12 +14,17 @@ import {
 } from "../../components/AccountHeroArt";
 import { AccountMenu, AccountSection } from "../../components/AccountMenu";
 import { Glyph } from "../../components/icons/Glyph";
+import {
+  REWARD_ART_H,
+  REWARD_ART_W,
+  RewardArt,
+} from "../../components/RewardArt";
 // Sign-out keeps its previous mark on purpose.
 import { LogoutSolid } from "../../components/AccountSolidIcons";
-import { danger, gold, iconGrey, ink, surface } from "../../theme/colors";
+import { danger, iconGrey, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
 import { fontFamilies } from "../../theme/typography";
-import { radius, space } from "../../theme/scale";
+import { space } from "../../theme/scale";
 import { useResponsive } from "../../theme/responsive";
 import { CONTACT, openEmail, openWhatsApp } from "../../data/contact";
 import { intlPhone, useAuthStore } from "../../store/authStore";
@@ -45,6 +50,8 @@ const CARD_R = 12;
 const STRIP_R = 15;
 const STRIP_TUCK = CARD_R;
 const INK_TEXT = "#202020";
+// Space between the referral strip and the reward card.
+const REWARD_GAP = 14;
 const WARN = "#A34500";
 const STRIP_INK = "#702B00";
 
@@ -271,39 +278,71 @@ export default function AccountScreen() {
           </PressableScale>
 
           {/* The one thing the screen actively asks for, given its own card
-              with a button rather than being buried in a list. */}
+              with a button rather than being buried in a list. Measured on
+              the reference: 98dp tall with a hairline border and the
+              identity card's corners, a two-line bold title in the warning
+              ink, a bordered white pill, and the art filling the
+              bottom-right corner, clipped by the card. */}
           <View
             style={{
-              marginTop: space.lg,
-              backgroundColor: "#FFF6E2",
-              borderRadius: radius.lg,
-              padding: space.lg,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: space.md,
+              marginTop: REWARD_GAP,
+              minHeight: REWARD_ART_H,
+              backgroundColor: "#FFF8E8",
+              borderRadius: CARD_R,
+              borderWidth: 1,
+              borderColor: "#E7E7E7",
+              overflow: "hidden",
+              paddingLeft: 12,
+              paddingTop: 15,
+              paddingBottom: 13,
+              paddingRight: REWARD_ART_W - 8,
             }}
           >
-            <View style={{ flex: 1, gap: space.sm }}>
-              <UiText token="bodySemibold" color="#7A5514">
-                Lengkapi profilmu, dapatkan reward
-              </UiText>
-              <PressableScale
-                onPress={() => router.push("/edit-profile")}
-                scaleTo={0.97}
+            <View
+              style={{
+                position: "absolute",
+                right: -1,
+                bottom: -1,
+              }}
+            >
+              <RewardArt />
+            </View>
+            <UiText
+              color={WARN}
+              style={{
+                fontSize: 14,
+                lineHeight: 17,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
+              Lengkapi profilmu, dapatkan reward
+            </UiText>
+            <PressableScale
+              onPress={() => router.push("/edit-profile")}
+              scaleTo={0.97}
+              style={{
+                marginTop: 5,
+                alignSelf: "flex-start",
+                height: 29,
+                justifyContent: "center",
+                backgroundColor: "#FFFFFF",
+                borderRadius: 14.5,
+                borderWidth: 1,
+                borderColor: "#EEEEEE",
+                paddingHorizontal: 10,
+              }}
+            >
+              <UiText
+                color={INK_TEXT}
                 style={{
-                  alignSelf: "flex-start",
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: radius.pill,
-                  paddingHorizontal: space.lg,
-                  paddingVertical: space.sm,
+                  fontSize: 14,
+                  lineHeight: 17,
+                  fontFamily: fontFamilies.bold,
                 }}
               >
-                <UiText token="label" color="#7A5514">
-                  Lengkapi sekarang
-                </UiText>
-              </PressableScale>
-            </View>
-            <Glyph name="gift" size={40} color={gold[500]} />
+                Lengkapi sekarang
+              </UiText>
+            </PressableScale>
           </View>
 
           <AccountSection title="Aktivitas kamu" />
