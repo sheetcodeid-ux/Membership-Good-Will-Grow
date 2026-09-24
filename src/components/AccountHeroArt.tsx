@@ -35,27 +35,27 @@ const SCENE_H = 170;
 /** How far the scene reaches below the header block it belongs to. */
 export const HERO_ART_OVERHANG = SCENE_H - 150;
 
-/** A gear outline with softly rounded teeth, plus its hub hole. */
+/**
+ * A chubby gear: the radius swings smoothly between root and tip, so teeth
+ * and gaps are both round — no flat flanks, no corners.
+ */
 function gearPath(teeth: number, outer: number, inner: number, hole: number) {
-  const steps = 24;
+  const n = 240;
   const pts: string[] = [];
-  for (let i = 0; i < teeth * steps; i += 1) {
-    const a = (i / (teeth * steps)) * Math.PI * 2;
-    const t = (i % steps) / steps;
-    let v = 0;
-    if (t < 0.14) v = (1 - Math.cos((Math.PI * t) / 0.14)) / 2;
-    else if (t < 0.4) v = 1;
-    else if (t < 0.54) v = (1 + Math.cos((Math.PI * (t - 0.4)) / 0.14)) / 2;
+  const k = Math.tanh(2.4);
+  for (let i = 0; i < n; i += 1) {
+    const a = (i / n) * Math.PI * 2;
+    const v = 0.5 + (0.5 * Math.tanh(2.4 * Math.cos(teeth * a))) / k;
     const r = inner + (outer - inner) * v;
     pts.push(`${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`);
   }
   return `M${pts.join("L")}ZM${hole} 0A${hole} ${hole} 0 1 0 ${-hole} 0A${hole} ${hole} 0 1 0 ${hole} 0Z`;
 }
-const GEAR = gearPath(8, 8.2, 6.3, 1.8);
+const GEAR = gearPath(7, 8.6, 6.2, 2.3);
 const SHIELD =
   "M-1.3 -14.4C-0.5 -14.9 0.5 -14.9 1.3 -14.4C5 -12.3 8.8 -11.3 12.3 -11C13.1 -10.9 13.6 -10.4 13.6 -9.6V-2.4C13.6 6.6 7.6 12.6 1.3 15.1C0.4 15.4 -0.4 15.4 -1.3 15.1C-7.6 12.6 -13.6 6.6 -13.6 -2.4V-9.6C-13.6 -10.4 -13.1 -10.9 -12.3 -11C-8.8 -11.3 -5 -12.3 -1.3 -14.4Z";
 const TICK = "M-5.4 0.4L-1.6 4.2L5.6 -3.4";
-const SHACKLE = "M-3.9 -1.2V-4.6a3.9 3.9 0 0 1 7.8 0V-1.2";
+const SHACKLE = "M-4 -0.5V-4.2a4 4 0 0 1 8 0V-0.5";
 
 type Building = [
   x: number,
@@ -197,30 +197,29 @@ function Row({
 }
 
 /**
- * A floating glass orb: its underside offset below, a face lit from the top
- * left, a rim catching the light and a specular glint.
+ * A soft floating orb, modelled like clay rather than glass: shading comes
+ * from the gradient alone (light top left, bounce light along the lower
+ * edge), a blurred glint, and a faint shadow on the scene below.
  */
 function Orb({ cx, cy, r }: { cx: number; cy: number; r: number }) {
   return (
     <>
-      <Circle cx={cx + 0.6} cy={cy + 1.8} r={r} fill="#86A5EE" />
-      <Circle cx={cx} cy={cy} r={r} fill="url(#bubble)" />
-      <Circle
-        cx={cx}
-        cy={cy}
-        r={r - 0.5}
-        fill="none"
-        stroke="url(#phRim)"
-        strokeWidth={1}
-      />
       <Ellipse
-        cx={cx - r * 0.42}
-        cy={cy - r * 0.5}
-        rx={r * 0.26}
-        ry={r * 0.13}
-        fill="#FFFFFF"
-        opacity={0.9}
-        transform={`rotate(-38 ${cx - r * 0.42} ${cy - r * 0.5})`}
+        cx={cx + 1.5}
+        cy={cy + r + 4}
+        rx={r * 0.8}
+        ry={2.6}
+        fill="url(#softShadow)"
+      />
+      <Circle cx={cx} cy={cy} r={r} fill="url(#orb)" />
+      <Circle cx={cx} cy={cy} r={r} fill="url(#orbBounce)" />
+      <Ellipse
+        cx={cx - r * 0.36}
+        cy={cy - r * 0.44}
+        rx={r * 0.34}
+        ry={r * 0.22}
+        fill="url(#glint)"
+        transform={`rotate(-32 ${cx - r * 0.36} ${cy - r * 0.44})`}
       />
     </>
   );
@@ -279,18 +278,17 @@ export function AccountHeroArt({
           <Stop offset="0" stopColor="#F5F8FF" />
           <Stop offset="1" stopColor="#BCD0FF" />
         </LinearGradient>
-        <LinearGradient
+        <RadialGradient
           id="shieldFace"
-          x1="-12"
-          y1="-15"
-          x2="10"
-          y2="15"
+          cx="-5"
+          cy="-7"
+          r="24"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0" stopColor="#9FBBFF" />
-          <Stop offset="0.5" stopColor="#4F75D4" />
+          <Stop offset="0" stopColor="#B9CEFF" />
+          <Stop offset="0.45" stopColor="#5A7ED8" />
           <Stop offset="1" stopColor={brand[600]} />
-        </LinearGradient>
+        </RadialGradient>
         <LinearGradient
           id="shieldInset"
           x1="-9"
@@ -306,60 +304,74 @@ export function AccountHeroArt({
           <Stop offset="0" stopColor="#9DB8F7" />
           <Stop offset="1" stopColor="#C3D5FF" />
         </LinearGradient>
-        <RadialGradient id="bubble" cx="0.36" cy="0.3" r="0.78">
+        <RadialGradient id="orb" cx="0.38" cy="0.32" r="0.72">
           <Stop offset="0" stopColor="#FFFFFF" />
-          <Stop offset="0.55" stopColor="#CFDDFF" />
-          <Stop offset="1" stopColor="#9DB8F7" />
+          <Stop offset="0.5" stopColor="#DCE7FF" />
+          <Stop offset="1" stopColor="#A6BFF8" />
         </RadialGradient>
-        <LinearGradient id="bubbleBar" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#E2EBFF" />
-          <Stop offset="0.6" stopColor="#B9CEFD" />
-          <Stop offset="1" stopColor="#9FBAF8" />
-        </LinearGradient>
-        <LinearGradient
-          id="gearFace"
-          x1="-7"
-          y1="-7"
-          x2="6"
-          y2="7"
-          gradientUnits="userSpaceOnUse"
-        >
-          <Stop offset="0" stopColor="#A9C2FF" />
-          <Stop offset="0.5" stopColor="#5277D2" />
-          <Stop offset="1" stopColor={brand[600]} />
+        <RadialGradient id="orbBounce" cx="0.62" cy="0.82" r="0.5">
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.45} />
+          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+        </RadialGradient>
+        <RadialGradient id="glint" cx="0.5" cy="0.5" r="0.5">
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.95} />
+          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+        </RadialGradient>
+        <RadialGradient id="softShadow" cx="0.5" cy="0.5" r="0.5">
+          <Stop offset="0" stopColor={brand[800]} stopOpacity={0.14} />
+          <Stop offset="1" stopColor={brand[800]} stopOpacity={0} />
+        </RadialGradient>
+        <RadialGradient id="pill" cx="0.3" cy="0.2" r="0.9">
+          <Stop offset="0" stopColor="#F4F8FF" />
+          <Stop offset="0.55" stopColor="#C6D7FF" />
+          <Stop offset="1" stopColor="#97B3F4" />
+        </RadialGradient>
+        <LinearGradient id="star" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFFFFF" />
+          <Stop offset="1" stopColor="#E4ECFF" />
         </LinearGradient>
         <RadialGradient
-          id="gearHub"
-          cx="-1.4"
-          cy="-1.6"
-          r="5.2"
+          id="gearFace"
+          cx="-3.2"
+          cy="-3.6"
+          r="13"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0" stopColor="#E3ECFF" />
-          <Stop offset="1" stopColor={brand[400]} />
-        </RadialGradient>
-        <LinearGradient
-          id="lockBody"
-          x1="-6.7"
-          y1="-2.3"
-          x2="4"
-          y2="8.1"
-          gradientUnits="userSpaceOnUse"
-        >
-          <Stop offset="0" stopColor="#A9C2FF" />
-          <Stop offset="0.5" stopColor="#5277D2" />
+          <Stop offset="0" stopColor="#B9CEFF" />
+          <Stop offset="0.45" stopColor="#6386DE" />
           <Stop offset="1" stopColor={brand[600]} />
-        </LinearGradient>
+        </RadialGradient>
+        <RadialGradient
+          id="gearHub"
+          cx="-1.2"
+          cy="-1.4"
+          r="5"
+          gradientUnits="userSpaceOnUse"
+        >
+          <Stop offset="0" stopColor="#EEF3FF" />
+          <Stop offset="1" stopColor="#7E9EEA" />
+        </RadialGradient>
+        <RadialGradient
+          id="lockBody"
+          cx="-3.4"
+          cy="-0.4"
+          r="13"
+          gradientUnits="userSpaceOnUse"
+        >
+          <Stop offset="0" stopColor="#B9CEFF" />
+          <Stop offset="0.45" stopColor="#6386DE" />
+          <Stop offset="1" stopColor={brand[600]} />
+        </RadialGradient>
         <LinearGradient
           id="lockSteel"
           x1="-4"
           y1="-8.5"
           x2="4"
-          y2="-1"
+          y2="-0.5"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0" stopColor="#FFFFFF" />
-          <Stop offset="1" stopColor="#9FAEC9" />
+          <Stop offset="0" stopColor="#EEF2FA" />
+          <Stop offset="1" stopColor="#7F90B4" />
         </LinearGradient>
       </Defs>
 
@@ -472,11 +484,17 @@ export function AccountHeroArt({
             fill={brand[800]}
           />
           {/* a shield with a tick — the account is protected — raised
-              off the glass: its side, a lit face, an inset rim, a tick
-              with its own shadow */}
+              off the glass: a soft shadow, a face lit from the top left,
+              an inset rim, a tick with its own shadow */}
           <G transform="translate(250 69)">
-            <Path d={SHIELD} fill={brand[800]} transform="translate(0.9 1.3)" />
+            <Path
+              d={SHIELD}
+              fill={brand[800]}
+              opacity={0.3}
+              transform="translate(0.6 1.4)"
+            />
             <Path d={SHIELD} fill="url(#shieldFace)" />
+            <Path d={SHIELD} fill="url(#orbBounce)" />
             <Path
               d={SHIELD}
               fill="none"
@@ -530,127 +548,125 @@ export function AccountHeroArt({
           />
         </G>
 
-        {/* password bubble: a thick slab — its underside shows below the
-            lit face — with a gloss band and raised asterisks */}
-        <Rect
-          x="174"
-          y="24.8"
-          width="54"
-          height="21"
-          rx="10.5"
-          fill="#7F9FE8"
-        />
-        <Path d="M186 44.8L184.5 51.3L193 44.8Z" fill="#7F9FE8" />
-        <Rect
-          x="174"
-          y="22.5"
-          width="54"
-          height="21"
-          rx="10.5"
-          fill="url(#bubbleBar)"
-        />
-        <Path d="M186 42.5L184.5 49L193 42.5Z" fill="#A3BDF9" />
-        <Rect
-          x="180"
-          y="24.2"
-          width="42"
-          height="4.6"
-          rx="2.3"
-          fill="#FFFFFF"
-          opacity={0.55}
-        />
-        {[188, 201, 214].map((x) => (
-          <G key={x} transform={`translate(${x} 33.5)`}>
-            {[
-              ["0.45", "0.8", "#6A8BDC"],
-              ["0", "0", "#FFFFFF"],
-            ].map(([dx, dy, fill]) => (
-              <G key={fill} transform={`translate(${dx} ${dy})`}>
-                {[0, 60, -60].map((a) => (
-                  <Rect
-                    key={a}
-                    x="-1"
-                    y="-4.7"
-                    width="2"
-                    height="9.4"
-                    rx="1"
-                    fill={fill}
-                    transform={`rotate(${a})`}
-                  />
-                ))}
-              </G>
-            ))}
-          </G>
-        ))}
-
-        {/* gear: extruded towards the lower right, face lit from above */}
-        <Orb cx={202} cy={56} r={12.6} />
-        <G transform="translate(201.4 55.3)">
-          {[1, 2, 3, 4, 5].map((k) => (
-            <Path
-              key={k}
-              d={GEAR}
-              fill={brand[900]}
-              fillRule="evenodd"
-              transform={`translate(${k * 0.24} ${k * 0.3})`}
-            />
+        {/* password bubble: puffy and tipped a little, shaded by its
+            gradient, with chubby asterisks */}
+        <Ellipse cx="203" cy="50.5" rx="21" ry="2.4" fill="url(#softShadow)" />
+        <G transform="rotate(-6 201 33)">
+          <Path
+            d="M184.6 41.6C184.4 45 183 47.8 181 49.8C185.2 49.6 189 47.4 191.4 43.2Z"
+            fill="#AFC6FB"
+          />
+          <Rect
+            x="174"
+            y="22"
+            width="54"
+            height="22"
+            rx="11"
+            fill="url(#pill)"
+          />
+          <Rect
+            x="174"
+            y="22"
+            width="54"
+            height="22"
+            rx="11"
+            fill="url(#orbBounce)"
+          />
+          <Ellipse cx="186" cy="26.4" rx="9" ry="2.6" fill="url(#glint)" />
+          {[188, 201, 214].map((x) => (
+            <G key={x} transform={`translate(${x} 33.4)`}>
+              {[0, 60, -60].map((a) => (
+                <Rect
+                  key={a}
+                  x="-1.1"
+                  y="-5"
+                  width="2.2"
+                  height="10"
+                  rx="1.1"
+                  fill="#7C9BE6"
+                  opacity={0.28}
+                  transform={`translate(0.3 0.8) rotate(${a})`}
+                />
+              ))}
+              {[0, 60, -60].map((a) => (
+                <Rect
+                  key={a}
+                  x="-1.1"
+                  y="-5"
+                  width="2.2"
+                  height="10"
+                  rx="1.1"
+                  fill="url(#star)"
+                  transform={`rotate(${a})`}
+                />
+              ))}
+            </G>
           ))}
-          <Path d={GEAR} fill="url(#gearFace)" fillRule="evenodd" />
-          <Circle r="3.8" fill="url(#gearHub)" />
-          <Circle r="1.8" fill={brand[900]} />
         </G>
 
-        {/* lock: steel shackle, blue body with its side showing */}
-        <Orb cx={308} cy={59.5} r={15.5} />
-        <G transform="translate(307.4 60.2)">
+        {/* gear: chubby, round-toothed, tipped a little */}
+        <Orb cx={202} cy={57} r={12.8} />
+        <G transform="translate(201.6 56.6) rotate(10)">
           <Path
-            d={SHACKLE}
-            fill="none"
-            stroke="#6E7C9A"
-            strokeWidth={2.6}
-            strokeLinecap="round"
-            transform="translate(0.7 0.8)"
+            d={GEAR}
+            fill={brand[800]}
+            fillRule="evenodd"
+            opacity={0.3}
+            transform="translate(0.5 1.1)"
           />
+          <Path d={GEAR} fill="url(#gearFace)" fillRule="evenodd" />
+          <Circle
+            r="4.3"
+            fill="none"
+            stroke="url(#gearHub)"
+            strokeWidth={2.2}
+          />
+          <Ellipse
+            cx="-3.6"
+            cy="-4.4"
+            rx="2.4"
+            ry="1.3"
+            fill="url(#glint)"
+            transform="rotate(-40 -3.6 -4.4)"
+          />
+        </G>
+
+        {/* lock: chubby body, thick shackle, tipped the other way */}
+        <Orb cx={308} cy={59.5} r={15.5} />
+        <G transform="translate(307.6 60.6) rotate(8)">
+          <Ellipse cx="0.6" cy="9.4" rx="7" ry="1.4" fill="url(#softShadow)" />
           <Path
             d={SHACKLE}
             fill="none"
             stroke="url(#lockSteel)"
-            strokeWidth={2.6}
+            strokeWidth={3}
             strokeLinecap="round"
           />
           <Rect
-            x="-5.6"
-            y="-1.1"
-            width="13.4"
-            height="10.4"
-            rx="2.8"
-            fill={brand[900]}
-          />
-          <Rect
-            x="-6.7"
-            y="-2.3"
-            width="13.4"
-            height="10.4"
-            rx="2.8"
+            x="-7.2"
+            y="-2"
+            width="14.4"
+            height="11.4"
+            rx="4.2"
             fill="url(#lockBody)"
           />
           <Rect
-            x="-5.1"
-            y="-1.4"
-            width="10.2"
-            height="1.1"
-            rx="0.55"
-            fill="#FFFFFF"
-            opacity={0.6}
+            x="-7.2"
+            y="-2"
+            width="14.4"
+            height="11.4"
+            rx="4.2"
+            fill="url(#orbBounce)"
           />
-          <Circle cx="0" cy="2.1" r="1.5" fill={brand[950]} />
+          <Ellipse cx="-3.4" cy="0.4" rx="2.8" ry="1.3" fill="url(#glint)" />
+          <Circle cx="0" cy="2.9" r="1.7" fill={brand[900]} />
           <Rect
-            x="-0.6"
-            y="2.4"
-            width="1.2"
-            height="3"
-            rx="0.6"
-            fill={brand[950]}
+            x="-0.75"
+            y="3.2"
+            width="1.5"
+            height="3.4"
+            rx="0.75"
+            fill={brand[900]}
           />
         </G>
 
