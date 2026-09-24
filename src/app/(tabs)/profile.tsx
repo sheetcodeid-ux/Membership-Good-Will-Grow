@@ -3,10 +3,7 @@ import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { PressableScale } from "../../components/ui/PressableScale";
@@ -39,12 +36,17 @@ const HERO_H = CARD_TOP + 61.5;
 const STRIP_H = 33;
 const EDGE = 13.5;
 const CARD_R = 15;
+// How far the gold strip tucks up behind the card (measured on the reference).
+const STRIP_TUCK = 8;
 const INK_TEXT = "#202020";
 const WARN = "#A34500";
 const STRIP_INK = "#702B00";
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
+  // The scene is drawn from the very top of the screen, status bar
+  // included; without one (web) it would lose its top 24dp.
+  const top = Math.max(insets.top, 24);
   const r = useResponsive();
   const name = useAuthStore((s) => s.name);
   const phone = useAuthStore((s) => s.phone);
@@ -64,14 +66,11 @@ export default function AccountScreen() {
         {/* Inside the list, not pinned over it: the scene belongs to the top
             of the page and should leave with it. It ends in a straight edge,
             as the reference's does — the card covers where a corner would be. */}
-        <View style={{ height: HERO_H + insets.top, overflow: "hidden" }}>
-          <AccountHeroArt width={r.width} height={HERO_H + insets.top} />
+        <View style={{ height: HERO_H + top, overflow: "hidden" }}>
+          <AccountHeroArt width={r.width} height={HERO_H + top} />
         </View>
 
-        <SafeAreaView
-          edges={["top"]}
-          style={{ position: "absolute", left: 0, right: 0 }}
-        >
+        <View style={{ position: "absolute", left: 0, right: 0, top }}>
           <View
             style={{
               height: HEADER_H,
@@ -87,7 +86,7 @@ export default function AccountScreen() {
               Akun Saya
             </UiText>
           </View>
-        </SafeAreaView>
+        </View>
 
         <View
           style={{ paddingHorizontal: EDGE, marginTop: -(HERO_H - CARD_TOP) }}
@@ -191,9 +190,14 @@ export default function AccountScreen() {
           <PressableScale
             onPress={() => router.push("/referral")}
             scaleTo={1}
+            // The strip runs up behind the card with square top corners, so
+            // the gold fills the space outside the card's rounded bottom
+            // corners — in the reference the card's corners sit on gold, not
+            // on the page.
             style={{
-              marginTop: -CARD_R,
-              borderRadius: CARD_R,
+              marginTop: -STRIP_TUCK,
+              borderBottomLeftRadius: CARD_R,
+              borderBottomRightRadius: CARD_R,
               ...(shadow.xs as object),
             }}
           >
@@ -203,17 +207,18 @@ export default function AccountScreen() {
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
               style={{
-                height: STRIP_H + CARD_R,
-                paddingTop: CARD_R,
+                height: STRIP_H + STRIP_TUCK,
+                paddingTop: STRIP_TUCK,
                 paddingLeft: 15.5,
                 paddingRight: 15,
-                borderRadius: CARD_R,
+                borderBottomLeftRadius: CARD_R,
+                borderBottomRightRadius: CARD_R,
                 overflow: "hidden",
                 flexDirection: "row",
                 alignItems: "center",
               }}
             >
-              <Glyph name="star" size={17} color={STRIP_INK} />
+              <Glyph name="qr" size={17} color={STRIP_INK} />
               <UiText
                 token="label"
                 color={STRIP_INK}
