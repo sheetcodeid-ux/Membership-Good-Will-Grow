@@ -46,9 +46,28 @@ export const gold = {
   700: "#946A20",
 } as const;
 
-export const success = { 50: "#E8F8EE", 500: "#16A34A", 600: "#0F8A3C" } as const;
-export const warning = { 50: "#FFF4E0", 500: "#F59E0B", 600: "#D6860A" } as const;
-export const danger = { 50: "#FDE8ED", 500: "#E11D48", 600: "#C21A40" } as const;
+export const success = {
+  50: "#E8F8EE",
+  500: "#16A34A",
+  600: "#0F8A3C",
+} as const;
+export const warning = {
+  50: "#FFF4E0",
+  500: "#F59E0B",
+  600: "#D6860A",
+} as const;
+export const danger = {
+  50: "#FDE8ED",
+  500: "#E11D48",
+  600: "#C21A40",
+} as const;
+
+/**
+ * Neutral grey for list glyphs — the grey of the reference icon sheet. Not
+ * ink[600]: that one carries the navy's blue, and next to navy text it read
+ * as a tint rather than as grey.
+ */
+export const iconGrey = "#484949";
 
 /** App background: a whisper of the brand navy over white. */
 export const surface = "#F3F4F9";

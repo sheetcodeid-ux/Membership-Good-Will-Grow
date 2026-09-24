@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# glyph generator scratch output (the committed result is src/components/icons/glyphPaths.ts)
+tools/glyphs/vfinal.json
+tools/glyphs/__pycache__/

@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { UiText } from "./ui/Text";
 import { PressableScale } from "./ui/PressableScale";
-import { AppIcon } from "./ui/AppIcon";
+import { Glyph } from "./icons/Glyph";
 import { brand, ink } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { HIT_SIZE, radius, space } from "../theme/scale";
@@ -48,7 +48,9 @@ export function AccountMenu({ items }: { items: MenuItemProps[] }) {
           {i > 0 ? (
             // Inset from the label, not the card, so the rule reads as a
             // divider between rows rather than a border around each.
-            <View style={{ height: 1, backgroundColor: ink[100], marginLeft: 56 }} />
+            <View
+              style={{ height: 1, backgroundColor: ink[100], marginLeft: 56 }}
+            />
           ) : null}
           <PressableScale
             onPress={item.onPress}
@@ -80,14 +82,17 @@ export function AccountMenu({ items }: { items: MenuItemProps[] }) {
                   backgroundColor: badgeColors[item.badgeTone ?? "brand"].bg,
                 }}
               >
-                <UiText token="label" color={badgeColors[item.badgeTone ?? "brand"].fg}>
+                <UiText
+                  token="label"
+                  color={badgeColors[item.badgeTone ?? "brand"].fg}
+                >
                   {item.badge}
                 </UiText>
               </View>
             ) : null}
             <View style={{ flex: 1 }} />
             {item.plain ? null : (
-              <AppIcon name="chevronRight" size={17} color={ink[300]} />
+              <Glyph name="chevronRight" size={15} color={ink[300]} />
             )}
           </PressableScale>
         </View>
@@ -102,7 +107,11 @@ export function AccountSection({ title }: { title: string }) {
     <UiText
       token="captionMedium"
       color={ink[500]}
-      style={{ marginTop: space.xxl, marginBottom: space.sm, paddingHorizontal: space.xs }}
+      style={{
+        marginTop: space.xxl,
+        marginBottom: space.sm,
+        paddingHorizontal: space.xs,
+      }}
     >
       {title}
     </UiText>

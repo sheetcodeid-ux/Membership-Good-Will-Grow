@@ -1,0 +1,6 @@
+numpy
+scipy
+shapely>=2
+svgelements
+cairosvg
+Pillow

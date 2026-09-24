@@ -21,7 +21,7 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
  * so the two curves read as nested rather than as one mis-set radius — and
  * shallow enough that the artwork keeps its width right down to the edge.
  */
-const BANNER_RADIUS = radius.md + 2;
+export const BANNER_RADIUS = radius.md + 2;
 
 /** Indicator that tracks the scroll offset rather than the settled page. */
 function Dot({ index, progress }: { index: number; progress: SharedValue<number> }) {
