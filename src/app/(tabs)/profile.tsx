@@ -8,7 +8,10 @@ import { UiText } from "../../components/ui/Text";
 import { Avatar } from "../../components/ui/Avatar";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { AccountHeroArt } from "../../components/AccountHeroArt";
+import {
+  AccountHeroArt,
+  HERO_ART_OVERHANG,
+} from "../../components/AccountHeroArt";
 import { AccountMenu, AccountSection } from "../../components/AccountMenu";
 import { Glyph } from "../../components/icons/Glyph";
 // Sign-out keeps its previous mark on purpose.
@@ -64,10 +67,14 @@ export default function AccountScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
       >
         {/* Inside the list, not pinned over it: the scene belongs to the top
-            of the page and should leave with it. It ends in a straight edge,
-            as the reference's does — the card covers where a corner would be. */}
-        <View style={{ height: HERO_H + top, overflow: "hidden" }}>
-          <AccountHeroArt width={r.width} height={HERO_H + top} />
+            of the page and should leave with it. Its lower edge arcs down
+            behind the card, so the art overhangs this block; the card,
+            later in the tree, covers it. */}
+        <View style={{ height: HERO_H + top }}>
+          <AccountHeroArt
+            width={r.width}
+            height={HERO_H + top + HERO_ART_OVERHANG}
+          />
         </View>
 
         <View style={{ position: "absolute", left: 0, right: 0, top }}>
