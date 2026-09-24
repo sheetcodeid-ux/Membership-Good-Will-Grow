@@ -1931,3 +1931,27 @@ export function PosGlyph({ size = 24, color = "#000" }: GlyphProps) {
     </Svg>
   );
 }
+
+
+/**
+ * Solid pencil, no baseline.
+ *
+ * The composer's mark carries a line under it to mean "write a post"; an
+ * edit button next to a name means only "change this", so the line is
+ * noise there. Filled rather than outlined, to sit with the solid set.
+ */
+export function PencilGlyph({ size = 24, color = "#000" }: GlyphProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M17.6 2.1a2.9 2.9 0 0 1 4.1 4.1l-1.5 1.5-4.1-4.1Z"
+        fill={color}
+      />
+      <Path d="M14.75 4.95 18.85 9.05 8.3 19.6l-4.1-4.1Z" fill={color} />
+      <Path
+        d="M3.32 16.72 6.98 20.38l-4.5 1.12a.82.82 0 0 1-1-1Z"
+        fill={color}
+      />
+    </Svg>
+  );
+}

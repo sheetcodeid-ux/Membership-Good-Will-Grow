@@ -13,27 +13,28 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { AccountHeroArt } from "../../components/AccountHeroArt";
 import { AccountMenu, AccountSection } from "../../components/AccountMenu";
 import {
-  BlockedUserGlyph,
-  FaqGlyph,
-  GearFlowerGlyph,
-  GiftGlyph,
-  LogoutGlyph,
-  MenuLinesGlyph,
-  OrderHistoryGlyph,
-  PointsHistoryGlyph,
-  PrivacyGlyph,
-  QrGlyph,
-  TagGlyph,
-  TermsGlyph,
-  VoucherGlyph,
-  WhatsAppGlyph,
-} from "../../components/AccountIcons";
+  CoinsSolid,
+  DocSolid,
+  FaqSolid,
+  GearSolid,
+  GiftSolid,
+  GridSolid,
+  LogoutSolid,
+  MailSolid,
+  QrSolid,
+  ReceiptSolid,
+  ShieldSolid,
+  TagSolid,
+  TicketSolid,
+  UserBlockSolid,
+  WhatsAppSolid,
+} from "../../components/AccountSolidIcons";
 import { brand, danger, gold, goldRamp, ink, surface } from "../../theme/colors";
 import { shadow } from "../../theme/shadows";
 import { radius, space } from "../../theme/scale";
 import { useResponsive } from "../../theme/responsive";
 import { CONTACT, openEmail, openWhatsApp } from "../../data/contact";
-import { localPhone, useAuthStore } from "../../store/authStore";
+import { intlPhone, useAuthStore } from "../../store/authStore";
 import { coupons, orders } from "../../data/mock";
 
 /**
@@ -105,7 +106,9 @@ export default function AccountScreen() {
             style={{
               backgroundColor: "#FFFFFF",
               borderRadius: radius.xl,
-              padding: space.lg,
+              // 12 round a 52pt avatar: the reference card measures 79pt
+              // tall, and 16 round 58 was making it 93.
+              padding: space.md,
               flexDirection: "row",
               alignItems: "center",
               gap: space.md,
@@ -113,7 +116,7 @@ export default function AccountScreen() {
               ...(shadow.lg as object),
             }}
           >
-            <Avatar name={name} size={58} />
+            <Avatar name={name} size={52} />
             <View style={{ flex: 1, gap: 1 }}>
               <UiText token="h3" color={brand[900]} numberOfLines={1}>
                 {name}
@@ -148,7 +151,7 @@ export default function AccountScreen() {
                 ) : null}
               </View>
               <UiText token="caption" color={ink[600]}>
-                {localPhone(phone)}
+                {intlPhone(phone)}
               </UiText>
             </View>
             <PressableScale
@@ -156,15 +159,15 @@ export default function AccountScreen() {
               rippleBorderless
               hitSlop={12}
               style={{
-                width: 38,
-                height: 38,
-                borderRadius: 19,
-                backgroundColor: brand[50],
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                backgroundColor: "transparent",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <AppIcon name="compose" size={18} color={brand[700]} />
+              <AppIcon name="pencil" size={17} color={ink[700]} />
             </PressableScale>
           </PressableScale>
 
@@ -177,7 +180,7 @@ export default function AccountScreen() {
               // reference strip gives a near-flat #FFDD00 with a sheen along
               // its upper edge. Running the ramp across instead washed the
               // left half out to cream.
-              locations={[0, 0.34, 1]}
+              locations={[0, 0.22, 1]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={{
@@ -187,6 +190,7 @@ export default function AccountScreen() {
                 // reference, where the strip is a sliver under the card
                 // rather than a second card of its own.
                 marginTop: -radius.xl,
+                marginHorizontal: -1,
                 paddingTop: radius.xl + space.xs,
                 borderRadius: radius.lg,
                 paddingHorizontal: space.lg,
@@ -199,7 +203,7 @@ export default function AccountScreen() {
             >
               {/* A highlight across the top third, the way a real gold face
                   catches light. Without it the strip is flat colour. */}
-              <QrGlyph size={18} color="#6B2A00" detail={goldRamp[1]} />
+              <QrSolid size={17} color="#6B2A00" />
               <UiText token="bodySemibold" color="#702B00">
                 Kode Referal
               </UiText>
@@ -257,36 +261,36 @@ export default function AccountScreen() {
                 </UiText>
               </PressableScale>
             </View>
-            <GiftGlyph size={44} color={gold[500]} detail="#FFF6E2" />
+            <GiftSolid size={40} color={gold[500]} />
           </View>
 
           <AccountSection title="Aktivitas kamu" />
           <AccountMenu
             items={[
               {
-                icon: <OrderHistoryGlyph />,
+                icon: <ReceiptSolid color={brand[600]} />,
                 label: "Riwayat Pemesanan",
                 badge: String(orders.length),
                 onPress: () => router.push("/order-history"),
               },
               {
-                icon: <PointsHistoryGlyph />,
+                icon: <CoinsSolid color={brand[600]} />,
                 label: "Histori Poin",
                 onPress: () => router.push("/points-history"),
               },
               {
-                icon: <TagGlyph />,
+                icon: <TagSolid color={brand[600]} />,
                 label: "Kupon Saya",
                 badge: String(coupons.length),
                 onPress: () => router.push("/coupons"),
               },
               {
-                icon: <VoucherGlyph />,
+                icon: <TicketSolid color={brand[600]} />,
                 label: "Voucher Saya",
                 onPress: () => router.push("/vouchers"),
               },
               {
-                icon: <TagGlyph />,
+                icon: <TagSolid color={brand[600]} />,
                 label: "Riwayat Pembelian Kupon",
                 onPress: () => router.push("/coupon-purchases"),
               },
@@ -297,17 +301,17 @@ export default function AccountScreen() {
           <AccountMenu
             items={[
               {
-                icon: <GearFlowerGlyph />,
+                icon: <GearSolid color={brand[600]} />,
                 label: "Pengaturan",
                 onPress: () => router.push("/settings"),
               },
               {
-                icon: <MenuLinesGlyph />,
+                icon: <GridSolid color={brand[600]} />,
                 label: "Atur Menu Pintas",
                 onPress: () => router.push("/shortcuts"),
               },
               {
-                icon: <BlockedUserGlyph />,
+                icon: <UserBlockSolid color={brand[600]} />,
                 label: "Daftar Blokir Pengguna",
                 onPress: () => router.push("/blocked"),
               },
@@ -317,24 +321,24 @@ export default function AccountScreen() {
           <AccountSection title="Bantuan & ketentuan" />
           <AccountMenu
             items={[
-              { icon: <FaqGlyph />, label: "FAQ", onPress: () => router.push("/faq") },
+              { icon: <FaqSolid color={brand[600]} />, label: "FAQ", onPress: () => router.push("/faq") },
               {
-                icon: <TermsGlyph />,
+                icon: <DocSolid color={brand[600]} />,
                 label: "Syarat & Ketentuan",
                 onPress: () => router.push("/terms"),
               },
               {
-                icon: <PrivacyGlyph />,
+                icon: <ShieldSolid color={brand[600]} />,
                 label: "Kebijakan Privasi",
                 onPress: () => router.push("/privacy"),
               },
               {
-                icon: <WhatsAppGlyph size={19} />,
+                icon: <WhatsAppSolid size={21} />,
                 label: CONTACT.phoneLabel,
                 onPress: () => openWhatsApp(),
               },
               {
-                icon: <AppIcon name="mail" size={19} color={brand[700]} />,
+                icon: <MailSolid color={brand[600]} />,
                 label: CONTACT.emailLabel,
                 onPress: () => openEmail("Bantuan Good Will Grow"),
               },
@@ -345,7 +349,7 @@ export default function AccountScreen() {
             <AccountMenu
               items={[
                 {
-                  icon: <LogoutGlyph />,
+                  icon: <LogoutSolid color={danger[500]} />,
                   label: "Keluar",
                   tone: danger[500],
                   plain: true,

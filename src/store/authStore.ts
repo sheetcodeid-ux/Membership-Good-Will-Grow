@@ -63,6 +63,23 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 /** Renders a stored number the way Indonesian members write it: 08xx…. */
+/**
+ * The number as the account screen shows it: +62 and the national part.
+ *
+ * `localPhone` stays for the places that ask for the 08 form people type;
+ * this is the one for display, where the country code is part of the
+ * identity rather than noise.
+ */
+export function intlPhone(phone: string) {
+  const digits = phone.replace(/[^0-9]/g, "");
+  const national = digits.startsWith("62")
+    ? digits.slice(2)
+    : digits.startsWith("0")
+      ? digits.slice(1)
+      : digits;
+  return `+62${national}`;
+}
+
 export function localPhone(phone: string) {
   const digits = phone.replace(/[^0-9]/g, "");
   if (digits.startsWith("62")) return `0${digits.slice(2)}`;

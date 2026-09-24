@@ -27,12 +27,15 @@ export const ink = {
 } as const;
 
 /**
- * The gold the reference actually uses is a vivid yellow, not a tan — its
- * strip samples at #FFDD00 with a #FBE565 highlight and a #E7C218 shadow.
- * The old ramp topped out at #EAC584, which is why anything built from it
- * came out looking beige rather than gold.
+ * The gold the reference uses.
+ *
+ * Sampling its strip in both directions returns #FFDD00 and nothing else —
+ * flat, top to bottom and end to end. The ramp here is deliberately almost
+ * no ramp: enough to catch the light along the upper edge, not enough to
+ * read as a gradient. The palette's own scale topped out at #EAC584, which
+ * is why anything built from it came out beige however it was arranged.
  */
-export const goldRamp = ["#FFEB70", "#FFDD00", "#F2BE00"] as const;
+export const goldRamp = ["#FFE64A", "#FFDD00", "#FBD900"] as const;
 
 export const gold = {
   50: "#FBF3E3",
