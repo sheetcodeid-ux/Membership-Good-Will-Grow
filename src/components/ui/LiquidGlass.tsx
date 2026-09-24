@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useId, useState } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
+import Svg, {
+  Defs,
+  LinearGradient as SvgGradient,
+  Rect,
+  Stop,
+} from "react-native-svg";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import { GlassContainer, GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+import {
+  GlassContainer,
+  GlassView,
+  isLiquidGlassAvailable,
+} from "expo-glass-effect";
 
 /**
  * Liquid Glass surface.
@@ -34,7 +44,102 @@ interface LiquidGlassProps {
   opacity?: number;
   /** Lets the surface flex under a press on iOS 26. */
   interactive?: boolean;
+  /** Draws the specular rim (fallback only). Defaults on for rounded glass. */
+  rim?: boolean;
   style?: ViewStyle | ViewStyle[];
+}
+
+/**
+ * The edge that makes a pane read as Liquid Glass rather than frosted
+ * plastic: a specular rim, brightest where light enters at the top left and
+ * again where it exits at the bottom right, fading to almost nothing along
+ * the sides; and just inside it a softer band along the top, the lensing
+ * of thick glass. Drawn as SVG strokes so the gradient can follow the
+ * curve, which a border cannot.
+ */
+export function GlassRim({
+  radius,
+  strength = 1,
+}: {
+  radius: number;
+  strength?: number;
+}) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  return (
+    <View
+      pointerEvents="none"
+      style={StyleSheet.absoluteFill}
+      onLayout={(e) =>
+        setSize({
+          w: e.nativeEvent.layout.width,
+          h: e.nativeEvent.layout.height,
+        })
+      }
+    >
+      {size && size.w > 4 && size.h > 4 ? (
+        <Svg width={size.w} height={size.h}>
+          <Defs>
+            <SvgGradient id={`rim${id}`} x1="0" y1="0" x2="1" y2="1">
+              <Stop
+                offset="0"
+                stopColor="#FFFFFF"
+                stopOpacity={0.95 * strength}
+              />
+              <Stop
+                offset="0.3"
+                stopColor="#FFFFFF"
+                stopOpacity={0.18 * strength}
+              />
+              <Stop
+                offset="0.7"
+                stopColor="#FFFFFF"
+                stopOpacity={0.1 * strength}
+              />
+              <Stop
+                offset="1"
+                stopColor="#FFFFFF"
+                stopOpacity={0.7 * strength}
+              />
+            </SvgGradient>
+            <SvgGradient id={`lens${id}`} x1="0" y1="0" x2="0" y2="1">
+              <Stop
+                offset="0"
+                stopColor="#FFFFFF"
+                stopOpacity={0.55 * strength}
+              />
+              <Stop offset="0.45" stopColor="#FFFFFF" stopOpacity={0} />
+              <Stop
+                offset="1"
+                stopColor="#FFFFFF"
+                stopOpacity={0.12 * strength}
+              />
+            </SvgGradient>
+          </Defs>
+          <Rect
+            x={0.7}
+            y={0.7}
+            width={size.w - 1.4}
+            height={size.h - 1.4}
+            rx={Math.max(0, radius - 0.7)}
+            fill="none"
+            stroke={`url(#rim${id})`}
+            strokeWidth={1.4}
+          />
+          <Rect
+            x={2.4}
+            y={2.4}
+            width={size.w - 4.8}
+            height={size.h - 4.8}
+            rx={Math.max(0, radius - 2.4)}
+            fill="none"
+            stroke={`url(#lens${id})`}
+            strokeWidth={2}
+          />
+        </Svg>
+      ) : null}
+    </View>
+  );
 }
 
 export function LiquidGlass({
@@ -43,6 +148,7 @@ export function LiquidGlass({
   tint = "rgba(155,185,255,0.12)",
   opacity = 1,
   interactive = false,
+  rim = radius > 0,
   style,
 }: LiquidGlassProps) {
   if (liquidGlassAvailable) {
@@ -65,8 +171,10 @@ export function LiquidGlass({
         {
           borderRadius: radius,
           overflow: "hidden",
-          borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.45)",
+          // A faint dark hairline outside the rim, so the pane keeps an
+          // edge over white content where the rim itself would vanish.
+          borderWidth: rim ? StyleSheet.hairlineWidth : 1,
+          borderColor: rim ? "rgba(20,32,64,0.10)" : "rgba(255,255,255,0.45)",
         },
         style,
       ]}
@@ -75,7 +183,7 @@ export function LiquidGlass({
           only there to keep contrast, and past about a third it stops being a
           window and turns into frosted plastic. */}
       <BlurView
-        intensity={58}
+        intensity={90}
         tint="light"
         // Android blurs nothing unless asked: blurMethod defaults to "none",
         // so BlurView is only a translucent tint there. With the wash this
@@ -89,7 +197,7 @@ export function LiquidGlass({
       <View
         style={[
           StyleSheet.absoluteFill,
-          { backgroundColor: `rgba(255,255,255,${0.26 * opacity})` },
+          { backgroundColor: `rgba(255,255,255,${0.24 * opacity})` },
         ]}
       />
 
@@ -113,17 +221,20 @@ export function LiquidGlass({
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Rim light along the top edge. */}
-      <View
-        style={{
-          position: "absolute",
-          left: radius * 0.5,
-          right: radius * 0.5,
-          top: 0,
-          height: 1,
-          backgroundColor: "rgba(255,255,255,0.75)",
-        }}
-      />
+      {rim ? (
+        <GlassRim radius={radius} />
+      ) : (
+        <View
+          style={{
+            position: "absolute",
+            left: radius * 0.5,
+            right: radius * 0.5,
+            top: 0,
+            height: 1,
+            backgroundColor: "rgba(255,255,255,0.75)",
+          }}
+        />
+      )}
 
       {children}
     </View>
@@ -154,7 +265,11 @@ export function LiquidGlassGroup({
     );
   }
   return (
-    <GlassContainer spacing={spacing} style={style} pointerEvents={pointerEvents}>
+    <GlassContainer
+      spacing={spacing}
+      style={style}
+      pointerEvents={pointerEvents}
+    >
       {children}
     </GlassContainer>
   );

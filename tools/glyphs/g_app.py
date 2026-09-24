@@ -500,3 +500,36 @@ def arrow_right():
     """Arrow pointing right: the forward mark in a call-to-action disc."""
     return [SC(line((4.0,12),(19.4,12)),SW), SC(line((13.0,5.6),(19.4,12),(13.0,18.4)),SW)]
 APP.update({"arrowRight":arrow_right})
+
+# ------------------------------------------------------------ tab bar --
+# Solid tab glyphs for the upgraded bar: chunky filled bodies with a few
+# cut-outs, in the spirit of the reference's bottom bar but our own shapes.
+def tab_home():
+    """House with a chimney and an arched door opening at the base."""
+    P=[(12,1.9),(22.3,10.2),(22.3,22.2),(1.7,22.2),(1.7,10.2)]
+    Q=[P[0],P[1],_bulge(P[1],P[2],-0.35),P[2],_bulge(P[2],P[3],-0.3),P[3],_bulge(P[3],P[4],-0.35),P[4]]
+    return [C_(rrect(15.8,2.6,3.6,7.6,1.4)),
+            C_(rpoly(Q,[2.6,2.4,9,4.8,9,4.8,9,2.4])),
+            D_(rrect(9.4,14.4,5.2,10.0,2.6))]
+def tab_order():
+    """Shopping bag with a smile: two eyelets and a grin cut out."""
+    return [SC("M7.8 8.8V6.6a4.2 4.2 0 0 1 8.4 0V8.8",HW),
+            C_(rpoly([(3.3,7.6),(20.7,7.6),(21.8,22.3),(2.2,22.3)],[2.2,2.2,3.6,3.6])),
+            D_(circle(7.8,11.4,1.15)), D_(circle(16.2,11.4,1.15)),
+            SD("M8.6 14.6a3.4 3.4 0 0 0 6.8 0",LW)]
+def tab_member():
+    """Member card — a magnetic stripe across it — with a star medal over
+    its corner."""
+    bx,by,br=17.8,17.6,5.0
+    return [C_(rrect(1.4,3.6,21.0,15.0,3.4)),
+            D_(rrect(-1,7.0,26,2.7,0)), SD(line((5.0,13.4),(9.8,13.4)),LW),
+            D_(circle(bx,by,br+BG)), C_(circle(bx,by,br)),
+            D_(rpoly(star_pts(bx,by+0.2,3.2,1.45),[0.45,0.3]*5))]
+def tab_profile():
+    """Person: round head over a domed body."""
+    return [C_(circle(12,6.9,4.6)),
+            C_("M2.6 20.5V19.9C2.6 15.9 6.8 13.3 12 13.3S21.4 15.9 21.4 19.9V20.5A1.8 1.8 0 0 1 19.6 22.3H4.4A1.8 1.8 0 0 1 2.6 20.5Z")]
+def tab_menu():
+    """Three bars, the middle one shorter."""
+    return [SC(line((3.4,5.6),(20.6,5.6)),SW),SC(line((3.4,12),(14.2,12)),SW),SC(line((3.4,18.4),(20.6,18.4)),SW)]
+APP.update({"tabHome":tab_home,"tabOrder":tab_order,"tabMember":tab_member,"tabProfile":tab_profile,"tabMenu":tab_menu})
