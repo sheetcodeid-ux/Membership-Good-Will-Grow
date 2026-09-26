@@ -12,15 +12,23 @@ import {
 } from "../components/LegalDoc";
 import { surface } from "../theme/colors";
 import { PRIVACY_UPDATED_AT, privacySections } from "../data/privacy";
+import { useScrolled } from "../hooks/useScrolled";
 
 export default function PrivacyScreen() {
+  const scroll = useScrolled();
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Kebijakan Privasi" />
+      <AppHeader
+        tone="account"
+        title="Kebijakan Privasi"
+        divider={scroll.scrolled}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{
           paddingHorizontal: 13.5,
           paddingTop: 16,

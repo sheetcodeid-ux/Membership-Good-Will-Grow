@@ -7,7 +7,7 @@ export interface ProfileFields {
   name: string;
   username: string;
   email: string;
-  /** Stored as the member typed it, e.g. "12/08/1998". */
+  /** Stored as shown, e.g. "12 Agustus 1998"; older "12/08/1998" still reads. */
   birthDate: string;
   gender?: Gender;
   province: string;
@@ -25,6 +25,9 @@ interface AuthState extends ProfileFields {
   phone: string;
   /** Code the member shares from the Account card and Kode Referal. */
   referralCode: string;
+  /** Friends who joined with the code, and the coupons that earned. */
+  referralJoined: number;
+  referralRewards: number;
   completeOnboarding: () => void;
   setPhone: (phone: string) => void;
   loginSuccess: () => void;
@@ -41,6 +44,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   hasPin: false,
   phone: "81234567890",
   referralCode: "GWGRW7QX",
+  referralJoined: 0,
+  referralRewards: 0,
   name: "Amalia Putri",
   username: "amaliaputri",
   email: "",

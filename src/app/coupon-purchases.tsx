@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { AppHeader } from "../components/ui/AppHeader";
 import { AccountEmpty } from "../components/EmptyArt";
 import { surface } from "../theme/colors";
+import { router } from "expo-router";
 
 export default function CouponPurchasesScreen() {
   return (
@@ -14,6 +15,10 @@ export default function CouponPurchasesScreen() {
         glyph="ticketPercent"
         title="Belum ada pembelian kupon"
         subtitle="Kupon yang kamu beli akan tercatat di sini, lengkap dengan tanggal dan harganya."
+        action={{
+          label: "Lihat kupon",
+          onPress: () => router.push("/coupons"),
+        }}
       />
     </View>
   );

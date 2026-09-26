@@ -10,6 +10,7 @@ import * as SystemUI from "expo-system-ui";
 import { PromoPopup } from "../components/PromoPopup";
 import { OutletServiceSheet } from "../components/OutletServiceSheet";
 import { ShortcutMenu } from "../components/ShortcutMenu";
+import { ToastHost } from "../components/ui/ToastHost";
 import { useUiStore } from "../store/uiStore";
 import { useOrderStore } from "../store/orderStore";
 import {
@@ -77,6 +78,7 @@ export default function RootLayout() {
         {pathname === "/order" && !outletConfirmed ? <OutletServiceSheet /> : null}
         {shortcutsOpen ? <ShortcutMenu onClose={closeShortcuts} /> : null}
         {promoOpen ? <PromoPopup onClose={closePromo} /> : null}
+        <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

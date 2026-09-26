@@ -137,12 +137,19 @@ export function AccountMenu({ items }: { items: MenuItemProps[] }) {
 }
 
 /** Small grey heading above a group, flush with the cards' edge. */
-export function AccountSection({ title }: { title: string }) {
+export function AccountSection({
+  title,
+  first,
+}: {
+  title: string;
+  /** Right under a toolbar or chips, where the full gap would be too much. */
+  first?: boolean;
+}) {
   return (
     <UiText
       color={QUIET_INK}
       style={{
-        marginTop: 22,
+        marginTop: first ? 6 : 22,
         marginBottom: 9,
         fontSize: 12,
         lineHeight: 16,

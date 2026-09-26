@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
-import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
 import { Glyph } from "../components/icons/Glyph";
 import { BrandLogo } from "../components/BrandLogo";
@@ -16,8 +17,11 @@ import {
 } from "../components/AccountMenu";
 import { brand, success, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
-import { coupons } from "../data/mock";
+import { coupons, getBrand } from "../data/mock";
+import { showToast } from "../store/toastStore";
+import { tapPress, tapSelect } from "../utils/haptics";
 import type { Coupon } from "../data/types";
+import { useScrolled } from "../hooks/useScrolled";
 
 const EDGE = 13.5;
 const CARD_H = 108;
@@ -38,7 +42,10 @@ function TabPill({
 }) {
   return (
     <PressableScale
-      onPress={onPress}
+      onPress={() => {
+        tapSelect();
+        onPress();
+      }}
       scaleTo={0.97}
       style={{
         flex: 1,
@@ -73,6 +80,7 @@ function TabPill({
  */
 function TicketCard({ coupon }: { coupon: Coupon }) {
   const urgent = coupon.daysLeft <= 1;
+  const brand_ = getBrand(coupon.brandId);
   return (
     <PressableScale
       scaleTo={0.99}
@@ -86,24 +94,61 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
         flexDirection: "row",
       }}
     >
-      <View style={{ width: ART_W }}>
-        <ImagePlaceholder radius={0} iconSize={22} style={{ flex: 1 }} />
+      {/* Stand-in art until the real coupon artwork arrives: the brand's
+          own gradient, a faint coupon mark and the logo on a white disc. */}
+      <LinearGradient
+        colors={brand_?.gradient ?? [brand[600], brand[400]]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ width: ART_W, alignItems: "center", justifyContent: "center" }}
+      >
         <View
           style={{
             position: "absolute",
-            top: 8,
-            left: 8,
-            width: 26,
-            height: 26,
-            borderRadius: 13,
+            right: -14,
+            bottom: -16,
+            opacity: 0.16,
+          }}
+        >
+          <Glyph name="ticketPercent" size={78} color="#FFFFFF" />
+        </View>
+        <View
+          style={{
+            position: "absolute",
+            left: -20,
+            top: -20,
+            width: 70,
+            height: 70,
+            borderRadius: 35,
+            backgroundColor: "rgba(255,255,255,0.12)",
+          }}
+        />
+        <View
+          style={{
+            width: 54,
+            height: 54,
+            borderRadius: 27,
             backgroundColor: "#FFFFFF",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <BrandLogo brandId={coupon.brandId} size={17} />
+          <BrandLogo brandId={coupon.brandId} size={36} />
         </View>
-      </View>
+        <UiText
+          color="#FFFFFF"
+          numberOfLines={1}
+          style={{
+            marginTop: 6,
+            fontSize: 11,
+            lineHeight: 14,
+            fontFamily: fontFamilies.bold,
+            opacity: 0.95,
+          }}
+        >
+          {brand_?.shortName}
+        </UiText>
+      </LinearGradient>
 
       {/* perforation, with the page showing through a notch at each end */}
       <View style={{ width: 0 }}>
@@ -167,29 +212,68 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
               fontFamily: fontFamilies.semibold,
             }}
           >
-            Berlaku {coupon.daysLeft} hari lagi
+            {urgent
+              ? "Segera berakhir · 1 hari lagi"
+              : `Berlaku ${coupon.daysLeft} hari lagi`}
           </UiText>
         </View>
         <View
           style={{
-            alignSelf: "flex-start",
+            flexDirection: "row",
+            alignItems: "center",
             marginTop: 6,
-            borderRadius: 6,
-            paddingHorizontal: 7,
-            paddingVertical: 2,
-            backgroundColor: coupon.used ? "#F2F3F5" : success[50],
           }}
         >
-          <UiText
-            color={coupon.used ? QUIET_INK : success[600]}
+          <View
             style={{
-              fontSize: 11.5,
-              lineHeight: 15,
-              fontFamily: fontFamilies.bold,
+              borderRadius: 6,
+              paddingHorizontal: 7,
+              paddingVertical: 2,
+              backgroundColor: coupon.used ? "#F2F3F5" : success[50],
             }}
           >
-            {coupon.used ? "Sudah dipakai" : "Belum dipakai"}
-          </UiText>
+            <UiText
+              color={coupon.used ? QUIET_INK : success[600]}
+              style={{
+                fontSize: 11.5,
+                lineHeight: 15,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
+              {coupon.used ? "Sudah dipakai" : "Belum dipakai"}
+            </UiText>
+          </View>
+          <View style={{ flex: 1 }} />
+          {coupon.used ? null : (
+            <PressableScale
+              scaleTo={0.94}
+              hitSlop={6}
+              onPress={() => {
+                tapPress();
+                showToast("Pilih menu, kupon bisa dipakai saat bayar", "info");
+                router.push("/order");
+              }}
+              style={{
+                height: 28,
+                paddingHorizontal: 14,
+                borderRadius: 14,
+                backgroundColor: brand[600],
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <UiText
+                color="#FFFFFF"
+                style={{
+                  fontSize: 13,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                Pakai
+              </UiText>
+            </PressableScale>
+          )}
         </View>
       </View>
     </PressableScale>
@@ -197,12 +281,13 @@ function TicketCard({ coupon }: { coupon: Coupon }) {
 }
 
 export default function CouponsScreen() {
+  const scroll = useScrolled();
   const [tab, setTab] = useState<Tab>("mine");
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Kupon Saya" />
+      <AppHeader tone="account" title="Kupon Saya" divider={scroll.scrolled} />
 
       <View
         style={{
@@ -228,6 +313,8 @@ export default function CouponsScreen() {
       {tab === "mine" ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
+          onScroll={scroll.onScroll}
+          scrollEventThrottle={scroll.scrollEventThrottle}
           contentContainerStyle={{
             paddingHorizontal: EDGE,
             paddingTop: 10,
@@ -235,15 +322,24 @@ export default function CouponsScreen() {
             gap: 10,
           }}
         >
-          {coupons.map((coupon) => (
-            <TicketCard key={coupon.id} coupon={coupon} />
-          ))}
+          {[...coupons]
+            .sort(
+              (a, b) =>
+                Number(a.used) - Number(b.used) || a.daysLeft - b.daysLeft,
+            )
+            .map((coupon) => (
+              <TicketCard key={coupon.id} coupon={coupon} />
+            ))}
         </ScrollView>
       ) : (
         <AccountEmpty
           glyph="ticket"
           title="Belum ada kupon tersedia"
-          subtitle="Kupon yang bisa dibeli akan muncul di sini. Cek lagi nanti, ya."
+          subtitle="Kupon yang bisa dibeli akan muncul di sini. Sambil menunggu, lihat promo yang sedang jalan."
+          action={{
+            label: "Lihat promo",
+            onPress: () => router.push("/promo"),
+          }}
         />
       )}
     </View>

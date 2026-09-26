@@ -10,6 +10,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { UiText } from "./ui/Text";
+import { PressableScale } from "./ui/PressableScale";
 import { glyphPaths, type GlyphName } from "./icons/glyphPaths";
 import { LABEL_INK, QUIET_INK } from "./AccountMenu";
 import { brand } from "../theme/colors";
@@ -134,11 +135,14 @@ export function AccountEmpty({
   glyph,
   title,
   subtitle,
+  action,
   style,
 }: {
   glyph: GlyphName;
   title: string;
   subtitle?: string;
+  /** A way out of the empty state, as a pill under the text. */
+  action?: { label: string; onPress: () => void };
   style?: ViewStyle;
 }) {
   return (
@@ -180,6 +184,32 @@ export function AccountEmpty({
         >
           {subtitle}
         </UiText>
+      ) : null}
+      {action ? (
+        <PressableScale
+          onPress={action.onPress}
+          scaleTo={0.97}
+          style={{
+            marginTop: 18,
+            height: 42,
+            paddingHorizontal: 22,
+            borderRadius: 21,
+            backgroundColor: brand[600],
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <UiText
+            color="#FFFFFF"
+            style={{
+              fontSize: 15,
+              lineHeight: 19,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
+            {action.label}
+          </UiText>
+        </PressableScale>
       ) : null}
     </View>
   );

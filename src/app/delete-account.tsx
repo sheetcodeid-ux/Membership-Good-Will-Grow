@@ -19,6 +19,9 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { brand, danger, ink, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { useAuthStore } from "../store/authStore";
+import { useScrolled } from "../hooks/useScrolled";
+import { showToast } from "../store/toastStore";
+import { tapSelect } from "../utils/haptics";
 
 const reasons = [
   "Sudah tidak tertarik lagi",
@@ -33,6 +36,7 @@ const consequences = [
 ];
 
 export default function DeleteAccountScreen() {
+  const scroll = useScrolled();
   const logout = useAuthStore((s) => s.logout);
   const [reason, setReason] = useState(reasons[0]);
   const [confirm, setConfirm] = useState(false);
@@ -40,10 +44,12 @@ export default function DeleteAccountScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Hapus Akun" />
+      <AppHeader tone="account" title="Hapus Akun" divider={scroll.scrolled} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{
           paddingHorizontal: 13.5,
           paddingTop: 16,
@@ -95,7 +101,10 @@ export default function DeleteAccountScreen() {
                 ) : null}
                 <PressableScale
                   scaleTo={0.995}
-                  onPress={() => setReason(item)}
+                  onPress={() => {
+                    tapSelect();
+                    setReason(item);
+                  }}
                   style={{
                     height: 52,
                     flexDirection: "row",
@@ -157,6 +166,7 @@ export default function DeleteAccountScreen() {
           onConfirm={() => {
             setConfirm(false);
             logout();
+            showToast("Akun kamu sudah dihapus", "info");
             router.replace("/");
           }}
         />

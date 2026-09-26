@@ -24,6 +24,8 @@ import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
 import { brand, surface } from "../theme/colors";
 import { faqEntries, type FaqEntry } from "../data/faq";
+import { useScrolled } from "../hooks/useScrolled";
+import { tapSelect } from "../utils/haptics";
 
 if (
   Platform.OS === "android" &&
@@ -116,10 +118,12 @@ function Item({
 }
 
 export default function FaqScreen() {
+  const scroll = useScrolled();
   // One answer open at a time, the first to start with.
   const [openId, setOpenId] = useState<string | null>(faqEntries[0].id);
 
   const toggle = (id: string) => {
+    tapSelect();
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setOpenId((current) => (current === id ? null : id));
   };
@@ -127,10 +131,12 @@ export default function FaqScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="FAQ" />
+      <AppHeader tone="account" title="FAQ" divider={scroll.scrolled} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{
           paddingHorizontal: 13.5,
           paddingTop: 16,

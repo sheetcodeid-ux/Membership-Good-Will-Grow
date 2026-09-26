@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ScrollView, TextInput, View } from "react-native";
+import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { UiText } from "../components/ui/Text";
@@ -16,6 +16,9 @@ import { brand, surface } from "../theme/colors";
 import { provinces } from "../data/regions";
 import { useAuthStore } from "../store/authStore";
 import { fontFamilies } from "../theme/typography";
+import { useScrolled } from "../hooks/useScrolled";
+import { showToast } from "../store/toastStore";
+import { tapSelect, tapSuccess } from "../utils/haptics";
 
 type Step = 0 | 1 | 2 | 3;
 
@@ -31,6 +34,7 @@ const stepLabels = [
  * so this is our own take: one column at a time, each pick opening the next.
  */
 export default function LocationPickerScreen() {
+  const scroll = useScrolled();
   const updateProfile = useAuthStore((s) => s.updateProfile);
   const [step, setStep] = useState<Step>(0);
   const [query, setQuery] = useState("");
@@ -51,6 +55,7 @@ export default function LocationPickerScreen() {
   );
 
   const choose = (value: string) => {
+    tapSelect();
     const next = [...picked.slice(0, step), value];
     setPicked(next);
     setQuery("");
@@ -64,13 +69,19 @@ export default function LocationPickerScreen() {
       district: next[2],
       village: next[3],
     });
+    tapSuccess();
+    showToast(`Lokasi disimpan: ${next[3]}, ${next[2]}`);
     router.back();
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Pilih Lokasi" />
+      <AppHeader
+        tone="account"
+        title="Pilih Lokasi"
+        divider={scroll.scrolled}
+      />
 
       <View style={{ paddingHorizontal: 13.5, paddingTop: 14, gap: 10 }}>
         <UiText
@@ -157,6 +168,9 @@ export default function LocationPickerScreen() {
               fontFamily: fontFamilies.semibold,
               fontSize: 14.5,
               color: LABEL_INK,
+              ...(Platform.OS === "web"
+                ? ({ outlineStyle: "none" } as object)
+                : null),
             }}
           />
         </View>
@@ -164,6 +178,8 @@ export default function LocationPickerScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{ padding: 13.5, paddingBottom: 40 }}
       >
         <AccountCard>

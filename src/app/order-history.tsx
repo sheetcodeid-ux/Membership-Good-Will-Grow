@@ -8,7 +8,12 @@ import { BottomSheet } from "../components/ui/BottomSheet";
 import { UiText } from "../components/ui/Text";
 import { Glyph, type GlyphName } from "../components/icons/Glyph";
 import { AccountEmpty } from "../components/EmptyArt";
-import { LABEL_INK, QUIET_INK, RULE } from "../components/AccountMenu";
+import {
+  AccountSection,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../components/AccountMenu";
 import { PressableScale } from "../components/ui/PressableScale";
 import { BrandLogo } from "../components/BrandLogo";
 import { OptionRow } from "../components/OptionRow";
@@ -16,9 +21,20 @@ import { channelMeta, statusMeta } from "../components/OrderIcons";
 import { brand, ink, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
-import { brands, orders, outlets } from "../data/mock";
+import { brands, menuItems, orders, outlets } from "../data/mock";
 import { useOrderStore } from "../store/orderStore";
-import type { OrderChannel, OrderStatus, ServiceType } from "../data/types";
+import { defaultSelections, useCartStore } from "../store/cartStore";
+import { showToast } from "../store/toastStore";
+import { parseIndoDate, relativeGroup } from "../utils/dates";
+import { tapError, tapSelect, tapSuccess } from "../utils/haptics";
+import { useScrolled } from "../hooks/useScrolled";
+import type {
+  MenuItem,
+  OrderChannel,
+  OrderRecord,
+  OrderStatus,
+  ServiceType,
+} from "../data/types";
 
 type SheetName = "channel" | "status" | "outlet" | null;
 
@@ -151,12 +167,31 @@ function Tag({ label, tone }: { label: string; tone: "grey" | "brand" }) {
   );
 }
 
+/**
+ * The item's default choices, except that a single-select option named
+ * like the order line's variant ("Level 3", "Iced") is picked instead of
+ * the group's first, so a reorder comes back the way it was ordered.
+ */
+function selectionsFor(item: MenuItem, variant: string) {
+  const out = defaultSelections(item.optionGroups);
+  const wanted = variant.trim().toLowerCase();
+  for (const group of item.optionGroups) {
+    if (group.selection !== "single") continue;
+    const match = group.options.find((o) => o.name.toLowerCase() === wanted);
+    if (!match) continue;
+    for (const o of group.options) delete out[o.id];
+    out[match.id] = 1;
+  }
+  return out;
+}
+
 export default function OrderHistoryScreen() {
   const filters = useOrderStore((s) => s.filters);
   const setFilter = useOrderStore((s) => s.setFilter);
   const [sheet, setSheet] = useState<SheetName>(null);
   const [outletBrandId, setOutletBrandId] = useState<string | null>(null);
   const [outletQuery, setOutletQuery] = useState("");
+  const scroll = useScrolled();
 
   const visible = useMemo(
     () =>
@@ -168,6 +203,72 @@ export default function OrderHistoryScreen() {
       ),
     [filters],
   );
+
+  const filtered = !!(filters.channel || filters.status || filters.outletId);
+  const clearFilters = () => {
+    tapSelect();
+    setFilter("channel", undefined);
+    setFilter("status", undefined);
+    setFilter("outletId", undefined);
+  };
+
+  // Newest first, under "Hari ini", "Kemarin", "7 hari terakhir" or the month.
+  const groups: { label: string; items: OrderRecord[] }[] = [];
+  for (const o of [...visible].sort(
+    (a, b) =>
+      (parseIndoDate(b.createdAt)?.getTime() ?? 0) -
+      (parseIndoDate(a.createdAt)?.getTime() ?? 0),
+  )) {
+    const at = parseIndoDate(o.createdAt);
+    const label = at ? relativeGroup(at) : "Lainnya";
+    const last = groups[groups.length - 1];
+    if (last && last.label === label) last.items.push(o);
+    else groups.push({ label, items: [o] });
+  }
+
+  const setOutlet = useOrderStore((s) => s.setOutlet);
+  const setServiceType = useOrderStore((s) => s.setServiceType);
+  const confirmOutlet = useOrderStore((s) => s.confirmOutlet);
+  const addLine = useCartStore((s) => s.addLine);
+
+  /**
+   * Puts the order's items back in the cart at the same outlet and service,
+   * matching each line to the menu by name; anything no longer on the menu
+   * is left out and said so, and if nothing is left the outlet's menu opens.
+   */
+  const reorder = (o: OrderRecord) => {
+    const found = o.lines.map((line) => ({
+      line,
+      item: menuItems.find(
+        (m) => m.brandId === o.brandId && m.name === line.name,
+      ),
+    }));
+    const ok = found.filter((f) => f.item);
+    setOutlet(o.outletId);
+    setServiceType(o.serviceType);
+    confirmOutlet();
+    if (ok.length === 0) {
+      // Nothing left to put back: open the same outlet's menu instead.
+      tapError();
+      showToast(
+        "Menunya sudah tidak ada, pilih yang lain di outlet ini",
+        "info",
+      );
+      router.push("/order");
+      return;
+    }
+    for (const { line, item } of ok) {
+      if (item) addLine(item, line.qty, selectionsFor(item, line.variant));
+    }
+    tapSuccess();
+    const missing = found.length - ok.length;
+    showToast(
+      missing
+        ? `${ok.length} menu masuk keranjang, ${missing} tidak tersedia`
+        : `${ok.length} menu masuk keranjang`,
+    );
+    router.push("/cart");
+  };
 
   const sheetOutlets = useMemo(() => {
     const q = outletQuery.trim().toLowerCase();
@@ -194,7 +295,11 @@ export default function OrderHistoryScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Riwayat Pesanan" />
+      <AppHeader
+        tone="account"
+        title="Riwayat Pesanan"
+        divider={scroll.scrolled}
+      />
 
       <ScrollView
         horizontal
@@ -230,10 +335,11 @@ export default function OrderHistoryScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{
           paddingHorizontal: EDGE,
           paddingBottom: 30,
-          gap: 10,
           flexGrow: 1,
         }}
       >
@@ -241,134 +347,213 @@ export default function OrderHistoryScreen() {
           <AccountEmpty
             glyph="receipt"
             title="Belum ada pesanan"
-            subtitle="Pesanan yang cocok dengan filter ini belum ada. Coba ubah filternya."
+            subtitle={
+              filtered
+                ? "Tidak ada pesanan yang cocok dengan filter ini."
+                : "Pesanan pertamamu akan muncul di sini."
+            }
+            action={
+              filtered
+                ? { label: "Hapus filter", onPress: clearFilters }
+                : { label: "Mulai pesan", onPress: () => router.push("/order") }
+            }
           />
         ) : null}
 
-        {visible.map((o) => {
-          const meta = statusMeta[o.status];
-          const items = o.lines.reduce((n, l) => n + l.qty, 0);
-          return (
-            <PressableScale
-              key={o.id}
-              onPress={() => router.push(`/order/${o.id}`)}
-              scaleTo={0.99}
-              style={{
-                backgroundColor: "#FFFFFF",
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: RULE,
-                paddingHorizontal: 14,
-                paddingTop: 12,
-                paddingBottom: 12,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 5,
-                    backgroundColor: alpha(meta.tint, 0.1),
-                    borderRadius: 12,
-                    paddingLeft: 7,
-                    paddingRight: 9,
-                    height: 24,
-                  }}
-                >
-                  <Glyph
-                    name={meta.icon as GlyphName}
-                    size={12}
-                    color={meta.tint}
-                  />
-                  <UiText
-                    color={meta.tint}
+        {groups.map((group, gi) => (
+          <View key={group.label}>
+            <AccountSection title={group.label} first={gi === 0} />
+            <View style={{ gap: 10 }}>
+              {group.items.map((o) => {
+                const meta = statusMeta[o.status];
+                const canReorder =
+                  o.status === "dibayar" || o.status === "dibatalkan";
+                const items = o.lines.reduce((n, l) => n + l.qty, 0);
+                return (
+                  // The card and its "Pesan lagi" are siblings, not nested
+                  // presses, so the button never also opens the detail.
+                  <View
+                    key={o.id}
                     style={{
-                      fontSize: 12,
-                      lineHeight: 16,
-                      fontFamily: fontFamilies.bold,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: RULE,
+                      overflow: "hidden",
                     }}
                   >
-                    {meta.label}
-                  </UiText>
-                </View>
-                <View style={{ flex: 1 }} />
-                <UiText
-                  color={QUIET_INK}
-                  style={{
-                    fontSize: 12,
-                    lineHeight: 16,
-                    fontFamily: fontFamilies.medium,
-                  }}
-                >
-                  {o.createdAt}
-                </UiText>
-              </View>
+                    <PressableScale
+                      onPress={() => router.push(`/order/${o.id}`)}
+                      scaleTo={0.99}
+                      style={{
+                        paddingHorizontal: 14,
+                        paddingTop: 12,
+                        paddingBottom: canReorder ? 0 : 12,
+                      }}
+                    >
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 5,
+                            backgroundColor: alpha(meta.tint, 0.1),
+                            borderRadius: 12,
+                            paddingLeft: 7,
+                            paddingRight: 9,
+                            height: 24,
+                          }}
+                        >
+                          <Glyph
+                            name={meta.icon as GlyphName}
+                            size={12}
+                            color={meta.tint}
+                          />
+                          <UiText
+                            color={meta.tint}
+                            style={{
+                              fontSize: 12,
+                              lineHeight: 16,
+                              fontFamily: fontFamilies.bold,
+                            }}
+                          >
+                            {meta.label}
+                          </UiText>
+                        </View>
+                        <View style={{ flex: 1 }} />
+                        <UiText
+                          color={QUIET_INK}
+                          style={{
+                            fontSize: 12,
+                            lineHeight: 16,
+                            fontFamily: fontFamilies.medium,
+                          }}
+                        >
+                          {o.createdAt}
+                        </UiText>
+                      </View>
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 9,
-                  marginTop: 10,
-                }}
-              >
-                <BrandLogo brandId={o.brandId} size={20} />
-                <UiText
-                  color={LABEL_INK}
-                  numberOfLines={1}
-                  style={{
-                    flex: 1,
-                    fontSize: 16,
-                    lineHeight: 20,
-                    fontFamily: fontFamilies.bold,
-                  }}
-                >
-                  {o.outletName}
-                </UiText>
-              </View>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 9,
+                          marginTop: 10,
+                        }}
+                      >
+                        <BrandLogo brandId={o.brandId} size={20} />
+                        <UiText
+                          color={LABEL_INK}
+                          numberOfLines={1}
+                          style={{
+                            flex: 1,
+                            fontSize: 16,
+                            lineHeight: 20,
+                            fontFamily: fontFamilies.bold,
+                          }}
+                        >
+                          {o.outletName}
+                        </UiText>
+                      </View>
 
-              <View style={{ gap: 5, marginTop: 8 }}>
-                <MetaLine icon="receipt">{o.nota}</MetaLine>
-                <MetaLine icon="hash">Kode pesanan {o.orderCode}</MetaLine>
-              </View>
+                      <View style={{ gap: 5, marginTop: 8 }}>
+                        <MetaLine icon="receipt">{o.nota}</MetaLine>
+                        <MetaLine icon="hash">
+                          Kode pesanan {o.orderCode}
+                        </MetaLine>
+                      </View>
 
-              <View
-                style={{ height: 1, backgroundColor: RULE, marginVertical: 10 }}
-              />
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: RULE,
+                          marginVertical: 10,
+                        }}
+                      />
 
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-              >
-                <Tag label={serviceLabels[o.serviceType]} tone="grey" />
-                <Tag label={channelMeta[o.channel].label} tone="brand" />
-                <View style={{ flex: 1 }} />
-                <View style={{ alignItems: "flex-end" }}>
-                  <UiText
-                    color={QUIET_INK}
-                    style={{
-                      fontSize: 11.5,
-                      lineHeight: 14,
-                      fontFamily: fontFamilies.medium,
-                    }}
-                  >
-                    {items} item
-                  </UiText>
-                  <UiText
-                    color={LABEL_INK}
-                    style={{
-                      fontSize: 16,
-                      lineHeight: 20,
-                      fontFamily: fontFamilies.extrabold,
-                    }}
-                  >
-                    {formatRupiah(o.paid)}
-                  </UiText>
-                </View>
-              </View>
-            </PressableScale>
-          );
-        })}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <Tag label={serviceLabels[o.serviceType]} tone="grey" />
+                        <Tag
+                          label={channelMeta[o.channel].label}
+                          tone="brand"
+                        />
+                        <View style={{ flex: 1 }} />
+                        <View style={{ alignItems: "flex-end" }}>
+                          <UiText
+                            color={QUIET_INK}
+                            style={{
+                              fontSize: 11.5,
+                              lineHeight: 14,
+                              fontFamily: fontFamilies.medium,
+                            }}
+                          >
+                            {items} item
+                          </UiText>
+                          <UiText
+                            color={LABEL_INK}
+                            style={{
+                              fontSize: 16,
+                              lineHeight: 20,
+                              fontFamily: fontFamilies.extrabold,
+                            }}
+                          >
+                            {formatRupiah(o.paid)}
+                          </UiText>
+                        </View>
+                      </View>
+                    </PressableScale>
+                    {canReorder ? (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "flex-end",
+                          marginTop: 10,
+                        }}
+                      >
+                        <PressableScale
+                          onPress={() => reorder(o)}
+                          scaleTo={0.95}
+                          hitSlop={6}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 6,
+                            height: 34,
+                            paddingHorizontal: 14,
+                            borderRadius: 17,
+                            borderWidth: 1.5,
+                            borderColor: brand[600],
+                            backgroundColor: "#FFFFFF",
+                          }}
+                        >
+                          <Glyph name="refresh" size={14} color={brand[600]} />
+                          <UiText
+                            color={brand[700]}
+                            style={{
+                              fontSize: 13.5,
+                              lineHeight: 17,
+                              fontFamily: fontFamilies.bold,
+                            }}
+                          >
+                            Pesan lagi
+                          </UiText>
+                        </PressableScale>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        ))}
       </ScrollView>
 
       {sheet === "channel" ? (

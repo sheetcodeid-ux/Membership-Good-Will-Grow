@@ -12,6 +12,8 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { brand, ink, success, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { useAuthStore } from "../store/authStore";
+import { useScrolled } from "../hooks/useScrolled";
+import { showToast } from "../store/toastStore";
 
 const consequences = [
   "Akunmu tidak bisa dicari oleh member lain.",
@@ -21,16 +23,23 @@ const consequences = [
 ];
 
 export default function DeactivateAccountScreen() {
+  const scroll = useScrolled();
   const logout = useAuthStore((s) => s.logout);
   const [confirm, setConfirm] = useState(false);
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Nonaktifkan Akun" />
+      <AppHeader
+        tone="account"
+        title="Nonaktifkan Akun"
+        divider={scroll.scrolled}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{ paddingHorizontal: 13.5, paddingBottom: 24 }}
       >
         <AccountSection title="Yang terjadi jika akun dinonaktifkan" />
@@ -103,6 +112,10 @@ export default function DeactivateAccountScreen() {
           onConfirm={() => {
             setConfirm(false);
             logout();
+            showToast(
+              "Akun dinonaktifkan. Masuk lagi kapan saja untuk mengaktifkan.",
+              "info",
+            );
             router.replace("/");
           }}
         />

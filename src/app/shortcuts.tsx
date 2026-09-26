@@ -20,6 +20,9 @@ import {
   useShortcutStore,
   type ShortcutItem,
 } from "../store/shortcutStore";
+import { useScrolled } from "../hooks/useScrolled";
+import { showToast } from "../store/toastStore";
+import { tapSelect, tapSuccess } from "../utils/haptics";
 
 const EDGE = 13.5;
 /** Row geometry shared with the profile's menu. */
@@ -197,6 +200,7 @@ function DefaultTag() {
 }
 
 export default function ShortcutsScreen() {
+  const scroll = useScrolled();
   const pinned = useShortcutStore((s) => s.pinned);
   const pin = useShortcutStore((s) => s.pin);
   const unpin = useShortcutStore((s) => s.unpin);
@@ -209,10 +213,16 @@ export default function ShortcutsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Atur Menu Pintas" />
+      <AppHeader
+        tone="account"
+        title="Atur Menu Pintas"
+        divider={scroll.scrolled}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{ paddingHorizontal: EDGE, paddingBottom: 40 }}
       >
         <AccountSection title="Menu wajib" />
@@ -263,7 +273,16 @@ export default function ShortcutsScreen() {
                 key={item.id}
                 item={item}
                 divider={i > 0}
-                right={<RoundButton remove onPress={() => unpin(item.id)} />}
+                right={
+                  <RoundButton
+                    remove
+                    onPress={() => {
+                      tapSelect();
+                      unpin(item.id);
+                      showToast(`${item.label} dilepas dari pintasan`, "info");
+                    }}
+                  />
+                }
               />
             ))
           )}
@@ -279,7 +298,15 @@ export default function ShortcutsScreen() {
                   key={item.id}
                   item={item}
                   divider={i > 0}
-                  right={<RoundButton onPress={() => pin(item.id)} />}
+                  right={
+                    <RoundButton
+                      onPress={() => {
+                        tapSuccess();
+                        pin(item.id);
+                        showToast(`${item.label} ditambahkan ke pintasan`);
+                      }}
+                    />
+                  }
                 />
               ))}
             </AccountCard>

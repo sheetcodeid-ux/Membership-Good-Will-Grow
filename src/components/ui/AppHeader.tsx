@@ -24,6 +24,8 @@ interface AppHeaderProps {
    * profile keeps the same bar in place and only the title changes.
    */
   tone?: "default" | "account";
+  /** Account bar only: a hairline under the bar once the page has scrolled. */
+  divider?: boolean;
   children?: React.ReactNode;
 }
 
@@ -44,11 +46,19 @@ export function AppHeader({
   right,
   leftIcon = "back",
   tone = "default",
+  divider = false,
   children,
 }: AppHeaderProps) {
   if (tone === "account") {
     return (
-      <View style={{ backgroundColor: ACCOUNT_BAR }}>
+      <View
+        style={{
+          backgroundColor: ACCOUNT_BAR,
+          borderBottomWidth: 1,
+          borderBottomColor: divider ? "rgba(112,43,0,0.14)" : ACCOUNT_BAR,
+          zIndex: 2,
+        }}
+      >
         <SafeAreaView edges={["top"]}>
           {/* Same geometry as the profile's bar: 56.5 tall, the title's
               centre 32 below the status bar. */}

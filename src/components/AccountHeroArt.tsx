@@ -678,3 +678,75 @@ export function AccountHeroArt({
     </Svg>
   );
 }
+
+/**
+ * The header's city on its own — sky, rings, clouds and the three rows of
+ * buildings, without the phone and bubbles — to open the account pages
+ * with the same scene the profile does. The lower edge is the same shallow
+ * arc, dipping in the middle where the avatar sits.
+ */
+export function SkylineBand({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}) {
+  const vh = (height * 360) / width;
+  return (
+    <Svg
+      width={width}
+      height={height}
+      viewBox={`0 ${SCENE_H - vh} 360 ${vh}`}
+      preserveAspectRatio="none"
+    >
+      <Defs>
+        <ClipPath id="skylineBand">
+          <Path
+            d={`M-1 -400H361V${SCENE_H - 16}Q180 ${SCENE_H + 14} -1 ${SCENE_H - 16}Z`}
+          />
+        </ClipPath>
+      </Defs>
+      <G clipPath="url(#skylineBand)">
+        <Rect x="-40" y="-400" width="440" height="600" fill="#EAF1FF" />
+        <Circle
+          cx="180"
+          cy="120"
+          r="64"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth={1.2}
+          opacity={0.75}
+        />
+        <Circle
+          cx="180"
+          cy="120"
+          r="96"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth={1.2}
+          opacity={0.55}
+        />
+        <Path
+          d="M292 62a6 6 0 0 1 11.2-3A5 5 0 0 1 310 64H292Z"
+          fill="#FFFFFF"
+        />
+        <Path d="M52 70a5 5 0 0 1 9.4-2.4A4 4 0 0 1 67 72H52Z" fill="#FFFFFF" />
+        {/* The rows sit lower than in the header, so a strip of sky shows
+            above them even in a short band. */}
+        <G transform="translate(0 46)">
+          <Row list={BACK} body="#D6E3FF" window="#E6EEFF" />
+        </G>
+        <G transform="translate(0 40)">
+          <Row list={MID} body="#AEC5FB" window="#CEDCFF" />
+        </G>
+        <G transform="translate(0 34)">
+          <Row list={FRONT} body="#7B9CEB" window="#A6BFF8" />
+        </G>
+        <Sparkle x={118} y={58} s={3.6} />
+        <Sparkle x={250} y={50} s={4.2} />
+        <Sparkle x={330} y={80} s={3} />
+      </G>
+    </Svg>
+  );
+}

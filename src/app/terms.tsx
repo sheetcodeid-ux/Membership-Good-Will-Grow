@@ -21,6 +21,7 @@ import {
   type TermsSection,
 } from "../data/terms";
 import { formatRupiah } from "../utils/format";
+import { useScrolled } from "../hooks/useScrolled";
 
 function Section({ section }: { section: TermsSection }) {
   return (
@@ -89,16 +90,23 @@ function LevelingSection() {
 }
 
 export default function TermsScreen() {
+  const scroll = useScrolled();
   const before = termsSections.slice(0, 6);
   const after = termsSections.slice(6);
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Syarat & Ketentuan" />
+      <AppHeader
+        tone="account"
+        title="Syarat & Ketentuan"
+        divider={scroll.scrolled}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{
           paddingHorizontal: 13.5,
           paddingTop: 16,

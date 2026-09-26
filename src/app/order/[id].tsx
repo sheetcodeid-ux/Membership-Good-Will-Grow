@@ -23,6 +23,10 @@ import { fontFamilies } from "../../theme/typography";
 import { formatRupiah } from "../../utils/format";
 import { getBrand, getOrder } from "../../data/mock";
 import type { ServiceType } from "../../data/types";
+import { useScrolled } from "../../hooks/useScrolled";
+import { CountUp } from "../../components/ui/CountUp";
+import { showToast } from "../../store/toastStore";
+import { tapSuccess } from "../../utils/haptics";
 
 const EDGE = 13.5;
 
@@ -167,13 +171,18 @@ function Rule() {
 }
 
 export default function OrderDetailScreen() {
+  const scroll = useScrolled();
   const { id } = useLocalSearchParams<{ id: string }>();
   const order = getOrder(id);
 
   if (!order) {
     return (
       <View style={{ flex: 1, backgroundColor: surface }}>
-        <AppHeader tone="account" title="Detail Pesanan" />
+        <AppHeader
+          tone="account"
+          title="Detail Pesanan"
+          divider={scroll.scrolled}
+        />
         <AccountEmpty
           glyph="receipt"
           title="Pesanan tidak ditemukan"
@@ -185,17 +194,25 @@ export default function OrderDetailScreen() {
 
   const meta = statusMeta[order.status];
   const total = order.subtotal + order.tax + order.rounding;
-  const copy = (value: string) => {
+  const copy = (label: string, value: string) => {
     Clipboard.setStringAsync(value).catch(() => {});
+    tapSuccess();
+    showToast(`${label} disalin`);
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Detail Pesanan" />
+      <AppHeader
+        tone="account"
+        title="Detail Pesanan"
+        divider={scroll.scrolled}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{
           paddingHorizontal: EDGE,
           paddingTop: 16,
@@ -282,16 +299,16 @@ export default function OrderDetailScreen() {
             >
               Total bayar
             </UiText>
-            <UiText
+            <CountUp
+              value={order.paid}
+              format={formatRupiah}
               color={LABEL_INK}
               style={{
                 fontSize: 22,
                 lineHeight: 27,
                 fontFamily: fontFamilies.extrabold,
               }}
-            >
-              {formatRupiah(order.paid)}
-            </UiText>
+            />
           </View>
         </AccountCard>
 
@@ -300,17 +317,17 @@ export default function OrderDetailScreen() {
           <InfoRow
             label="Nota"
             value={order.nota}
-            onCopy={() => copy(order.nota)}
+            onCopy={() => copy("Nota", order.nota)}
           />
           <InfoRow
             label="Kode pesanan"
             value={order.orderCode}
-            onCopy={() => copy(order.orderCode)}
+            onCopy={() => copy("Kode pesanan", order.orderCode)}
           />
           <InfoRow
             label="ID transaksi"
             value={order.transactionId}
-            onCopy={() => copy(order.transactionId)}
+            onCopy={() => copy("ID transaksi", order.transactionId)}
           />
           <InfoRow
             label="Tipe pesanan"

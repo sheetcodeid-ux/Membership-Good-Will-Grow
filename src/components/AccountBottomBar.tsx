@@ -16,10 +16,13 @@ export function AccountBottomBar({
   label,
   onPress,
   tone = "primary",
+  disabled = false,
 }: {
   label: string;
   onPress: () => void;
   tone?: "primary" | "danger";
+  /** Dims the pill and ignores presses, e.g. while nothing has changed. */
+  disabled?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const danger_ = tone === "danger";
@@ -36,8 +39,10 @@ export function AccountBottomBar({
     >
       <PressableScale
         onPress={onPress}
+        disabled={disabled}
         scaleTo={0.98}
         style={{
+          opacity: disabled ? 0.4 : 1,
           height: 48,
           borderRadius: 24,
           backgroundColor: danger_ ? "#FFFFFF" : brand[600],

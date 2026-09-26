@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TextInput, View } from "react-native";
+import { Platform, TextInput, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
@@ -14,6 +14,9 @@ import {
 } from "../components/AccountMenu";
 import { brand, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
+import { router } from "expo-router";
+import { showToast } from "../store/toastStore";
+import { tapError } from "../utils/haptics";
 
 const EDGE = 13.5;
 const FIELD_H = 46;
@@ -89,11 +92,19 @@ export default function VouchersScreen() {
                 fontSize: 15,
                 letterSpacing: code ? 1 : 0,
                 color: LABEL_INK,
+                ...(Platform.OS === "web"
+                  ? ({ outlineStyle: "none" } as object)
+                  : null),
               }}
             />
             <PressableScale
               scaleTo={0.97}
               disabled={!ready}
+              onPress={() => {
+                // No voucher codes exist yet, so every code is unknown.
+                tapError();
+                showToast(`Kode "${code.trim()}" tidak ditemukan`, "error");
+              }}
               style={{
                 height: FIELD_H,
                 paddingHorizontal: 22,
@@ -123,6 +134,7 @@ export default function VouchersScreen() {
         glyph="gift"
         title="Belum ada voucher"
         subtitle="Voucher yang berhasil kamu klaim akan tersimpan di sini."
+        action={{ label: "Lihat promo", onPress: () => router.push("/promo") }}
       />
     </View>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView, Share, View } from "react-native";
+import { Linking, ScrollView, Share, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Clipboard from "expo-clipboard";
@@ -18,6 +18,10 @@ import {
 import { brand, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { useAuthStore } from "../store/authStore";
+import { showToast } from "../store/toastStore";
+import { tapPress, tapSuccess } from "../utils/haptics";
+import { useScrolled } from "../hooks/useScrolled";
+import { CountUp } from "../components/ui/CountUp";
 
 const EDGE = 13.5;
 /** The referral strip's gold and ink, carried over from the profile. */
@@ -83,27 +87,49 @@ function PillButton({
 
 export default function ReferralScreen() {
   const code = useAuthStore((s) => s.referralCode);
+  const joined = useAuthStore((s) => s.referralJoined);
+  const rewards = useAuthStore((s) => s.referralRewards);
   const [copied, setCopied] = useState(false);
+  const scroll = useScrolled();
+  const message = `Gabung Good Will Grow pakai kode referal saya: ${code}. Kita sama-sama dapat reward!`;
 
   const copy = async () => {
     await Clipboard.setStringAsync(code);
+    tapSuccess();
+    showToast("Kode referal disalin");
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };
 
   const share = () => {
-    Share.share({
-      message: `Gabung Good Will Grow pakai kode referal saya: ${code}. Kita sama-sama dapat reward!`,
-    }).catch(() => {});
+    tapPress();
+    Share.share({ message }).catch(() => {});
+  };
+
+  // Straight into WhatsApp when it is installed, else WhatsApp on the web.
+  const shareWhatsApp = () => {
+    tapPress();
+    const text = encodeURIComponent(message);
+    Linking.openURL(`whatsapp://send?text=${text}`).catch(() =>
+      Linking.openURL(`https://wa.me/?text=${text}`).catch(() =>
+        showToast("WhatsApp tidak bisa dibuka", "error"),
+      ),
+    );
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Kode Referal" />
+      <AppHeader
+        tone="account"
+        title="Kode Referal"
+        divider={scroll.scrolled}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{
           paddingHorizontal: EDGE,
           paddingTop: 16,
@@ -184,15 +210,114 @@ export default function ReferralScreen() {
               {code}
             </UiText>
           </View>
-          <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+          <PressableScale
+            onPress={shareWhatsApp}
+            scaleTo={0.98}
+            style={{
+              marginTop: 12,
+              height: 46,
+              borderRadius: 23,
+              backgroundColor: "#25D366",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            <Glyph name="whatsapp" size={19} color="#FFFFFF" />
+            <UiText
+              color="#FFFFFF"
+              style={{
+                fontSize: 15,
+                lineHeight: 19,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
+              Bagikan ke WhatsApp
+            </UiText>
+          </PressableScale>
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
             <PillButton
               icon={copied ? "check" : "copy"}
-              label={copied ? "Tersalin" : "Salin"}
+              label={copied ? "Tersalin" : "Salin kode"}
               onPress={copy}
             />
-            <PillButton icon="share" label="Bagikan" onPress={share} solid />
+            <PillButton icon="share" label="Lainnya" onPress={share} />
           </View>
         </AccountCard>
+
+        <AccountSection title="Hasil ajakanmu" />
+        <AccountCard style={{ flexDirection: "row", paddingVertical: 14 }}>
+          {[
+            {
+              label: "Teman bergabung",
+              value: joined,
+              icon: "userPlus" as const,
+            },
+            { label: "Kupon didapat", value: rewards, icon: "ticket" as const },
+          ].map((stat, i) => (
+            <View
+              key={stat.label}
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                paddingHorizontal: 14,
+                borderLeftWidth: i > 0 ? 1 : 0,
+                borderLeftColor: RULE,
+              }}
+            >
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: "#FFF3C4",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Glyph name={stat.icon} size={18} color={STRIP_INK} />
+              </View>
+              <View>
+                <CountUp
+                  value={stat.value}
+                  format={(n) => n.toLocaleString("id-ID")}
+                  color={LABEL_INK}
+                  style={{
+                    fontSize: 20,
+                    lineHeight: 24,
+                    fontFamily: fontFamilies.extrabold,
+                  }}
+                />
+                <UiText
+                  color={QUIET_INK}
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  {stat.label}
+                </UiText>
+              </View>
+            </View>
+          ))}
+        </AccountCard>
+        {joined === 0 ? (
+          <UiText
+            color={QUIET_INK}
+            style={{
+              marginTop: 8,
+              fontSize: 12.5,
+              lineHeight: 17,
+              fontFamily: fontFamilies.medium,
+            }}
+          >
+            Belum ada teman yang bergabung. Kirim kodemu sekarang, yuk!
+          </UiText>
+        ) : null}
 
         <AccountSection title="Cara kerjanya" />
         <AccountCard style={{ paddingVertical: 6 }}>

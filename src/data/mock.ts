@@ -681,10 +681,11 @@ export const memberTiers: MemberTier[] = [
   },
 ];
 
+/** Adds up to the member's 1.000-point balance: 1.000 + 90 − 150 + 60. */
 export const pointsHistory: PointsHistoryEntry[] = [
   { id: "ph-1", title: "Reward Pendaftaran", date: "29 Agustus 2026", points: 1000, type: "earn" },
   { id: "ph-2", title: "Transaksi Nordu Coffee Mega Mall", date: "05 September 2026", points: 90, type: "earn" },
-  { id: "ph-3", title: "Tukar Poin - Diskon Rp 10.000", date: "10 September 2026", points: -500, type: "redeem" },
+  { id: "ph-3", title: "Tukar Poin - Diskon Rp 3.000", date: "10 September 2026", points: -150, type: "redeem" },
   { id: "ph-4", title: "Transaksi Cattu Coffee Sepakat", date: "18 September 2026", points: 60, type: "earn" },
 ];
 
