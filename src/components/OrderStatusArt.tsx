@@ -1,11 +1,13 @@
 import React from "react";
 import Svg, {
   Circle,
+  ClipPath,
   Defs,
   Ellipse,
   G,
   LinearGradient,
   Path,
+  RadialGradient,
   Rect,
   Stop,
 } from "react-native-svg";
@@ -292,14 +294,41 @@ export function HelpArt({ size = 110 }: { size?: number }) {
     <Svg width={size} height={size} viewBox="0 0 110 110">
       <Defs>
         <LinearGradient id="haBody" x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#6F93EA" />
+          <Stop offset="0" stopColor="#7FA2F0" />
+          <Stop offset="0.55" stopColor={brand[600]} />
           <Stop offset="1" stopColor={brand[800]} />
         </LinearGradient>
-        <LinearGradient id="haScreen" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#FFFFFF" />
-          <Stop offset="1" stopColor="#DCE7FF" />
+        <LinearGradient id="haSide" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor={brand[800]} />
+          <Stop offset="1" stopColor={brand[900]} />
         </LinearGradient>
+        <LinearGradient id="haScreen" x1="0" y1="0" x2="0.4" y2="1">
+          <Stop offset="0" stopColor="#FFFFFF" />
+          <Stop offset="1" stopColor="#D3E0FF" />
+        </LinearGradient>
+        <LinearGradient id="haInset" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor={brand[900]} stopOpacity={0.22} />
+          <Stop offset="1" stopColor={brand[900]} stopOpacity={0} />
+        </LinearGradient>
+        <LinearGradient id="haGlare" x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.75} />
+          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+        </LinearGradient>
+        <RadialGradient id="haBadge" cx="0.38" cy="0.32" r="0.72">
+          <Stop offset="0" stopColor="#FFF1A6" />
+          <Stop offset="0.45" stopColor="#FFD233" />
+          <Stop offset="1" stopColor="#E39A00" />
+        </RadialGradient>
+        <RadialGradient id="haFloor" cx="0.5" cy="0.5" r="0.5">
+          <Stop offset="0" stopColor={brand[900]} stopOpacity={0.28} />
+          <Stop offset="1" stopColor={brand[900]} stopOpacity={0} />
+        </RadialGradient>
+        <ClipPath id="haClip">
+          <Rect x={29} y={22} width={40} height={72} rx={8} />
+        </ClipPath>
       </Defs>
+
+      {/* dot grid behind */}
       <G fill="#C9D7F7">
         {[0, 1, 2, 3, 4].map((r) =>
           [0, 1, 2].map((c) => (
@@ -307,7 +336,29 @@ export function HelpArt({ size = 110 }: { size?: number }) {
           )),
         )}
       </G>
+
+      {/* soft shadow on the floor */}
+      <Ellipse cx={56} cy={103} rx={34} ry={6} fill="url(#haFloor)" />
+
       <G transform="rotate(-12 50 60)">
+        {/* the phone's thickness, seen on the right and bottom */}
+        <Rect
+          x={28.5}
+          y={17.5}
+          width={50}
+          height={90}
+          rx={13}
+          fill="url(#haSide)"
+        />
+        <Rect
+          x={26.2}
+          y={15.8}
+          width={50}
+          height={90}
+          rx={12.5}
+          fill={brand[700]}
+        />
+        {/* front face */}
         <Rect
           x={24}
           y={14}
@@ -316,6 +367,37 @@ export function HelpArt({ size = 110 }: { size?: number }) {
           rx={12}
           fill="url(#haBody)"
         />
+        {/* bevel catching the light */}
+        <Rect
+          x={24.8}
+          y={14.8}
+          width={48.4}
+          height={88.4}
+          rx={11.3}
+          fill="none"
+          stroke="#FFFFFF"
+          strokeOpacity={0.35}
+          strokeWidth={1.2}
+        />
+        {/* side buttons */}
+        <Rect
+          x={22.4}
+          y={34}
+          width={2.4}
+          height={10}
+          rx={1.2}
+          fill={brand[800]}
+        />
+        <Rect
+          x={22.4}
+          y={47}
+          width={2.4}
+          height={7}
+          rx={1.2}
+          fill={brand[800]}
+        />
+
+        {/* screen, sunk into the body */}
         <Rect
           x={29}
           y={22}
@@ -324,17 +406,68 @@ export function HelpArt({ size = 110 }: { size?: number }) {
           rx={8}
           fill="url(#haScreen)"
         />
-        <Circle cx={49} cy={56} r={15} fill="#FFD233" />
+        <G clipPath="url(#haClip)">
+          <Rect x={29} y={22} width={40} height={10} fill="url(#haInset)" />
+          {/* glass reflection */}
+          <Rect
+            x={14}
+            y={34}
+            width={46}
+            height={11}
+            rx={5.5}
+            fill="url(#haGlare)"
+            transform="rotate(-38 37 40)"
+            opacity={0.8}
+          />
+          {/* shadow the badge casts on the glass */}
+          <Ellipse
+            cx={51.5}
+            cy={71}
+            rx={13}
+            ry={4.5}
+            fill={brand[900]}
+            opacity={0.14}
+          />
+        </G>
+        {/* speaker and home bar */}
+        <Rect
+          x={43}
+          y={17}
+          width={12}
+          height={2.6}
+          rx={1.3}
+          fill="#FFFFFF"
+          opacity={0.55}
+        />
+        <Rect
+          x={42}
+          y={89}
+          width={14}
+          height={2.2}
+          rx={1.1}
+          fill={brand[300]}
+        />
+
+        {/* the alert, a glossy sphere lifting off the screen */}
+        <Circle
+          cx={49}
+          cy={56}
+          r={15}
+          fill={brand[900]}
+          opacity={0.16}
+          transform="translate(1.4 1.8)"
+        />
+        <Circle cx={49} cy={56} r={15} fill="url(#haBadge)" />
         <Rect x={46.6} y={46} width={4.8} height={13} rx={2.4} fill="#7A4B00" />
         <Circle cx={49} cy={64.5} r={2.8} fill="#7A4B00" />
-        <Rect
-          x={41}
-          y={17}
-          width={16}
-          height={3}
-          rx={1.5}
+        <Ellipse
+          cx={43.5}
+          cy={48.5}
+          rx={4.6}
+          ry={2.6}
           fill="#FFFFFF"
-          opacity={0.5}
+          opacity={0.75}
+          transform="rotate(-35 43.5 48.5)"
         />
       </G>
     </Svg>

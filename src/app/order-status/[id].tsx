@@ -1028,7 +1028,7 @@ export default function OrderStatusScreen() {
                 onPress={() => router.push("/faq")}
               />
             </View>
-            <View style={{ position: "absolute", right: 4, bottom: 0 }}>
+            <View style={{ position: "absolute", right: 4, bottom: 4 }}>
               <HelpArt size={116} />
             </View>
           </View>
