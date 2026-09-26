@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
   Platform,
   Pressable,
+  Share,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -30,6 +31,7 @@ import { formatRupiah } from "../../utils/format";
 import { tapSelect, tapSuccess } from "../../utils/haptics";
 import { getMenuItem } from "../../data/mock";
 import { showToast } from "../../store/toastStore";
+import { useFavoriteStore } from "../../store/favoriteStore";
 import {
   defaultSelections,
   unitPrice,
@@ -166,6 +168,8 @@ export default function ProductSheet() {
   const lines = useCartStore((s) => s.lines);
   const addLine = useCartStore((s) => s.addLine);
   const updateLine = useCartStore((s) => s.updateLine);
+  const saved = useFavoriteStore((s) => s.ids.includes(id));
+  const toggleSaved = useFavoriteStore((s) => s.toggle);
 
   const editing = useMemo(
     () => lines.find((l) => l.lineId === lineId),
@@ -367,6 +371,67 @@ export default function ProductSheet() {
               >
                 Mulai {formatRupiah(item.price)}
               </UiText>
+              <View style={{ marginTop: 12, flexDirection: "row", gap: 8 }}>
+                {[
+                  {
+                    glyph: "heart" as const,
+                    label: saved ? "Tersimpan" : "Simpan",
+                    on: saved,
+                    onPress: () => {
+                      tapSelect();
+                      toggleSaved(item.id);
+                      showToast(
+                        saved
+                          ? `${item.name} dihapus dari Favoritmu`
+                          : `${item.name} masuk Favoritmu`,
+                      );
+                    },
+                  },
+                  {
+                    glyph: "share" as const,
+                    label: "Bagikan",
+                    on: false,
+                    onPress: () => {
+                      Share.share({
+                        message: `${item.name} (${formatRupiah(item.price)}) bisa kamu pesan di aplikasi Good Will Grow.`,
+                      }).catch(() => {});
+                    },
+                  },
+                ].map((b) => (
+                  <PressableScale
+                    key={b.label}
+                    onPress={b.onPress}
+                    scaleTo={0.95}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                      height: 36,
+                      paddingHorizontal: 13,
+                      borderRadius: 18,
+                      borderWidth: 1,
+                      borderColor: b.on ? brand[200] : RULE,
+                      backgroundColor: b.on ? brand[50] : "#FFFFFF",
+                    }}
+                  >
+                    <Glyph
+                      name={b.glyph}
+                      size={16}
+                      color={b.on ? brand[600] : LABEL_INK}
+                    />
+                    <UiText
+                      color={b.on ? brand[700] : LABEL_INK}
+                      style={{
+                        fontSize: 13.5,
+                        lineHeight: 18,
+                        fontFamily: fontFamilies.bold,
+                      }}
+                    >
+                      {b.label}
+                    </UiText>
+                  </PressableScale>
+                ))}
+              </View>
             </View>
 
             <View style={{ paddingHorizontal: 13.5, paddingTop: 6, gap: 4 }}>
