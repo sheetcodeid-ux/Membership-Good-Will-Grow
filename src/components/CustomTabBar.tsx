@@ -282,7 +282,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           interactive
           blurTarget={blurTarget}
           intensity={100}
-          opacity={1.3}
+          frost={0.84}
           style={{
             flex: 1,
             height: TAB_BAR_HEIGHT,

@@ -42,6 +42,11 @@ interface LiquidGlassProps {
    * over arbitrary content.
    */
   opacity?: number;
+  /**
+   * White laid over the blur (fallback only), 0..1. Raise it where the
+   * glass must hide what is behind it, not just soften it.
+   */
+  frost?: number;
   /** Blur strength for the fallback glass, 1..100. */
   intensity?: number;
   /** Lets the surface flex under a press on iOS 26. */
@@ -156,6 +161,7 @@ export function LiquidGlass({
   opacity = 1,
   interactive = false,
   intensity = 90,
+  frost = 0.24,
   blurTarget,
   rim = radius > 0,
   style,
@@ -207,7 +213,7 @@ export function LiquidGlass({
       <View
         style={[
           StyleSheet.absoluteFill,
-          { backgroundColor: `rgba(255,255,255,${0.24 * opacity})` },
+          { backgroundColor: `rgba(255,255,255,${frost * opacity})` },
         ]}
       />
 
