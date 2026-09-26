@@ -32,6 +32,8 @@ export function CouponTicket({
   image,
   notchColor = surface,
   size = "regular",
+  price,
+  fresh,
 }: {
   coupon: Coupon;
   onPress?: () => void;
@@ -40,8 +42,15 @@ export function CouponTicket({
   image?: ImageSourcePropType;
   notchColor?: string;
   size?: keyof typeof SIZES;
+  /**
+   * For a coupon on sale: its price in points, shown in place of the
+   * used/unused tag, and the validity read as "after purchase".
+   */
+  price?: number;
+  /** Marks a coupon just bought with a small "Baru" tag. */
+  fresh?: boolean;
 }) {
-  const urgent = coupon.daysLeft <= 1;
+  const urgent = price === undefined && coupon.daysLeft <= 1;
   const m = SIZES[size];
   const art = image ?? (coupon.image ? { uri: coupon.image } : undefined);
   const CARD_H = m.h;
@@ -109,6 +118,30 @@ export function CouponTicket({
         >
           <BrandLogo brandId={coupon.brandId} size={16} />
         </View>
+        {fresh ? (
+          <View
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 8,
+              backgroundColor: "#E11D48",
+              borderRadius: 8,
+              paddingHorizontal: 6,
+              paddingVertical: 1,
+            }}
+          >
+            <UiText
+              color="#FFFFFF"
+              style={{
+                fontSize: 10.5,
+                lineHeight: 14,
+                fontFamily: fontFamilies.extrabold,
+              }}
+            >
+              Baru
+            </UiText>
+          </View>
+        ) : null}
       </View>
 
       {/* perforation, with the surface showing through a notch at each end */}
@@ -175,33 +208,61 @@ export function CouponTicket({
               fontFamily: fontFamilies.semibold,
             }}
           >
-            {urgent
-              ? `Sisa ${coupon.daysLeft} hari · segera habis`
-              : `Sisa ${coupon.daysLeft} hari`}
+            {price !== undefined
+              ? `Berlaku ${coupon.daysLeft} hari`
+              : urgent
+                ? `Sisa ${coupon.daysLeft} hari · segera habis`
+                : `Sisa ${coupon.daysLeft} hari`}
           </UiText>
         </View>
         <View
           style={{ flexDirection: "row", alignItems: "center", marginTop: 6 }}
         >
-          <View
-            style={{
-              borderRadius: 6,
-              paddingHorizontal: 7,
-              paddingVertical: 2,
-              backgroundColor: coupon.used ? "#F2F3F5" : success[50],
-            }}
-          >
-            <UiText
-              color={coupon.used ? QUIET_INK : success[600]}
+          {price !== undefined ? (
+            <View
               style={{
-                fontSize: 11.5,
-                lineHeight: 15,
-                fontFamily: fontFamilies.bold,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                borderRadius: 6,
+                paddingHorizontal: 7,
+                paddingVertical: 2,
+                backgroundColor: "#FFF3C4",
               }}
             >
-              {coupon.used ? "Sudah dipakai" : "Belum dipakai"}
-            </UiText>
-          </View>
+              <Glyph name="coins" size={12} color="#702B00" />
+              <UiText
+                color="#702B00"
+                style={{
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.extrabold,
+                }}
+              >
+                {price.toLocaleString("id-ID")} poin
+              </UiText>
+            </View>
+          ) : (
+            <View
+              style={{
+                borderRadius: 6,
+                paddingHorizontal: 7,
+                paddingVertical: 2,
+                backgroundColor: coupon.used ? "#F2F3F5" : success[50],
+              }}
+            >
+              <UiText
+                color={coupon.used ? QUIET_INK : success[600]}
+                style={{
+                  fontSize: 11.5,
+                  lineHeight: 15,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                {coupon.used ? "Sudah dipakai" : "Belum dipakai"}
+              </UiText>
+            </View>
+          )}
           <View style={{ flex: 1 }} />
           {onPress ? (
             <View

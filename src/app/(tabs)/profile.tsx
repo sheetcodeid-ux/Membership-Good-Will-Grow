@@ -36,7 +36,8 @@ import { space } from "../../theme/scale";
 import { useResponsive } from "../../theme/responsive";
 import { CONTACT, openEmail, openWhatsApp } from "../../data/contact";
 import { intlPhone, useAuthStore } from "../../store/authStore";
-import { coupons, orders } from "../../data/mock";
+import { orders } from "../../data/mock";
+import { useCouponStore } from "../../store/couponStore";
 
 /*
  * Measured off the reference account screen (360dp wide, values in dp below
@@ -83,6 +84,9 @@ export default function AccountScreen() {
   const referralCode = useAuthStore((s) => s.referralCode);
   const logout = useAuthStore((s) => s.logout);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const couponCount = useCouponStore(
+    (s) => s.mine.filter((c) => !c.used).length,
+  );
 
   const scrollY = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((e) => {
@@ -375,7 +379,7 @@ export default function AccountScreen() {
               {
                 icon: <Glyph name="tag" size={21} color={iconGrey} />,
                 label: "Kupon Saya",
-                badge: String(coupons.length),
+                badge: String(couponCount),
                 onPress: () => router.push("/coupons"),
               },
               {

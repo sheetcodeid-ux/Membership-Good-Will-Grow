@@ -13,6 +13,7 @@ import { brand, success } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { getBrand, getOutlet, outletFullName } from "../data/mock";
 import { useOrderStore } from "../store/orderStore";
+import { useMemberStore } from "../store/memberStore";
 import { showToast } from "../store/toastStore";
 import { tapPress } from "../utils/haptics";
 import type { Coupon } from "../data/types";
@@ -138,10 +139,14 @@ function Fact({
 export function CouponSheet({
   coupon,
   onClose,
+  offer,
 }: {
   coupon: Coupon;
   onClose: () => void;
+  /** Opened from "Kupon tersedia": priced in points, bought from the footer. */
+  offer?: { price: number; onBuy: () => void };
 }) {
+  const points = useMemberStore((s) => s.points);
   const detail = coupon.detail;
   const brandInfo = getBrand(coupon.brandId);
   const outletId = useOrderStore((s) => s.outletId);
@@ -171,57 +176,115 @@ export function CouponSheet({
       onClose={onClose}
       maxHeightRatio={0.9}
       footer={
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <PressableScale
-            onPress={onClose}
-            scaleTo={0.97}
-            style={{
-              flex: coupon.used ? 1 : 0.8,
-              height: 48,
-              borderRadius: 24,
-              borderWidth: 1,
-              borderColor: RULE,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <UiText
-              color={LABEL_INK}
-              style={{
-                fontSize: 16,
-                lineHeight: 20,
-                fontFamily: fontFamilies.bold,
-              }}
-            >
-              Tutup
-            </UiText>
-          </PressableScale>
-          {coupon.used ? null : (
+        offer ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                Poinmu
+              </UiText>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+              >
+                <Glyph name="coins" size={15} color="#C98A00" />
+                <UiText
+                  color={LABEL_INK}
+                  style={{
+                    fontSize: 17,
+                    lineHeight: 22,
+                    fontFamily: fontFamilies.extrabold,
+                  }}
+                >
+                  {points.toLocaleString("id-ID")}
+                </UiText>
+              </View>
+            </View>
             <PressableScale
-              onPress={use}
+              onPress={offer.onBuy}
+              disabled={points < offer.price}
               scaleTo={0.97}
               style={{
-                flex: 1.2,
+                flex: 1.6,
                 height: 48,
                 borderRadius: 24,
-                backgroundColor: brand[600],
+                backgroundColor: points < offer.price ? "#E4E7EC" : brand[600],
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
               <UiText
-                color="#FFFFFF"
+                color={points < offer.price ? QUIET_INK : "#FFFFFF"}
                 style={{
                   fontSize: 16,
                   lineHeight: 20,
                   fontFamily: fontFamilies.bold,
                 }}
               >
-                Pakai kupon
+                {points < offer.price
+                  ? `Poin kurang ${(offer.price - points).toLocaleString("id-ID")}`
+                  : `Tukar ${offer.price.toLocaleString("id-ID")} poin`}
               </UiText>
             </PressableScale>
-          )}
-        </View>
+          </View>
+        ) : (
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <PressableScale
+              onPress={onClose}
+              scaleTo={0.97}
+              style={{
+                flex: coupon.used ? 1 : 0.8,
+                height: 48,
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor: RULE,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  fontSize: 16,
+                  lineHeight: 20,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                Tutup
+              </UiText>
+            </PressableScale>
+            {coupon.used ? null : (
+              <PressableScale
+                onPress={use}
+                scaleTo={0.97}
+                style={{
+                  flex: 1.2,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: brand[600],
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <UiText
+                  color="#FFFFFF"
+                  style={{
+                    fontSize: 16,
+                    lineHeight: 20,
+                    fontFamily: fontFamilies.bold,
+                  }}
+                >
+                  Pakai kupon
+                </UiText>
+              </PressableScale>
+            )}
+          </View>
+        )
       }
     >
       <ScrollView
@@ -237,6 +300,7 @@ export function CouponSheet({
           onClose={onClose}
           notchColor="#FFFFFF"
           size="large"
+          price={offer?.price}
         />
 
         <UiText
@@ -324,16 +388,27 @@ export function CouponSheet({
         >
           <Fact
             icon="clock"
-            label="Masa berlaku"
-            value={`${coupon.daysLeft} hari lagi`}
-            tone={urgent ? WARN_INK : LABEL_INK}
+            label={offer ? "Berlaku setelah ditukar" : "Masa berlaku"}
+            value={
+              offer ? `${coupon.daysLeft} hari` : `${coupon.daysLeft} hari lagi`
+            }
+            tone={urgent && !offer ? WARN_INK : LABEL_INK}
           />
-          <Fact
-            icon={coupon.used ? "checkCircle" : "ticket"}
-            label="Status"
-            value={coupon.used ? "Sudah dipakai" : "Belum dipakai"}
-            tone={coupon.used ? QUIET_INK : success[600]}
-          />
+          {offer ? (
+            <Fact
+              icon="coins"
+              label="Harga"
+              value={`${offer.price.toLocaleString("id-ID")} poin`}
+              tone="#702B00"
+            />
+          ) : (
+            <Fact
+              icon={coupon.used ? "checkCircle" : "ticket"}
+              label="Status"
+              value={coupon.used ? "Sudah dipakai" : "Belum dipakai"}
+              tone={coupon.used ? QUIET_INK : success[600]}
+            />
+          )}
         </View>
 
         {detail ? (

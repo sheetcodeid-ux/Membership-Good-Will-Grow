@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { memberTiers, pointsHistory as initialHistory } from "../data/mock";
 import type { PointsHistoryEntry } from "../data/types";
+import { formatIndoDate } from "../utils/dates";
 
 interface MemberState {
   points: number;
@@ -11,7 +12,14 @@ interface MemberState {
   nextTier: () => (typeof memberTiers)[number] | undefined;
   spendProgress: () => number;
   transactionProgress: () => number;
+  /**
+   * Takes points off the balance and records it in Riwayat Poin. False,
+   * and nothing changes, when the balance is short.
+   */
+  spendPoints: (amount: number, title: string) => boolean;
 }
+
+let spendSeq = 1;
 
 export const useMemberStore = create<MemberState>((set, get) => ({
   points: 1000,
@@ -42,5 +50,22 @@ export const useMemberStore = create<MemberState>((set, get) => ({
     const next = get().nextTier();
     if (!next) return 1;
     return Math.min(1, get().totalTransactions / next.minTransactions);
+  },
+  spendPoints: (amount, title) => {
+    if (amount <= 0 || get().points < amount) return false;
+    set((s) => ({
+      points: s.points - amount,
+      history: [
+        ...s.history,
+        {
+          id: `ph-spend-${spendSeq++}`,
+          title,
+          date: formatIndoDate(new Date()),
+          points: -amount,
+          type: "redeem",
+        },
+      ],
+    }));
+    return true;
   },
 }));

@@ -111,6 +111,28 @@ export interface CouponDetail {
   outletIds: string[];
 }
 
+/** A coupon the member can buy with points, from "Kupon tersedia". */
+export interface CouponOffer {
+  id: string;
+  brandId?: string;
+  title: string;
+  pricePoints: number;
+  /** How long the coupon lasts once bought. */
+  validDays: number;
+  detail: CouponDetail;
+}
+
+/** One line of Riwayat Pembelian Kupon. */
+export interface CouponPurchase {
+  id: string;
+  offerId: string;
+  couponId: string;
+  brandId?: string;
+  title: string;
+  pricePoints: number;
+  date: string;
+}
+
 export interface Promo {
   id: string;
   title: string;

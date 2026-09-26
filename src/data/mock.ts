@@ -7,6 +7,7 @@ import type {
   MenuItem,
   MenuOptionGroup,
   Coupon,
+  CouponOffer,
   Promo,
   FeedPost,
   FeedComment,
@@ -546,6 +547,84 @@ export const coupons: Coupon[] = [
       ],
       note: "Selama persediaan masih ada.",
       outletIds: ["lesung-gajahmada", "lesung-hijas"],
+    },
+  },
+];
+
+/** Coupons on sale for points in "Kupon tersedia". */
+export const couponOffers: CouponOffer[] = [
+  {
+    id: "off-kopi-25",
+    brandId: "nordu",
+    title: "Diskon 25% Semua Kopi",
+    pricePoints: 300,
+    validDays: 7,
+    detail: {
+      benefits: ["Diskon 25% untuk satu minuman kopi", "Maksimal potongan Rp 10.000"],
+      claimTerms: [
+        "Kupon langsung masuk ke Kupon Saya setelah ditukar.",
+        "Kupon berlaku 7 hari sejak ditukar.",
+      ],
+      requirements: [
+        ["Coffee Creamy, varian apa pun, 1 item"],
+        ["Caffe Latte, varian apa pun, 1 item"],
+        ["Americano Arabika, varian apa pun, 1 item"],
+      ],
+      note: "Tidak berlaku kelipatan.",
+      outletIds: ["nordu-megamall", "nordu-tanjungsari", "nordu-merdeka"],
+    },
+  },
+  {
+    id: "off-dimsum",
+    brandId: "lesung-pipi",
+    title: "Gratis Dimsum Udang",
+    pricePoints: 450,
+    validDays: 5,
+    detail: {
+      benefits: ["Gratis 1 porsi Dimsum Udang"],
+      claimTerms: [
+        "Kupon langsung masuk ke Kupon Saya setelah ditukar.",
+        "Kupon berlaku 5 hari sejak ditukar.",
+      ],
+      requirements: [["Transaksi minimal Rp 30.000 di Lesung Pipi"]],
+      note: "Selama persediaan masih ada.",
+      outletIds: ["lesung-gajahmada", "lesung-hijas"],
+    },
+  },
+  {
+    id: "off-busari-15",
+    brandId: "ayam-busari",
+    title: "Potongan Rp 15.000",
+    pricePoints: 600,
+    validDays: 3,
+    detail: {
+      benefits: ["Potongan Rp 15.000 per transaksi"],
+      claimTerms: [
+        "Kupon langsung masuk ke Kupon Saya setelah ditukar.",
+        "Kupon berlaku 3 hari sejak ditukar.",
+      ],
+      requirements: [
+        ["Nasi Ayam Geprek Chili Padi, varian apa pun, 2 item"],
+        ["Nasi Ayam Bakar Madu, varian apa pun, 2 item"],
+      ],
+      outletIds: ["busari-veteran", "busari-pancasila"],
+    },
+  },
+  {
+    id: "off-cattu-bogo",
+    brandId: "cattu",
+    title: "Beli 1 Gratis 1 Kopi Susu",
+    pricePoints: 1200,
+    validDays: 7,
+    detail: {
+      benefits: ["Beli 1 kopi susu, gratis 1 kopi susu"],
+      claimTerms: [
+        "Kupon langsung masuk ke Kupon Saya setelah ditukar.",
+        "Kupon berlaku 7 hari sejak ditukar.",
+      ],
+      requirements: [["Arabika Coffee Milk, varian apa pun, 2 item"]],
+      note: "Minuman gratis adalah yang harganya sama atau lebih rendah.",
+      outletIds: ["cattu-sepakat", "cattu-ks-tubun"],
     },
   },
 ];
