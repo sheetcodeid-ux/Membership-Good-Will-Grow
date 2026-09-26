@@ -33,6 +33,9 @@ import { brand } from "../theme/colors";
 /** Height of the viewBox; the arc's lowest point is just above it. */
 const SCENE_H = 170;
 /** How far the scene reaches below the header block it belongs to. */
+/** The scenes' sky: the top bar takes it too once the page scrolls. */
+export const HERO_SKY = "#EAF1FF";
+
 export const HERO_ART_OVERHANG = SCENE_H - 150;
 
 /**

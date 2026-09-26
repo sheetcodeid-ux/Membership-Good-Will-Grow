@@ -16,11 +16,10 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UiText } from "../../components/ui/Text";
-import { ACCOUNT_BAR } from "../../components/ui/AppHeader";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { CountUp } from "../../components/ui/CountUp";
 import { Glyph, type GlyphName } from "../../components/icons/Glyph";
-import { SkylineBand } from "../../components/AccountHeroArt";
+import { HERO_SKY, SkylineBand } from "../../components/AccountHeroArt";
 import { CoinStack } from "../../components/CoinStack";
 import {
   MemberTierCard,
@@ -779,7 +778,12 @@ export default function MemberScreen() {
         <Animated.View
           style={[
             StyleSheet.absoluteFill,
-            { height: top + BAR_H, backgroundColor: ACCOUNT_BAR },
+            {
+              height: top + BAR_H,
+              backgroundColor: HERO_SKY,
+              borderBottomWidth: 1,
+              borderBottomColor: "rgba(11,43,115,0.07)",
+            },
             barStyle,
           ]}
         />

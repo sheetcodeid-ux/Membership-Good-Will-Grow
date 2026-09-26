@@ -103,7 +103,15 @@ function contourPaths() {
 
 const CONTOURS = contourPaths();
 
-function CardArt({ id, look }: { id: string; look: TierLook }) {
+function CardArt({
+  id,
+  look,
+  locked,
+}: {
+  id: string;
+  look: TierLook;
+  locked: boolean;
+}) {
   const g = (name: string) => `${name}-${id}`;
   return (
     <Svg
@@ -183,15 +191,18 @@ function CardArt({ id, look }: { id: string; look: TierLook }) {
         strokeOpacity={0.45}
         strokeWidth={0.6}
       />
-      <Ellipse
-        cx={EMBLEM.x - 6.5}
-        cy={EMBLEM.y - 8.5}
-        rx={4.6}
-        ry={2.4}
-        fill="#FFFFFF"
-        opacity={0.7}
-        transform={`rotate(-35 ${EMBLEM.x - 6.5} ${EMBLEM.y - 8.5})`}
-      />
+      {/* the glint; on a locked card the lock's glass takes its place */}
+      {locked ? null : (
+        <Ellipse
+          cx={EMBLEM.x - 6.5}
+          cy={EMBLEM.y - 8.5}
+          rx={4.6}
+          ry={2.4}
+          fill="#FFFFFF"
+          opacity={0.7}
+          transform={`rotate(-35 ${EMBLEM.x - 6.5} ${EMBLEM.y - 8.5})`}
+        />
+      )}
       <G transform={`rotate(-16 ${EMBLEM.x} ${EMBLEM.y})`}>
         <Path
           d={`M${EMBLEM.x + 28} ${EMBLEM.y} A28 8 0 0 1 ${EMBLEM.x - 28} ${EMBLEM.y}`}
@@ -212,6 +223,7 @@ function CardArt({ id, look }: { id: string; look: TierLook }) {
           cy={EMBLEM.y + 4.8}
           r={0.7}
           fill="#FFFFFF"
+          opacity={locked ? 0 : 1}
         />
       </G>
     </Svg>
@@ -258,7 +270,42 @@ export function MemberTierCard({
       }}
     >
       <View style={{ flex: 1, borderRadius: 22, overflow: "hidden" }}>
-        <CardArt id={tier.id} look={look} />
+        <CardArt id={tier.id} look={look} locked={locked} />
+
+        {/* a level not reached yet: dimmed, with a lock set in the sphere */}
+        {locked ? (
+          <>
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                backgroundColor: "rgba(8,12,28,0.42)",
+              }}
+            />
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                left: (width * EMBLEM.x) / VW - 24,
+                top: (height * EMBLEM.y) / VH - 24,
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: white(0.18),
+                borderWidth: 1,
+                borderColor: white(0.35),
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Glyph name="lock" size={21} color="#FFFFFF" />
+            </View>
+          </>
+        ) : null}
 
         {/* the level's mark on the sphere */}
         <View
@@ -371,17 +418,44 @@ export function MemberTierCard({
           >
             {tier.name}
           </UiText>
-          <UiText
-            color={white(0.82)}
-            numberOfLines={2}
-            style={{
-              fontSize: 12.5,
-              lineHeight: 17,
-              fontFamily: fontFamilies.medium,
-            }}
-          >
-            {tier.tagline}
-          </UiText>
+          {locked ? (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "flex-start",
+                gap: 6,
+              }}
+            >
+              <View style={{ marginTop: 2 }}>
+                <Glyph name="lock" size={12} color={look.accent} />
+              </View>
+              <UiText
+                color={white(0.9)}
+                numberOfLines={2}
+                style={{
+                  flex: 1,
+                  fontSize: 12.5,
+                  lineHeight: 17,
+                  fontFamily: fontFamilies.semibold,
+                }}
+              >
+                Terbuka setelah belanja {formatRupiah(tier.minSpend)} dan{" "}
+                {tier.minTransactions} transaksi
+              </UiText>
+            </View>
+          ) : (
+            <UiText
+              color={white(0.82)}
+              numberOfLines={2}
+              style={{
+                fontSize: 12.5,
+                lineHeight: 17,
+                fontFamily: fontFamilies.medium,
+              }}
+            >
+              {tier.tagline}
+            </UiText>
+          )}
           <View
             style={{
               height: 1,
@@ -437,61 +511,6 @@ export function MemberTierCard({
             </View>
           </View>
         </View>
-
-        {locked ? (
-          <View
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-              backgroundColor: "rgba(8,12,28,0.42)",
-              alignItems: "center",
-              justifyContent: "center",
-              paddingHorizontal: 18,
-            }}
-          >
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: white(0.16),
-                borderWidth: 1,
-                borderColor: white(0.3),
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Glyph name="lock" size={21} color="#FFFFFF" />
-            </View>
-            <UiText
-              color="#FFFFFF"
-              style={{
-                marginTop: 10,
-                fontSize: 15,
-                lineHeight: 20,
-                fontFamily: fontFamilies.extrabold,
-              }}
-            >
-              Level ini terkunci
-            </UiText>
-            <UiText
-              color={white(0.82)}
-              center
-              style={{
-                marginTop: 3,
-                fontSize: 12,
-                lineHeight: 17,
-                fontFamily: fontFamilies.medium,
-              }}
-            >
-              Belanja {formatRupiah(tier.minSpend)} dan{"\n"}
-              {tier.minTransactions} transaksi untuk membuka
-            </UiText>
-          </View>
-        ) : null}
       </View>
     </View>
   );

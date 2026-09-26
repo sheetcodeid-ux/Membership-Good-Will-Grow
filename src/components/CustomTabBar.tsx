@@ -41,6 +41,8 @@ const ICON = 24;
 /** Inset of the bar's contents, and of the droplet inside its tab. */
 const BAR_PAD = 5;
 const DROP_INSET = 4;
+/** Never narrower than the longest label plus a margin each side. */
+const DROP_MIN_W = 60;
 
 const tabs: Record<string, { glyph: GlyphName; label: string }> = {
   index: { glyph: "tabHome", label: "Home" },
@@ -151,6 +153,7 @@ function TabButton({
             lineHeight: 13,
             fontFamily: focused ? fontFamilies.bold : fontFamilies.medium,
           },
+          { textAlign: "center" },
           labelStyle,
         ]}
       >
@@ -177,9 +180,11 @@ function Droplet({ index, tabW }: { index: number; tabW: number }) {
     );
   }, [index, pos, stretch]);
 
-  const w = tabW - DROP_INSET * 2;
+  // On a narrow phone a tab is barely wider than "Member", so the droplet
+  // may spill a little past its tab rather than cut through the label.
+  const w = Math.max(tabW - DROP_INSET * 2, DROP_MIN_W);
   const h = TAB_BAR_HEIGHT - BAR_PAD * 2 - DROP_INSET * 2 + 4;
-  const x = useDerivedValue(() => BAR_PAD + pos.value * tabW + DROP_INSET);
+  const x = useDerivedValue(() => BAR_PAD + pos.value * tabW + (tabW - w) / 2);
   const style = useAnimatedStyle(() => ({
     transform: [
       { translateX: x.value },
