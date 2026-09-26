@@ -22,6 +22,11 @@ interface AuthState extends ProfileFields {
   hasOnboarded: boolean;
   isLoggedIn: boolean;
   hasPin: boolean;
+  /**
+   * The PIN set on this device, until PINs are checked by the server. Unset
+   * when the session started without going through Buat PIN.
+   */
+  pinCode?: string;
   phone: string;
   /** Code the member shares from the Account card and Kode Referal. */
   referralCode: string;
@@ -31,7 +36,7 @@ interface AuthState extends ProfileFields {
   completeOnboarding: () => void;
   setPhone: (phone: string) => void;
   loginSuccess: () => void;
-  setPin: () => void;
+  setPin: (code: string) => void;
   unlock: () => void;
   logout: () => void;
   updateName: (name: string) => void;
@@ -60,7 +65,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   completeOnboarding: () => set({ hasOnboarded: true }),
   setPhone: (phone) => set({ phone }),
   loginSuccess: () => set({ isLoggedIn: true }),
-  setPin: () => set({ hasPin: true }),
+  setPin: (code) => set({ hasPin: true, pinCode: code }),
   unlock: () => set({ isLoggedIn: true }),
   logout: () => set({ isLoggedIn: false }),
   updateName: (name) => set({ name }),

@@ -213,7 +213,7 @@ export default function ProfileDetailScreen() {
               {
                 label: "PIN akses",
                 value: "Ubah PIN",
-                onPress: () => router.push("/create-pin"),
+                onPress: () => router.push("/create-pin?mode=change"),
               },
             ]}
           />

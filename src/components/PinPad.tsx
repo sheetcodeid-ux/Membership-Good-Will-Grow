@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, useWindowDimensions } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 import { PressableScale } from "./ui/PressableScale";
 import { AppText } from "./ui/AppText";
 import { brand, ink, danger } from "../theme/colors";
 import { shadow } from "../theme/shadows";
+import { tapSelect } from "../utils/haptics";
 
 const GAP = 18;
 const MAX_KEY = 96;
@@ -17,29 +26,64 @@ interface PinKeypadProps {
   onChange: (next: string) => void;
 }
 
+/** One PIN dot: pops in as it fills, settles back as it empties. */
+function Dot({ filled, error }: { filled: boolean; error?: boolean }) {
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    scale.value = filled
+      ? withSequence(
+          withTiming(1.28, { duration: 90 }),
+          withSpring(1, { damping: 12, stiffness: 260 }),
+        )
+      : withTiming(1, { duration: 120 });
+  }, [filled, scale]);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return (
+    <Animated.View
+      style={[
+        {
+          width: 18,
+          height: 18,
+          borderRadius: 9,
+          backgroundColor: error ? danger[500] : filled ? brand[900] : ink[300],
+        },
+        style,
+      ]}
+    />
+  );
+}
+
+/**
+ * The row of PIN dots. Bump `shake` (any new number) to shake the row
+ * sideways, the way a wrong PIN is refused.
+ */
 export function PinDots({
   length = 6,
   value,
   error,
+  shake = 0,
 }: {
   length?: number;
   value: string;
   error?: boolean;
+  shake?: number;
 }) {
+  const x = useSharedValue(0);
+  useEffect(() => {
+    if (!shake) return;
+    x.value = withSequence(
+      withTiming(-10, { duration: 45 }),
+      withRepeat(withTiming(10, { duration: 80 }), 3, true),
+      withTiming(0, { duration: 45 }),
+    );
+  }, [shake, x]);
+  const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
   return (
-    <View style={{ flexDirection: "row", justifyContent: "center", gap: 14 }}>
+    <Animated.View style={[{ flexDirection: "row", justifyContent: "center", gap: 14 }, style]}>
       {Array.from({ length }).map((_, i) => (
-        <View
-          key={i}
-          style={{
-            width: 18,
-            height: 18,
-            borderRadius: 9,
-            backgroundColor: error ? danger[500] : i < value.length ? brand[900] : ink[300],
-          }}
-        />
+        <Dot key={i} filled={i < value.length} error={error} />
       ))}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -73,6 +117,7 @@ export function PinKeypad({ length = 6, value, onChange }: PinKeypadProps) {
 
   const press = (k: string) => {
     if (k === "") return;
+    tapSelect();
     if (k === "del") {
       onChange(value.slice(0, -1));
       return;
