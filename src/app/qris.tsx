@@ -10,9 +10,7 @@ import { PressableScale } from "../components/ui/PressableScale";
 import { brand, danger, ink, surface } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { formatRupiah } from "../utils/format";
-import { computeBreakdown } from "../utils/pricing";
-import { useCartStore } from "../store/cartStore";
-import { useMemberStore } from "../store/memberStore";
+import { markCouponUsed, useCheckout } from "../hooks/useCheckout";
 import { useOrderStore } from "../store/orderStore";
 
 const PAY_WINDOW_SECONDS = 10 * 60;
@@ -26,10 +24,7 @@ const steps = [
 ];
 
 export default function QrisScreen() {
-  const subtotal = useCartStore((s) => s.subtotal());
-  const usePoints = useCartStore((s) => s.usePoints);
-  const points = useMemberStore((s) => s.points);
-  const breakdown = computeBreakdown(subtotal, usePoints, points);
+  const { breakdown, coupon, check } = useCheckout();
 
   const [remaining, setRemaining] = useState(PAY_WINDOW_SECONDS);
 
@@ -128,7 +123,11 @@ export default function QrisScreen() {
           </PressableScale>
 
           <PressableScale
-            onPress={() => router.replace("/order-success")}
+            onPress={() => {
+              // Paid: the coupon that came off this order is spent.
+              if (coupon && check?.ok) markCouponUsed(coupon.id);
+              router.replace("/order-success");
+            }}
             style={{
               flexDirection: "row",
               alignItems: "center",

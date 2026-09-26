@@ -7,13 +7,13 @@ import { PressableScale } from "../components/ui/PressableScale";
 import { brand, ink, gold } from "../theme/colors";
 import { useCartStore } from "../store/cartStore";
 import { useMemberStore } from "../store/memberStore";
-import { computeBreakdown } from "../utils/pricing";
+import { useCheckout } from "../hooks/useCheckout";
 import { formatRupiah } from "../utils/format";
 
 export default function PaymentScreen() {
   const cart = useCartStore();
+  const { breakdown } = useCheckout();
   const points = useMemberStore((s) => s.points);
-  const breakdown = computeBreakdown(cart.subtotal(), cart.usePoints, points);
 
   return (
     <Screen scroll>
@@ -62,7 +62,10 @@ export default function PaymentScreen() {
           <AppText variant="titleLg">Detail Pembayaran</AppText>
           <Row label="Nominal Belanja" value={formatRupiah(breakdown.subtotal)} />
           <Divider />
-          <Row label="Sub Total" value={formatRupiah(breakdown.subtotal)} bold />
+          {breakdown.couponDiscount > 0 ? (
+            <Row label="Potongan Kupon" value={`- ${formatRupiah(breakdown.couponDiscount)}`} />
+          ) : null}
+          <Row label="Sub Total" value={formatRupiah(breakdown.net)} bold />
           <Row label="Pajak (PB1 10%)" value={formatRupiah(breakdown.tax)} />
           <Row label="Pembulatan" value={formatRupiah(breakdown.rounding)} />
           {cart.usePoints ? <Row label="Potongan Poin" value={`- ${formatRupiah(breakdown.pointsDiscount)}`} /> : null}

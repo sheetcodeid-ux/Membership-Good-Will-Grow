@@ -11,6 +11,8 @@ interface VoucherState {
   /** Codes already turned into vouchers, so each works once. */
   claimed: string[];
   claim: (code: string) => ClaimResult;
+  /** Spends a voucher on a paid order. */
+  markUsed: (id: string) => void;
 }
 
 export const useVoucherStore = create<VoucherState>((set, get) => ({
@@ -28,4 +30,8 @@ export const useVoucherStore = create<VoucherState>((set, get) => ({
     }));
     return { ok: true, voucher };
   },
+  markUsed: (id) =>
+    set((s) => ({
+      vouchers: s.vouchers.map((v) => (v.id === id ? { ...v, used: true } : v)),
+    })),
 }));

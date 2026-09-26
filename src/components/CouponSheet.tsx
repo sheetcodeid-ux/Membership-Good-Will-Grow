@@ -12,6 +12,7 @@ import { LABEL_INK, QUIET_INK, RULE, WARN_INK } from "./AccountMenu";
 import { brand, success } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { getBrand, getOutlet, outletFullName } from "../data/mock";
+import { useCartStore } from "../store/cartStore";
 import { useOrderStore } from "../store/orderStore";
 import { useMemberStore } from "../store/memberStore";
 import { showToast } from "../store/toastStore";
@@ -164,6 +165,8 @@ export function CouponSheet({
     // Start the order at an outlet that takes this coupon.
     const target = outlets.find((o) => o.id === outletId) ?? outlets[0];
     if (target && target.id !== outletId) setOutlet(target.id);
+    // Held on the cart, so checkout opens with it applied.
+    useCartStore.getState().setCoupon(coupon.id);
     showToast(
       target
         ? `Pilih menu di ${outletFullName(target)}, ${noun} dipakai saat bayar`

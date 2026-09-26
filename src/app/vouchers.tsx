@@ -38,6 +38,7 @@ export default function VouchersScreen() {
   // The voucher claimed on this visit, marked "Baru" in the list.
   const [latest, setLatest] = useState<string | undefined>();
   const scroll = useScrolled();
+  const active = vouchers.filter((v) => !v.used).length;
 
   const submit = () => {
     const result = claim(code);
@@ -206,19 +207,27 @@ export default function VouchersScreen() {
           scrollEventThrottle={scroll.scrollEventThrottle}
           contentContainerStyle={{ paddingHorizontal: EDGE, paddingBottom: 40 }}
         >
-          <AccountSection title={`${vouchers.length} voucher aktif`} />
+          <AccountSection
+            title={
+              active === vouchers.length
+                ? `${active} voucher aktif`
+                : `${active} aktif · ${vouchers.length - active} sudah dipakai`
+            }
+          />
           <View style={{ gap: 10 }}>
-            {vouchers.map((v) => (
-              <CouponTicket
-                key={v.id}
-                coupon={v}
-                fresh={v.id === latest}
-                onPress={() => {
-                  tapPress();
-                  setOpen(v);
-                }}
-              />
-            ))}
+            {[...vouchers]
+              .sort((a, b) => Number(a.used) - Number(b.used))
+              .map((v) => (
+                <CouponTicket
+                  key={v.id}
+                  coupon={v}
+                  fresh={v.id === latest}
+                  onPress={() => {
+                    tapPress();
+                    setOpen(v);
+                  }}
+                />
+              ))}
           </View>
         </ScrollView>
       )}

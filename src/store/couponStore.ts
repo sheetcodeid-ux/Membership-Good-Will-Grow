@@ -19,6 +19,8 @@ interface CouponState {
    * Returns the new coupon, or undefined if the balance is short.
    */
   buy: (offerId: string) => Coupon | undefined;
+  /** Spends a coupon on a paid order. */
+  markUsed: (id: string) => void;
 }
 
 let seq = 1;
@@ -42,6 +44,7 @@ export const useCouponStore = create<CouponState>((set, get) => ({
       daysLeft: offer.validDays,
       used: false,
       detail: offer.detail,
+      rule: offer.rule,
     };
     const purchase: CouponPurchase = {
       id: `pur-${n}`,
@@ -59,4 +62,8 @@ export const useCouponStore = create<CouponState>((set, get) => ({
     }));
     return coupon;
   },
+  markUsed: (id) =>
+    set((s) => ({
+      mine: s.mine.map((c) => (c.id === id ? { ...c, used: true } : c)),
+    })),
 }));

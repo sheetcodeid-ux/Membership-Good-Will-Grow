@@ -96,6 +96,32 @@ export interface Coupon {
   image?: string;
   /** What the sheet shows when the coupon is opened. */
   detail?: CouponDetail;
+  /** How checkout decides whether it applies and what it takes off. */
+  rule?: CouponRule;
+}
+
+/**
+ * What a coupon asks of an order and what it gives back, as checkout reads
+ * it. The words in `CouponDetail` say the same thing to the member.
+ */
+export interface CouponRule {
+  /**
+   * Menu item ids that qualify the order: any one of them, at least
+   * `minQty` of that same item. Unset means any order qualifies.
+   */
+  items?: string[];
+  minQty?: number;
+  /** Least the order's items must add up to, before PB1. */
+  minSpend?: number;
+  reward:
+    /** A flat amount off the order. */
+    | { kind: "amount"; value: number }
+    /** A share off one qualifying item (the whole order without `items`), capped at `max`. */
+    | { kind: "percent"; value: number; max?: number }
+    /** One qualifying item sold at this price. */
+    | { kind: "price"; value: number }
+    /** One unit of `itemId` free, or the order's cheapest item without it. */
+    | { kind: "free"; itemId?: string };
 }
 
 export interface CouponDetail {
@@ -122,6 +148,7 @@ export interface CouponOffer {
   /** How long the coupon lasts once bought. */
   validDays: number;
   detail: CouponDetail;
+  rule?: CouponRule;
 }
 
 /** One line of Riwayat Pembelian Kupon. */

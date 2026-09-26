@@ -9,17 +9,15 @@ import { useCartStore } from "../store/cartStore";
 import { useOrderStore } from "../store/orderStore";
 import { getOutlet, outletFullName } from "../data/mock";
 import { formatRupiah } from "../utils/format";
-import { computeBreakdown } from "../utils/pricing";
-import { useMemberStore } from "../store/memberStore";
+import { useCheckout } from "../hooks/useCheckout";
 
 export default function OrderSuccessScreen() {
   const scale = useSharedValue(0.4);
   const opacity = useSharedValue(0);
   const cart = useCartStore();
-  const points = useMemberStore((s) => s.points);
   const outletId = useOrderStore((s) => s.outletId);
   const outlet = getOutlet(outletId);
-  const breakdown = computeBreakdown(cart.subtotal(), cart.usePoints, points);
+  const { breakdown, coupon } = useCheckout({ paid: true });
 
   useEffect(() => {
     scale.value = withSpring(1, { damping: 9, stiffness: 140 });
@@ -70,6 +68,16 @@ export default function OrderSuccessScreen() {
         </View>
 
         <View style={{ backgroundColor: ink[50], borderRadius: 18, padding: 18, width: "100%", gap: 10 }}>
+          {breakdown.couponDiscount > 0 ? (
+            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
+              <AppText variant="caption" color={ink[500]} numberOfLines={1} style={{ flexShrink: 1 }}>
+                {coupon?.title ?? "Kupon"}
+              </AppText>
+              <AppText variant="bodySemibold" color={success[600]}>
+                -{formatRupiah(breakdown.couponDiscount)}
+              </AppText>
+            </View>
+          ) : null}
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <AppText variant="caption" color={ink[500]}>Total Pembayaran</AppText>
             <AppText variant="bodySemibold" color={brand[700]}>{formatRupiah(breakdown.finalTotal)}</AppText>

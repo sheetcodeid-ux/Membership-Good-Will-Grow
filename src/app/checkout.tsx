@@ -14,8 +14,12 @@ import { OutletBar } from "../components/OutletBar";
 import { brand, danger, ink, surface, warning } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { formatRupiah } from "../utils/format";
-import { computeBreakdown } from "../utils/pricing";
-import { getOutlet, outletFullName } from "../data/mock";
+import { CouponPickerSheet } from "../components/CouponPickerSheet";
+import { isVoucher, useCheckout } from "../hooks/useCheckout";
+import { checkCoupon } from "../utils/coupons";
+import { showToast } from "../store/toastStore";
+import { tapPress, tapSuccess } from "../utils/haptics";
+import { outletFullName } from "../data/mock";
 import { selectionSummary, unitPrice, useCartStore } from "../store/cartStore";
 import { MAX_ORDER_DISTANCE_KM, useOrderStore } from "../store/orderStore";
 import { useMemberStore } from "../store/memberStore";
@@ -78,8 +82,6 @@ function AmountRow({ label, value, bold }: { label: string; value: string; bold?
 }
 
 export default function CheckoutScreen() {
-  const lines = useCartStore((s) => s.lines);
-  const subtotal = useCartStore((s) => s.subtotal());
   const usePoints = useCartStore((s) => s.usePoints);
   const toggleUsePoints = useCartStore((s) => s.toggleUsePoints);
   const orderNote = useCartStore((s) => s.orderNote);
@@ -91,16 +93,19 @@ export default function CheckoutScreen() {
   const couponId = useCartStore((s) => s.couponId);
   const setCoupon = useCartStore((s) => s.setCoupon);
 
-  const outletId = useOrderStore((s) => s.outletId);
   const serviceType = useOrderStore((s) => s.serviceType);
-  const outlet = getOutlet(outletId);
   const mintReceipt = useOrderStore((s) => s.mintReceipt);
   const points = useMemberStore((s) => s.points);
 
   const [confirming, setConfirming] = useState(false);
+  const [picking, setPicking] = useState(false);
 
-  // 1 point redeems Rp 1, capped at the bill.
-  const breakdown = computeBreakdown(subtotal, usePoints, points);
+  // 1 point redeems Rp 1, capped at the bill; a coupon comes off first.
+  const { breakdown, coupon, check, held, lines, outlet } = useCheckout();
+  const couponRows = held
+    .filter((c) => !c.used)
+    .map((c) => ({ coupon: c, check: checkCoupon(c, lines, outlet?.brandId) }));
+  const usableCount = couponRows.filter((r) => r.check.ok).length;
   const tooFar = (outlet?.distanceKm ?? 0) > MAX_ORDER_DISTANCE_KM;
 
   return (
@@ -312,28 +317,74 @@ export default function CheckoutScreen() {
 
         <Card title="Potongan Biaya Produk">
           <PressableScale
-            onPress={() => setCoupon(couponId ? undefined : "cp-3")}
+            onPress={() => {
+              tapPress();
+              setPicking(true);
+            }}
             style={{
               flexDirection: "row",
               alignItems: "center",
+              gap: 11,
               backgroundColor: brand[50],
               borderRadius: 12,
-              paddingVertical: 13,
+              paddingVertical: 11,
               paddingHorizontal: 12,
             }}
           >
-            <AppText variant="titleLg" style={{ flex: 1 }}>
-              Kupon
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: "#FFFFFF",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <AppIcon name="ticketPercent" size={19} color={brand[700]} />
+            </View>
+            <View style={{ flex: 1, gap: 1 }}>
+              <AppText variant="titleLg" numberOfLines={1}>
+                {coupon ? coupon.title : "Kupon & Voucher"}
+              </AppText>
+              {coupon && check && !check.ok ? (
+                <AppText variant="caption" color={warning[600]} numberOfLines={1}>
+                  Belum berlaku: {check.reason}
+                </AppText>
+              ) : coupon && check?.ok ? (
+                <AppText variant="caption" color="#3F8F4A" style={{ fontFamily: "Urbanist_700Bold" }}>
+                  Hemat {formatRupiah(check.amount)}
+                </AppText>
+              ) : (
+                <AppText variant="caption" color={usableCount ? brand[700] : ink[500]}>
+                  {usableCount
+                    ? `${usableCount} bisa dipakai untuk pesanan ini`
+                    : "Belum ada yang cocok dengan pesanan ini"}
+                </AppText>
+              )}
+            </View>
+            <AppText variant="bodySemibold" color={brand[700]}>
+              {coupon ? "Ganti" : "Pilih"}
             </AppText>
-            <Radio selected={!!couponId} />
+            <AppIcon name="chevronRight" size={12} color={brand[700]} />
           </PressableScale>
         </Card>
 
         <Card title="Detail Pembayaran">
           <View>
             <AmountRow label="Nominal Belanja" value={formatRupiah(breakdown.subtotal)} />
+            {breakdown.couponDiscount > 0 ? (
+              <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 5 }}>
+                <AppText variant="bodySemibold" color="#3F8F4A" style={{ flex: 1 }}>
+                  {coupon && isVoucher(coupon) ? "Potongan Voucher" : "Potongan Kupon"}
+                </AppText>
+                <AppText variant="bodySemibold" color="#3F8F4A">
+                  -{formatRupiah(breakdown.couponDiscount)}
+                </AppText>
+              </View>
+            ) : null}
             <View style={{ height: 1, backgroundColor: ink[100] }} />
-            <AmountRow label="Sub Total" value={formatRupiah(breakdown.subtotal)} bold />
+            <AmountRow label="Sub Total" value={formatRupiah(breakdown.net)} bold />
             <AmountRow label="Pb1" value={formatRupiah(breakdown.tax)} />
             <AmountRow label="Pembulatan" value={formatRupiah(breakdown.rounding)} />
             <View style={{ height: 1, backgroundColor: ink[100] }} />
@@ -430,6 +481,27 @@ export default function CheckoutScreen() {
           </View>
         </SafeAreaView>
       </View>
+
+      {picking ? (
+        <CouponPickerSheet
+          rows={couponRows}
+          selectedId={couponId}
+          isVoucher={isVoucher}
+          onClose={() => setPicking(false)}
+          onApply={(id) => {
+            setPicking(false);
+            if (id === couponId) return;
+            setCoupon(id);
+            const picked = couponRows.find((r) => r.coupon.id === id);
+            if (picked?.check.ok) {
+              tapSuccess();
+              showToast(`Hemat ${formatRupiah(picked.check.amount)} dengan ${picked.coupon.title}`);
+            } else if (couponId) {
+              showToast("Kupon dilepas dari pesanan", "info");
+            }
+          }}
+        />
+      ) : null}
 
       {confirming && outlet ? (
         <ConfirmDialog

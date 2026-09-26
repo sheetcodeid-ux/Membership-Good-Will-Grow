@@ -444,7 +444,7 @@ export const menuItems: MenuItem[] = [
     optionGroups: plainOptions(18000),
   },
   {
-    id: "tumbler-cw",
+    id: "tumbler-gwg",
     brandId: "nordu",
     categoryId: "merch",
     name: "Tumbler Good Will Grow",
@@ -466,6 +466,7 @@ export const coupons: Coupon[] = [
     title: "Hot Hour Deals - Pontianak",
     daysLeft: 1,
     used: false,
+    rule: { items: ["nasi-ayam-geprek", "nasi-ayam-bakar"], reward: { kind: "amount", value: 9500 } },
     detail: {
       benefits: ["Diskon Rp 9.500 per transaksi"],
       claimTerms: oneDayClaim,
@@ -483,6 +484,7 @@ export const coupons: Coupon[] = [
     title: "VIP Member Reward - Cattu Coffee",
     daysLeft: 1,
     used: false,
+    rule: { minSpend: 50000, reward: { kind: "free" } },
     detail: {
       benefits: ["Gratis 1 minuman ukuran reguler"],
       claimTerms: oneDayClaim,
@@ -497,6 +499,10 @@ export const coupons: Coupon[] = [
     title: "Sale 40%",
     daysLeft: 3,
     used: false,
+    rule: {
+      items: ["coffee-creamy", "caffe-latte", "matcha-latte"],
+      reward: { kind: "percent", value: 40, max: 12000 },
+    },
     detail: {
       benefits: ["Diskon 40% untuk satu minuman", "Maksimal potongan Rp 12.000"],
       claimTerms: [
@@ -518,6 +524,7 @@ export const coupons: Coupon[] = [
     title: "Arenga Coffee Rp 19.000",
     daysLeft: 3,
     used: false,
+    rule: { items: ["arenga-coffee"], reward: { kind: "price", value: 19000 } },
     detail: {
       benefits: ["Harga spesial Arenga Coffee jadi Rp 19.000"],
       claimTerms: [
@@ -535,6 +542,10 @@ export const coupons: Coupon[] = [
     title: "Gratis 1 Kue Lapis",
     daysLeft: 5,
     used: false,
+    rule: {
+      items: ["dimsum-ayam", "dimsum-udang"],
+      reward: { kind: "free", itemId: "kue-lapis" },
+    },
     detail: {
       benefits: ["Gratis 1 potong Kue Lapis Legit"],
       claimTerms: [
@@ -559,6 +570,10 @@ export const couponOffers: CouponOffer[] = [
     title: "Diskon 25% Semua Kopi",
     pricePoints: 300,
     validDays: 7,
+    rule: {
+      items: ["coffee-creamy", "caffe-latte", "americano-arabika"],
+      reward: { kind: "percent", value: 25, max: 10000 },
+    },
     detail: {
       benefits: ["Diskon 25% untuk satu minuman kopi", "Maksimal potongan Rp 10.000"],
       claimTerms: [
@@ -580,6 +595,7 @@ export const couponOffers: CouponOffer[] = [
     title: "Gratis Dimsum Udang",
     pricePoints: 450,
     validDays: 5,
+    rule: { minSpend: 30000, reward: { kind: "free", itemId: "dimsum-udang" } },
     detail: {
       benefits: ["Gratis 1 porsi Dimsum Udang"],
       claimTerms: [
@@ -597,6 +613,11 @@ export const couponOffers: CouponOffer[] = [
     title: "Potongan Rp 15.000",
     pricePoints: 600,
     validDays: 3,
+    rule: {
+      items: ["nasi-ayam-geprek", "nasi-ayam-bakar"],
+      minQty: 2,
+      reward: { kind: "amount", value: 15000 },
+    },
     detail: {
       benefits: ["Potongan Rp 15.000 per transaksi"],
       claimTerms: [
@@ -616,6 +637,7 @@ export const couponOffers: CouponOffer[] = [
     title: "Beli 1 Gratis 1 Kopi Susu",
     pricePoints: 1200,
     validDays: 7,
+    rule: { items: ["arabika-coffee-milk"], minQty: 2, reward: { kind: "free" } },
     detail: {
       benefits: ["Beli 1 kopi susu, gratis 1 kopi susu"],
       claimTerms: [
@@ -637,6 +659,7 @@ export const voucherCodes: Record<string, Omit<Coupon, "id" | "used">> = {
   GWGBARU: {
     title: "Voucher Member Baru Rp 10.000",
     daysLeft: 14,
+    rule: { minSpend: 40000, reward: { kind: "amount", value: 10000 } },
     detail: {
       benefits: ["Potongan Rp 10.000 untuk transaksi pertama"],
       claimTerms: [
@@ -660,6 +683,18 @@ export const voucherCodes: Record<string, Omit<Coupon, "id" | "used">> = {
     brandId: "nordu",
     title: "Voucher Nordu Hemat 20%",
     daysLeft: 7,
+    rule: {
+      items: [
+        "coffee-creamy",
+        "americano-arabika",
+        "arabika-coffee-milk",
+        "arenga-coffee",
+        "caffe-latte",
+        "matcha-latte",
+        "choco-hazelnut",
+      ],
+      reward: { kind: "percent", value: 20, max: 8000 },
+    },
     detail: {
       benefits: ["Diskon 20% semua minuman", "Maksimal potongan Rp 8.000"],
       claimTerms: [
