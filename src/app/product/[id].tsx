@@ -1,107 +1,185 @@
 import React, { useMemo, useState } from "react";
-import { AppIcon } from "../../components/ui/AppIcon";
-import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { SlideInDown } from "react-native-reanimated";
-import { AppText } from "../../components/ui/AppText";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
+import { UiText } from "../../components/ui/Text";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
-import { QuantityStepper } from "../../components/ui/QuantityStepper";
-import { brand, ink, surface, warning } from "../../theme/colors";
-import { shadow } from "../../theme/shadows";
+import { Glyph } from "../../components/icons/Glyph";
+import { LABEL_INK, QUIET_INK, RULE } from "../../components/AccountMenu";
+import { Radio, Stepper } from "../../components/checkout/parts";
+import { brand } from "../../theme/colors";
+import { fontFamilies } from "../../theme/typography";
 import { formatRupiah } from "../../utils/format";
+import { tapSelect, tapSuccess } from "../../utils/haptics";
 import { getMenuItem } from "../../data/mock";
-import { defaultSelections, unitPrice, useCartStore } from "../../store/cartStore";
+import { showToast } from "../../store/toastStore";
+import {
+  defaultSelections,
+  unitPrice,
+  useCartStore,
+} from "../../store/cartStore";
 import type { MenuOption, MenuOptionGroup } from "../../data/types";
 
-/** Hollow ring / filled dot used by every single-select row. */
-function Radio({ selected }: { selected: boolean }) {
+/** The small tag beside a group's name: must pick one, or optional. */
+function GroupTag({ group }: { group: MenuOptionGroup }) {
+  const single = group.selection === "single";
   return (
     <View
       style={{
-        width: 19,
-        height: 19,
         borderRadius: 10,
-        borderWidth: 1.8,
-        borderColor: selected ? brand[900] : ink[300],
-        alignItems: "center",
-        justifyContent: "center",
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        backgroundColor: single ? "#EAF0FF" : "#FFF3C4",
       }}
     >
-      {selected ? (
-        <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: brand[900] }} />
-      ) : null}
+      <UiText
+        color={single ? brand[700] : "#7A4B00"}
+        style={{
+          fontSize: 11.5,
+          lineHeight: 15,
+          fontFamily: fontFamilies.bold,
+        }}
+      >
+        {single ? "Wajib, pilih 1" : (group.hint ?? "Opsional")}
+      </UiText>
     </View>
   );
 }
 
-function OptionCard({
+/** One option: a toggle row (radio) or a counter row for add-ons. */
+function OptionRow({
   option,
   group,
   qty,
+  first,
   onChange,
-  leadingIcon,
 }: {
   option: MenuOption;
   group: MenuOptionGroup;
   qty: number;
+  first: boolean;
   onChange: (qty: number) => void;
-  leadingIcon?: React.ReactNode;
 }) {
-  // A single-select group, or a multi-select option capped at one, is a toggle.
-  const isToggle = group.selection === "single" || option.maxQty === 1;
-  return (
-    <Pressable
-      onPress={() => (isToggle ? onChange(qty > 0 ? (group.selection === "single" ? 1 : 0) : 1) : undefined)}
+  const single = group.selection === "single";
+  const toggle = single || option.maxQty === 1;
+  const on = qty > 0;
+  const body = (
+    <View
       style={{
         flexDirection: "row",
         alignItems: "center",
-        gap: 10,
-        backgroundColor: "#FFFFFF",
-        borderRadius: 12,
-        paddingHorizontal: 13,
-        height: 44,
-        ...(shadow.xs as object),
+        gap: 12,
+        minHeight: 54,
+        paddingHorizontal: 14,
+        borderTopWidth: first ? 0 : 1,
+        borderTopColor: RULE,
+        backgroundColor: on && toggle ? "#F3F7FF" : "#FFFFFF",
       }}
     >
-      {leadingIcon}
-      <AppText variant="bodyMedium" numberOfLines={1} style={{ flex: 1 }}>
-        {option.name}
-      </AppText>
-      <AppText variant="bodyMedium" color={ink[700]}>
-        {formatRupiah(option.price)}
-      </AppText>
-      {isToggle ? (
-        <Radio selected={qty > 0} />
+      <View style={{ flex: 1 }}>
+        <UiText
+          color={LABEL_INK}
+          numberOfLines={1}
+          style={{
+            fontSize: 15,
+            lineHeight: 20,
+            fontFamily: on ? fontFamilies.bold : fontFamilies.medium,
+          }}
+        >
+          {option.name}
+        </UiText>
+      </View>
+      <UiText
+        color={QUIET_INK}
+        style={{
+          fontSize: 14,
+          lineHeight: 18,
+          fontFamily: fontFamilies.semibold,
+        }}
+      >
+        {single
+          ? formatRupiah(option.price)
+          : option.price > 0
+            ? `+${formatRupiah(option.price)}`
+            : "Gratis"}
+      </UiText>
+      {toggle ? (
+        <Radio on={on} />
       ) : (
-        <QuantityStepper value={qty} onChange={onChange} size={24} max={option.maxQty ?? 10} />
+        <Stepper
+          qty={qty}
+          onChange={onChange}
+          min={0}
+          max={option.maxQty ?? 10}
+          size={28}
+        />
       )}
-    </Pressable>
+    </View>
+  );
+  if (!toggle) return body;
+  return (
+    <PressableScale
+      scaleTo={0.99}
+      onPress={() => {
+        tapSelect();
+        onChange(single ? 1 : on ? 0 : 1);
+      }}
+    >
+      {body}
+    </PressableScale>
   );
 }
 
+/**
+ * Detail Produk, as a sheet over Daftar Menu: the photo, name and story,
+ * each option group in its own bordered card (the variant must be picked,
+ * add-ons are optional), a note for the kitchen, then the quantity and
+ * the button with the running price. From Keranjang's "Ubah" it opens on
+ * that line and saves back into it.
+ */
 export default function ProductSheet() {
-  const { id, lineId } = useLocalSearchParams<{ id: string; lineId?: string }>();
+  const { id, lineId } = useLocalSearchParams<{
+    id: string;
+    lineId?: string;
+  }>();
   const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const item = getMenuItem(id);
 
   const lines = useCartStore((s) => s.lines);
   const addLine = useCartStore((s) => s.addLine);
   const updateLine = useCartStore((s) => s.updateLine);
 
-  // Opened from the cart's Edit button, the sheet starts from that line.
-  const editing = useMemo(() => lines.find((l) => l.lineId === lineId), [lines, lineId]);
+  const editing = useMemo(
+    () => lines.find((l) => l.lineId === lineId),
+    [lines, lineId],
+  );
 
   const [selections, setSelections] = useState<Record<string, number>>(
-    () => editing?.selections ?? (item ? defaultSelections(item.optionGroups) : {})
+    () =>
+      editing?.selections ?? (item ? defaultSelections(item.optionGroups) : {}),
   );
   const [qty, setQty] = useState(editing?.qty ?? 1);
+  const [note, setNote] = useState(editing?.note ?? "");
 
   if (!item) return null;
 
-  const setOption = (group: MenuOptionGroup, option: MenuOption, next: number) => {
+  const setOption = (
+    group: MenuOptionGroup,
+    option: MenuOption,
+    next: number,
+  ) => {
     setSelections((prev) => {
       const draft = { ...prev };
       if (group.selection === "single") {
@@ -119,140 +197,309 @@ export default function ProductSheet() {
   const total = unitPrice(item, selections) * qty;
 
   const submit = () => {
-    if (editing) updateLine(editing.lineId, qty, selections, editing.note);
-    else addLine(item, qty, selections);
+    tapSuccess();
+    const trimmed = note.trim() || undefined;
+    if (editing) {
+      updateLine(editing.lineId, qty, selections, trimmed);
+      showToast("Pesanan diperbarui");
+    } else {
+      addLine(item, qty, selections, trimmed);
+      showToast(`${item.name} masuk keranjang`);
+    }
     router.back();
   };
-
-  const [variantGroup, ...restGroups] = item.optionGroups;
 
   return (
     <View style={{ flex: 1 }}>
       <StatusBar style="light" />
 
-      <Pressable style={StyleSheet.absoluteFill} onPress={() => router.back()}>
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(10,14,26,0.5)" }]} />
-      </Pressable>
+      <Animated.View
+        entering={FadeIn.duration(200)}
+        style={StyleSheet.absoluteFill}
+      >
+        <Pressable
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: "rgba(10,14,26,0.5)" },
+          ]}
+          onPress={() => router.back()}
+        />
+      </Animated.View>
 
-      <View style={{ flex: 1, justifyContent: "flex-end" }} pointerEvents="box-none">
+      <View
+        style={{ flex: 1, justifyContent: "flex-end" }}
+        pointerEvents="box-none"
+      >
         <Animated.View
           entering={SlideInDown.duration(300)}
           style={{
             height: height * 0.92,
-            backgroundColor: surface,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            backgroundColor: "#F3F4F9",
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
             overflow: "hidden",
           }}
         >
-          <View style={{ alignItems: "center", paddingVertical: 8 }}>
-            <View style={{ width: 38, height: 4, borderRadius: 2, backgroundColor: ink[200] }} />
-          </View>
-
           <ScrollView
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 24 }}
           >
-            <ImagePlaceholder
-              label="Foto Produk"
-              radius={0}
-              iconSize={36}
-              style={{ width: "100%", aspectRatio: 1 }}
-            />
+            <View>
+              <ImagePlaceholder
+                label="Foto Produk"
+                seed={item.id}
+                radius={0}
+                iconSize={36}
+                style={{ width: "100%", aspectRatio: 4 / 3 }}
+              />
+              <View
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 0,
+                  right: 0,
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: 40,
+                    height: 5,
+                    borderRadius: 3,
+                    backgroundColor: "rgba(255,255,255,0.85)",
+                  }}
+                />
+              </View>
+              <PressableScale
+                onPress={() => router.back()}
+                hitSlop={8}
+                scaleTo={0.9}
+                style={{
+                  position: "absolute",
+                  top: 16,
+                  right: 14,
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  backgroundColor: "#FFFFFF",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Glyph name="close" size={13} color={QUIET_INK} />
+              </PressableScale>
+            </View>
 
-            <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 8 }}>
-              <AppText variant="h3">{item.name}</AppText>
-
-              {variantGroup ? (
-                <View style={{ gap: 8 }}>
-                  {variantGroup.options.map((option) => (
-                    <OptionCard
-                      key={option.id}
-                      option={option}
-                      group={variantGroup}
-                      qty={selections[option.id] ?? 0}
-                      onChange={(n) => setOption(variantGroup, option, n)}
-                      leadingIcon={<AppIcon name="chefHat" size={16} color={brand[700]} />}
-                    />
-                  ))}
+            <View
+              style={{
+                backgroundColor: "#FFFFFF",
+                paddingHorizontal: 16,
+                paddingTop: 16,
+                paddingBottom: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: RULE,
+              }}
+            >
+              {item.isBestSeller ? (
+                <View
+                  style={{
+                    alignSelf: "flex-start",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                    marginBottom: 6,
+                    borderRadius: 10,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    backgroundColor: "#FFF3C4",
+                  }}
+                >
+                  <Glyph name="star" size={11} color="#A36A00" />
+                  <UiText
+                    color="#7A4B00"
+                    style={{
+                      fontSize: 11.5,
+                      lineHeight: 15,
+                      fontFamily: fontFamilies.bold,
+                    }}
+                  >
+                    Terlaris
+                  </UiText>
                 </View>
               ) : null}
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  fontSize: 22,
+                  lineHeight: 28,
+                  fontFamily: fontFamilies.extrabold,
+                }}
+              >
+                {item.name}
+              </UiText>
+              {item.description ? (
+                <UiText
+                  color={QUIET_INK}
+                  style={{
+                    marginTop: 4,
+                    fontSize: 14,
+                    lineHeight: 20,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  {item.description}
+                </UiText>
+              ) : null}
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  marginTop: 8,
+                  fontSize: 16,
+                  lineHeight: 21,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                Mulai {formatRupiah(item.price)}
+              </UiText>
+            </View>
 
-              {restGroups.map((group) => (
-                <View key={group.id} style={{ gap: 8, marginTop: 10 }}>
-                  <AppText variant="bodySemibold">{group.name}</AppText>
-                  {group.hint ? (
-                    <View
+            <View style={{ paddingHorizontal: 13.5, paddingTop: 6, gap: 4 }}>
+              {item.optionGroups.map((group) => (
+                <View key={group.id}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      marginTop: 16,
+                      marginBottom: 8,
+                      marginLeft: 2,
+                    }}
+                  >
+                    <UiText
+                      color={LABEL_INK}
                       style={{
-                        alignSelf: "flex-start",
-                        borderWidth: 1.2,
-                        borderColor: warning[500],
-                        borderRadius: 7,
-                        paddingHorizontal: 9,
-                        paddingVertical: 4,
+                        fontSize: 16,
+                        lineHeight: 21,
+                        fontFamily: fontFamilies.extrabold,
                       }}
                     >
-                      <AppText variant="micro" color={warning[600]}>
-                        {group.hint}
-                      </AppText>
-                    </View>
-                  ) : null}
-                  {group.options.map((option) => (
-                    <OptionCard
-                      key={option.id}
-                      option={option}
-                      group={group}
-                      qty={selections[option.id] ?? 0}
-                      onChange={(n) => setOption(group, option, n)}
-                    />
-                  ))}
+                      {group.name}
+                    </UiText>
+                    <GroupTag group={group} />
+                  </View>
+                  <View
+                    style={{
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: RULE,
+                      overflow: "hidden",
+                    }}
+                  >
+                    {group.options.map((option, i) => (
+                      <OptionRow
+                        key={option.id}
+                        option={option}
+                        group={group}
+                        first={i === 0}
+                        qty={selections[option.id] ?? 0}
+                        onChange={(n) => setOption(group, option, n)}
+                      />
+                    ))}
+                  </View>
                 </View>
               ))}
+
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  marginTop: 16,
+                  marginBottom: 8,
+                  marginLeft: 2,
+                  fontSize: 16,
+                  lineHeight: 21,
+                  fontFamily: fontFamilies.extrabold,
+                }}
+              >
+                Catatan
+              </UiText>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  minHeight: 50,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: RULE,
+                  backgroundColor: "#FFFFFF",
+                  paddingHorizontal: 14,
+                }}
+              >
+                <Glyph name="pencil" size={13} color={QUIET_INK} />
+                <TextInput
+                  value={note}
+                  onChangeText={setNote}
+                  maxLength={120}
+                  placeholder="Opsional, mis. tanpa bawang, es sedikit"
+                  placeholderTextColor="#8A93A6"
+                  style={[
+                    {
+                      flex: 1,
+                      minWidth: 0,
+                      paddingVertical: 12,
+                      fontFamily: fontFamilies.medium,
+                      fontSize: 14.5,
+                      color: LABEL_INK,
+                    },
+                    Platform.OS === "web"
+                      ? ({ outlineStyle: "none" } as object)
+                      : null,
+                  ]}
+                />
+              </View>
             </View>
           </ScrollView>
 
           <View
             style={{
               backgroundColor: "#FFFFFF",
-              borderTopLeftRadius: 18,
-              borderTopRightRadius: 18,
-              ...(shadow.lg as object),
+              borderTopWidth: 1,
+              borderTopColor: RULE,
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: Math.max(insets.bottom, 12),
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 14,
             }}
           >
-            <SafeAreaView edges={["bottom"]}>
-              <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, gap: 12 }}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View style={{ flex: 1 }}>
-                    <AppText variant="caption" color={ink[500]}>
-                      Total
-                    </AppText>
-                    <AppText variant="h3" color={brand[800]}>
-                      {formatRupiah(total)}
-                    </AppText>
-                  </View>
-                  <QuantityStepper value={qty} onChange={setQty} min={1} size={30} />
-                </View>
-
-                <PressableScale
-                  onPress={submit}
-                  scaleTo={0.98}
-                  style={{
-                    height: 46,
-                    borderRadius: 23,
-                    backgroundColor: brand[900],
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 10,
-                  }}
-                >
-                  <AppText variant="titleLg" color="#FFFFFF">
-                    {editing ? "Simpan Perubahan" : "Tambah ke Keranjang"}
-                  </AppText>
-                  <AppIcon name="cart" size={17} color="#FFFFFF" />
-                </PressableScale>
-              </View>
-            </SafeAreaView>
+            <Stepper qty={qty} onChange={setQty} min={1} size={34} filledPlus />
+            <PressableScale
+              onPress={submit}
+              scaleTo={0.97}
+              style={{
+                flex: 1,
+                height: 50,
+                borderRadius: 25,
+                backgroundColor: brand[600],
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <UiText
+                color="#FFFFFF"
+                numberOfLines={1}
+                style={{
+                  fontSize: 16,
+                  lineHeight: 20,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                {editing ? "Simpan" : "Tambah"} · {formatRupiah(total)}
+              </UiText>
+            </PressableScale>
           </View>
         </Animated.View>
       </View>

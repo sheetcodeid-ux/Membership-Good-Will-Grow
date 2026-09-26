@@ -1,18 +1,21 @@
 import React, { useMemo, useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
-import { EmptyState } from "../components/ui/EmptyState";
 import { PressableScale } from "../components/ui/PressableScale";
 import { BrandLogo } from "../components/BrandLogo";
+import { Glyph, type GlyphName } from "../components/icons/Glyph";
+import { AccountEmpty } from "../components/EmptyArt";
+import { LABEL_INK, QUIET_INK, RULE } from "../components/AccountMenu";
+import { fontFamilies } from "../theme/typography";
+import { tapSelect } from "../utils/haptics";
+import { formatDistance } from "../utils/format";
 import { OutletInfoSheet } from "../components/OutletInfoSheet";
-import { brand, danger, ink, success, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { brand, danger, success, surface } from "../theme/colors";
 import { brands, outlets } from "../data/mock";
-import { useOrderStore } from "../store/orderStore";
+import { MAX_ORDER_DISTANCE_KM, useOrderStore } from "../store/orderStore";
 import type { Outlet, ServiceType } from "../data/types";
 
 const serviceLabels: Record<ServiceType, string> = {
@@ -27,10 +30,6 @@ const SIDE_CARD_W = 64;
 const SIDE_CARD_H = 62;
 const SIDE_GAP = 10;
 const RAIL_X = SIDE_PAD + SIDE_CARD_W + 12;
-
-function formatDistance(km: number) {
-  return km < 1 ? `~${(km * 1000).toFixed(2)} m` : `~${km.toFixed(2)} km`;
-}
 
 export default function OutletPickerScreen() {
   const selectedId = useOrderStore((s) => s.outletId);
@@ -51,7 +50,7 @@ export default function OutletPickerScreen() {
           !q ||
           o.name.toLowerCase().includes(q) ||
           o.address.toLowerCase().includes(q) ||
-          o.city.toLowerCase().includes(q)
+          o.city.toLowerCase().includes(q),
       )
       .sort((a, b) => a.distanceKm - b.distanceKm);
   }, [brandId, query]);
@@ -59,7 +58,8 @@ export default function OutletPickerScreen() {
   const activeBrandIndex = brands.findIndex((b) => b.id === brandId);
   // Same rail as Daftar Menu: hairline for the whole column, darker segment
   // parked beside the brand currently selected.
-  const indicatorTop = 14 + activeBrandIndex * (SIDE_CARD_H + SIDE_GAP) - sideScrollY;
+  const indicatorTop =
+    14 + activeBrandIndex * (SIDE_CARD_H + SIDE_GAP) - sideScrollY;
 
   const choose = (outlet: Outlet) => {
     setOutlet(outlet.id);
@@ -72,39 +72,46 @@ export default function OutletPickerScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-
-      <AppHeader title="Pilih Outlet">
-        <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
+      <AppHeader tone="account" title="Pilih Outlet">
+        <View style={{ paddingHorizontal: 13.5, paddingBottom: 12 }}>
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: 12,
-              backgroundColor: brand[50],
-              borderRadius: 14,
-              paddingHorizontal: 12,
-              height: 44,
+              gap: 10,
+              backgroundColor: "#FFFFFF",
+              borderRadius: 23,
+              borderWidth: 1,
+              borderColor: "#C9D6F5",
+              paddingHorizontal: 14,
+              height: 46,
             }}
           >
-            <AppIcon name="store" size={17} color={brand[600]} />
+            <Glyph name="search" size={16} color={QUIET_INK} />
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder="Ketik untuk mencari outlet"
-              placeholderTextColor={ink[400]}
+              placeholder="Cari outlet atau alamat"
+              placeholderTextColor="#8A93A6"
               style={[
                 {
                   flex: 1,
                   minWidth: 0,
                   padding: 0,
-                  fontFamily: "Urbanist_400Regular",
-                  fontSize: 12.5,
-                  color: ink[900],
+                  fontFamily: fontFamilies.medium,
+                  fontSize: 15,
+                  color: LABEL_INK,
                 },
-                Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
+                Platform.OS === "web"
+                  ? ({ outlineStyle: "none" } as object)
+                  : null,
               ]}
             />
-            <AppIcon name="search" size={18} color={brand[700]} />
+            {query ? (
+              <PressableScale onPress={() => setQuery("")} hitSlop={8}>
+                <Glyph name="closeCircle" size={16} color="#8A93A6" />
+              </PressableScale>
+            ) : null}
           </View>
         </View>
       </AppHeader>
@@ -128,6 +135,7 @@ export default function OutletPickerScreen() {
               <PressableScale
                 key={b.id}
                 onPress={() => {
+                  tapSelect();
                   setQuery("");
                   setBrandId(b.id);
                 }}
@@ -135,16 +143,15 @@ export default function OutletPickerScreen() {
                 style={{
                   width: SIDE_CARD_W,
                   height: SIDE_CARD_H,
-                  borderRadius: 14,
-                  backgroundColor: "#FFFFFF",
-                  borderWidth: 1.5,
-                  borderColor: active ? brand[600] : "transparent",
+                  borderRadius: 16,
+                  backgroundColor: active ? "#F3F7FF" : "#FFFFFF",
+                  borderWidth: active ? 1.5 : 1,
+                  borderColor: active ? brand[600] : RULE,
                   alignItems: "center",
                   justifyContent: "center",
-                  ...(shadow.xs as object),
                 }}
               >
-                <BrandLogo brandId={b.id} size={44} />
+                <BrandLogo brandId={b.id} size={42} />
               </PressableScale>
             );
           })}
@@ -157,8 +164,8 @@ export default function OutletPickerScreen() {
             left: RAIL_X,
             top: 0,
             bottom: 0,
-            width: 1.5,
-            backgroundColor: brand[100],
+            width: 1,
+            backgroundColor: RULE,
           }}
         />
         {!query ? (
@@ -166,12 +173,12 @@ export default function OutletPickerScreen() {
             pointerEvents="none"
             style={{
               position: "absolute",
-              left: RAIL_X - 0.5,
+              left: RAIL_X - 1,
               top: indicatorTop,
-              width: 2.5,
+              width: 3,
               height: SIDE_CARD_H,
               borderRadius: 2,
-              backgroundColor: brand[900],
+              backgroundColor: brand[600],
             }}
           />
         ) : null}
@@ -179,130 +186,153 @@ export default function OutletPickerScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingLeft: 22, paddingRight: 12, paddingVertical: 12, gap: 10, flexGrow: 1 }}
+          contentContainerStyle={{
+            paddingLeft: 22,
+            paddingRight: 13.5,
+            paddingVertical: 14,
+            gap: 10,
+            flexGrow: 1,
+          }}
           style={{ flex: 1 }}
         >
           {visible.length === 0 ? (
-            <EmptyState
-              icon={<AppIcon name="store" size={50} color={ink[300]} />}
+            <AccountEmpty
+              glyph="store"
               title="Outlet tidak ditemukan"
-              subtitle="Coba kata kunci lain."
-              style={{ paddingTop: 50 }}
+              subtitle="Coba kata kunci lain, misalnya nama jalan."
             />
           ) : null}
 
           {visible.map((o) => {
             const isSelected = o.id === selectedId;
+            const far = o.distanceKm > MAX_ORDER_DISTANCE_KM;
+            const line = (
+              glyph: GlyphName,
+              text: string,
+              extra?: React.ReactNode,
+            ) => (
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
+                <Glyph name={glyph} size={13} color="#8A93A6" />
+                <UiText
+                  color={QUIET_INK}
+                  numberOfLines={1}
+                  style={{
+                    flexShrink: 1,
+                    fontSize: 13,
+                    lineHeight: 18,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  {text}
+                </UiText>
+                {extra}
+              </View>
+            );
             return (
               <PressableScale
                 key={o.id}
                 onPress={() => choose(o)}
                 scaleTo={0.99}
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: 14,
-                  padding: 10,
+                  backgroundColor: isSelected ? "#F3F7FF" : "#FFFFFF",
+                  borderRadius: 16,
+                  padding: 12,
                   gap: 6,
-                  borderWidth: 1.5,
-                  borderColor: isSelected ? brand[600] : "transparent",
-                  ...(shadow.xs as object),
+                  borderWidth: isSelected ? 1.5 : 1,
+                  borderColor: isSelected ? brand[600] : RULE,
                 }}
               >
-                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                  <BrandLogo brandId={o.brandId} size={25} />
-                  <View style={{ flex: 1 }} />
-                  {isSelected ? (
-                    <View
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <BrandLogo brandId={o.brandId} size={24} />
+                  <UiText
+                    color={LABEL_INK}
+                    numberOfLines={1}
+                    style={{
+                      flexShrink: 1,
+                      fontSize: 16,
+                      lineHeight: 21,
+                      fontFamily: fontFamilies.extrabold,
+                    }}
+                  >
+                    {o.name}
+                  </UiText>
+                  <View
+                    style={{
+                      backgroundColor: o.isOpen ? success[50] : "#F2F3F5",
+                      borderRadius: 8,
+                      paddingHorizontal: 7,
+                      paddingVertical: 1,
+                    }}
+                  >
+                    <UiText
+                      color={o.isOpen ? success[600] : QUIET_INK}
                       style={{
-                        backgroundColor: brand[50],
-                        borderRadius: 7,
-                        paddingHorizontal: 7,
-                        paddingVertical: 3,
+                        fontSize: 11.5,
+                        lineHeight: 15,
+                        fontFamily: fontFamilies.bold,
                       }}
                     >
-                      <AppText variant="micro" color={brand[700]}>
-                        Outlet Terpilih
-                      </AppText>
-                    </View>
+                      {o.isOpen ? "Buka" : "Tutup"}
+                    </UiText>
+                  </View>
+                  <View style={{ flex: 1 }} />
+                  {isSelected ? (
+                    <Glyph name="checkCircle" size={18} color={brand[600]} />
                   ) : null}
                 </View>
 
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <AppText variant="h3" numberOfLines={1} style={{ flexShrink: 1 }}>
-                    {o.name}
-                  </AppText>
-                  <View
+                {line(
+                  "pin",
+                  o.address,
+                  <UiText
+                    color={far ? danger[500] : QUIET_INK}
+                    numberOfLines={1}
                     style={{
-                      backgroundColor: o.isOpen ? success[50] : ink[100],
-                      borderRadius: 6,
-                      paddingHorizontal: 7,
-                      paddingVertical: 2,
+                      flexShrink: 0,
+                      fontSize: 13,
+                      lineHeight: 18,
+                      fontFamily: fontFamilies.bold,
                     }}
                   >
-                    <AppText variant="micro" color={o.isOpen ? success[600] : ink[500]}>
-                      {o.isOpen ? "Available" : "Tutup"}
-                    </AppText>
-                  </View>
-                </View>
+                    · {formatDistance(o.distanceKm)}
+                  </UiText>,
+                )}
+                {line(
+                  "store",
+                  o.services.map((s) => serviceLabels[s]).join(", "),
+                )}
 
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <AppIcon name="cart" size={12} color={ink[400]} />
-                  <AppText variant="caption" color={ink[600]} numberOfLines={1}>
-                    {o.services.map((s) => serviceLabels[s]).join(", ")}
-                  </AppText>
-                </View>
-
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <AppIcon name="pin" size={12} color={ink[400]} />
-                  <AppText
-                    variant="caption"
-                    color={ink[600]}
-                    numberOfLines={1}
-                    style={{ flexShrink: 1 }}
-                  >
-                    {o.address}
-                  </AppText>
-                  <AppText variant="caption" color={ink[400]}>
-                    •
-                  </AppText>
-                  <AppText
-                    variant="caption"
-                    color={danger[500]}
-                    numberOfLines={1}
-                    style={{ fontFamily: "Urbanist_700Bold", flexShrink: 0 }}
-                  >
-                    {formatDistance(o.distanceKm)}
-                  </AppText>
-                </View>
-
-                <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                  <View style={{ flex: 1, gap: 8 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <AppIcon name="building" size={12} color={ink[400]} />
-                      <AppText variant="caption" color={ink[600]}>
-                        {o.city}
-                      </AppText>
-                    </View>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <AppIcon name="clock" size={12} color={ink[400]} />
-                      <AppText variant="caption" color={ink[600]}>
-                        {o.hours}
-                      </AppText>
-                    </View>
-                  </View>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ flex: 1 }}>{line("clock", o.hours)}</View>
                   <PressableScale
                     onPress={() => setInfoOutlet(o)}
                     hitSlop={8}
+                    scaleTo={0.92}
                     style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 7,
-                      backgroundColor: brand[900],
+                      flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "center",
+                      gap: 4,
+                      borderRadius: 12,
+                      paddingHorizontal: 9,
+                      paddingVertical: 3,
+                      backgroundColor: "#EAF0FF",
                     }}
                   >
-                    <AppIcon name="info" size={12} color="#FFFFFF" />
+                    <Glyph name="info" size={12} color={brand[700]} />
+                    <UiText
+                      color={brand[700]}
+                      style={{
+                        fontSize: 12,
+                        lineHeight: 16,
+                        fontFamily: fontFamilies.bold,
+                      }}
+                    >
+                      Info
+                    </UiText>
                   </PressableScale>
                 </View>
               </PressableScale>
@@ -312,7 +342,10 @@ export default function OutletPickerScreen() {
       </View>
 
       {infoOutlet ? (
-        <OutletInfoSheet outlet={infoOutlet} onClose={() => setInfoOutlet(null)} />
+        <OutletInfoSheet
+          outlet={infoOutlet}
+          onClose={() => setInfoOutlet(null)}
+        />
       ) : null}
     </View>
   );

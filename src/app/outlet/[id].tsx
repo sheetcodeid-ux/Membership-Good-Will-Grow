@@ -2,34 +2,68 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { AppIcon } from "../../components/ui/AppIcon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UiText } from "../../components/ui/Text";
 import { AppHeader } from "../../components/ui/AppHeader";
-import { EmptyState } from "../../components/ui/EmptyState";
 import { PressableScale } from "../../components/ui/PressableScale";
+import { Glyph, type GlyphName } from "../../components/icons/Glyph";
 import { BrandLogo } from "../../components/BrandLogo";
-import { brand, danger, ink, success, surface } from "../../theme/colors";
-import { radius, space } from "../../theme/scale";
-import { shadow } from "../../theme/shadows";
-import { useResponsive } from "../../theme/responsive";
+import { AccountEmpty } from "../../components/EmptyArt";
+import { LABEL_INK, QUIET_INK, RULE } from "../../components/AccountMenu";
+import { Block, EDGE } from "../../components/checkout/parts";
+import { SERVICE_META } from "../../components/checkout/CheckoutSheets";
+import { brand, danger, success, surface } from "../../theme/colors";
+import { fontFamilies } from "../../theme/typography";
 import { outlets, brands } from "../../data/mock";
+import { useOrderStore } from "../../store/orderStore";
+import { useScrolled } from "../../hooks/useScrolled";
+import { tapPress } from "../../utils/haptics";
 
-const serviceLabel: Record<string, string> = {
-  dine_in: "Dine In",
-  takeaway: "Take Away",
-  delivery: "Delivery",
-};
+function Row({
+  glyph,
+  text,
+  last,
+}: {
+  glyph: GlyphName;
+  text: string;
+  last?: boolean;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        gap: 12,
+        paddingVertical: 13,
+        borderBottomWidth: last ? 0 : 1,
+        borderBottomColor: RULE,
+      }}
+    >
+      <Glyph name={glyph} size={17} color={brand[600]} />
+      <UiText
+        color={LABEL_INK}
+        style={{
+          flex: 1,
+          fontSize: 14.5,
+          lineHeight: 20,
+          fontFamily: fontFamilies.medium,
+        }}
+      >
+        {text}
+      </UiText>
+    </View>
+  );
+}
 
 /**
- * The outlet behind a check-in.
- *
- * The check-in chip on a post has always carried a chevron, which promises a
- * destination; until now there was none, and a chevron that goes nowhere
- * teaches people to stop trying the ones that do.
+ * The outlet behind a check-in: who it is, whether it is open, where and
+ * when, what it serves, and a way to start an order there.
  */
 export default function OutletScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const r = useResponsive();
+  const insets = useSafeAreaInsets();
+  const scroll = useScrolled();
+  const setOutlet = useOrderStore((s) => s.setOutlet);
+  const reopenOutletSheet = useOrderStore((s) => s.reopenOutletSheet);
   const outlet = outlets.find((o) => o.id === id);
   const brandName = brands.find((b) => b.id === outlet?.brandId)?.name ?? "";
 
@@ -37,9 +71,9 @@ export default function OutletScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: surface }}>
         <StatusBar style="dark" />
-        <AppHeader title="Outlet" />
-        <EmptyState
-          icon={<AppIcon name="store" size={60} color={ink[300]} />}
+        <AppHeader tone="account" title="Outlet" />
+        <AccountEmpty
+          glyph="store"
           title="Outlet tidak ditemukan"
           subtitle="Outlet ini mungkin sudah tidak beroperasi."
         />
@@ -50,114 +84,145 @@ export default function OutletScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title={outlet.name} />
+      <AppHeader tone="account" title={outlet.name} divider={scroll.scrolled} />
 
       <ScrollView
-        contentContainerStyle={{
-          padding: r.gutter,
-          paddingBottom: space.xxxl * 2,
-          gap: space.lg,
-        }}
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
+        contentContainerStyle={{ padding: EDGE, paddingBottom: 28, gap: 12 }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: space.lg,
-            backgroundColor: "#FFFFFF",
-            borderRadius: radius.lg,
-            padding: space.lg,
-            ...(shadow.xs as object),
-          }}
-        >
-          <View
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: radius.md,
-              backgroundColor: "#FFFFFF",
-              borderWidth: 1,
-              borderColor: ink[100],
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-            }}
-          >
-            <BrandLogo brandId={outlet.brandId} size={44} />
-          </View>
-          <View style={{ flex: 1, gap: 2 }}>
-            <UiText token="h3" color={brand[900]} numberOfLines={1}>
-              {outlet.name}
-            </UiText>
-            <UiText token="caption" color={ink[500]}>
-              {brandName} · {outlet.city}
-            </UiText>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: space.xs }}>
+        <Block style={{ padding: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: RULE,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <BrandLogo brandId={outlet.brandId} size={44} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={LABEL_INK}
+                numberOfLines={1}
+                style={{
+                  fontSize: 19,
+                  lineHeight: 24,
+                  fontFamily: fontFamilies.extrabold,
+                }}
+              >
+                {outlet.name}
+              </UiText>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  fontSize: 13.5,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                {brandName} · {outlet.city}
+              </UiText>
               <View
                 style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: 4,
-                  backgroundColor: outlet.isOpen ? success[500] : danger[500],
+                  marginTop: 6,
+                  alignSelf: "flex-start",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                  borderRadius: 10,
+                  paddingHorizontal: 9,
+                  paddingVertical: 3,
+                  backgroundColor: outlet.isOpen ? success[50] : "#FDECEE",
                 }}
-              />
-              <UiText token="label" color={outlet.isOpen ? success[500] : danger[500]}>
-                {outlet.isOpen ? `Buka · ${outlet.hours}` : `Tutup · buka ${outlet.opensAt}`}
-              </UiText>
+              >
+                <View
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: 4,
+                    backgroundColor: outlet.isOpen ? success[500] : danger[500],
+                  }}
+                />
+                <UiText
+                  color={outlet.isOpen ? success[600] : danger[500]}
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.bold,
+                  }}
+                >
+                  {outlet.isOpen
+                    ? `Buka · ${outlet.hours}`
+                    : `Tutup · buka ${outlet.opensAt}`}
+                </UiText>
+              </View>
             </View>
           </View>
-        </View>
+        </Block>
 
+        <Block style={{ paddingHorizontal: 16 }}>
+          <Row glyph="pin" text={outlet.addressFull} />
+          <Row glyph="clock" text={`Setiap hari ${outlet.hours}`} />
+          <Row
+            glyph="store"
+            text={outlet.services.map((s) => SERVICE_META[s].label).join(" · ")}
+            last
+          />
+        </Block>
+      </ScrollView>
+
+      {outlet.appOrderAvailable ? (
         <View
           style={{
             backgroundColor: "#FFFFFF",
-            borderRadius: radius.lg,
-            padding: space.lg,
-            gap: space.lg,
-            ...(shadow.xs as object),
+            borderTopWidth: 1,
+            borderTopColor: RULE,
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: Math.max(insets.bottom, 12),
           }}
         >
-          <View style={{ flexDirection: "row", gap: space.md }}>
-            <AppIcon name="pin" size={19} color={brand[600]} />
-            <UiText token="body" color={ink[700]} style={{ flex: 1 }}>
-              {outlet.addressFull}
-            </UiText>
-          </View>
-          <View style={{ flexDirection: "row", gap: space.md }}>
-            <AppIcon name="clock" size={19} color={brand[600]} />
-            <UiText token="body" color={ink[700]} style={{ flex: 1 }}>
-              Setiap hari {outlet.hours}
-            </UiText>
-          </View>
-          <View style={{ flexDirection: "row", gap: space.md }}>
-            <AppIcon name="order" size={19} color={brand[600]} />
-            <UiText token="body" color={ink[700]} style={{ flex: 1 }}>
-              {outlet.services.map((s) => serviceLabel[s] ?? s).join(" · ")}
-            </UiText>
-          </View>
-        </View>
-
-        {outlet.appOrderAvailable ? (
           <PressableScale
-            onPress={() => router.push("/order")}
+            onPress={() => {
+              tapPress();
+              // Start the order here; the outlet sheet asks Dine In or
+              // Take Away before the menu.
+              setOutlet(outlet.id);
+              reopenOutletSheet();
+              router.push("/order");
+            }}
+            scaleTo={0.97}
             style={{
               height: 52,
-              borderRadius: radius.pill,
-              backgroundColor: brand[900],
+              borderRadius: 26,
+              backgroundColor: brand[600],
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              gap: space.sm,
+              gap: 8,
             }}
           >
-            <AppIcon name="order" size={19} color="#FFFFFF" />
-            <UiText token="title" color="#FFFFFF">
+            <Glyph name="cart" size={17} color="#FFFFFF" />
+            <UiText
+              color="#FFFFFF"
+              style={{
+                fontSize: 16.5,
+                lineHeight: 21,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
               Pesan dari outlet ini
             </UiText>
           </PressableScale>
-        ) : null}
-      </ScrollView>
+        </View>
+      ) : null}
     </View>
   );
 }

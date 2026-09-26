@@ -1,12 +1,16 @@
 import React from "react";
-import { AppIcon } from "./ui/AppIcon";
 import { ScrollView, View } from "react-native";
-import { AppText } from "./ui/AppText";
-import { BottomSheet } from "./ui/BottomSheet";
-import { brand, danger, ink, success, surface } from "../theme/colors";
+import { UiText } from "./ui/Text";
+import { Glyph } from "./icons/Glyph";
+import { BrandLogo } from "./BrandLogo";
+import { AccountSheet } from "./AccountSheet";
+import { LABEL_INK, QUIET_INK, RULE } from "./AccountMenu";
+import { brand, danger, success } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import type { Outlet, WeekDay } from "../data/types";
+import { formatDistance } from "../utils/format";
 
-const days: { key: WeekDay; label: string }[] = [
+const DAYS: { key: WeekDay; label: string }[] = [
   { key: "senin", label: "Senin" },
   { key: "selasa", label: "Selasa" },
   { key: "rabu", label: "Rabu" },
@@ -16,128 +20,205 @@ const days: { key: WeekDay; label: string }[] = [
   { key: "minggu", label: "Minggu" },
 ];
 
-/** Mock "today" so the highlighted row is stable across renders. */
-const TODAY: WeekDay = "selasa";
+/** Today's key; getDay() counts from Sunday. */
+function todayKey(): WeekDay {
+  return DAYS[(new Date().getDay() + 6) % 7].key;
+}
 
-/** Address, live open/closed banner and the full week of opening hours. */
-export function OutletInfoSheet({ outlet, onClose }: { outlet: Outlet; onClose: () => void }) {
+function Pill({ ok, text }: { ok: boolean; text: string }) {
   return (
-    <BottomSheet
-      onClose={onClose}
-      showHandle
-      showClose={false}
-      backgroundColor={surface}
-      maxHeightRatio={0.82}
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        borderRadius: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        backgroundColor: ok ? success[50] : "#FDECEE",
+      }}
     >
+      <Glyph
+        name={ok ? "checkCircle" : "closeCircle"}
+        size={18}
+        color={ok ? success[600] : danger[500]}
+      />
+      <UiText
+        color={ok ? success[600] : danger[500]}
+        style={{
+          flex: 1,
+          fontSize: 14,
+          lineHeight: 19,
+          fontFamily: fontFamilies.bold,
+        }}
+      >
+        {text}
+      </UiText>
+    </View>
+  );
+}
+
+/**
+ * An outlet's details from Pilih Outlet: where it is, whether it is open
+ * and takes app orders, and the week's hours with today marked.
+ */
+export function OutletInfoSheet({
+  outlet,
+  onClose,
+}: {
+  outlet: Outlet;
+  onClose: () => void;
+}) {
+  const today = todayKey();
+  return (
+    <AccountSheet title="Info outlet" onClose={onClose} maxHeightRatio={0.84}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 22, paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
       >
-        <AppText variant="h2">{outlet.name}</AppText>
-
-        <View style={{ flexDirection: "row", gap: 12, marginTop: 22 }}>
-          <AppIcon name="pin" size={20} color={danger[500]} />
-          <AppText variant="body" color={ink[500]} style={{ flex: 1, lineHeight: 23 }}>
-            {outlet.addressFull}
-          </AppText>
-        </View>
-
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12 }}>
-          <AppIcon name="clock" size={20} color={ink[400]} />
-          <AppText variant="body" color={ink[500]}>
-            Hari ini: {outlet.weeklyHours[TODAY]}
-          </AppText>
-        </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-            marginTop: 20,
-            borderRadius: 14,
-            paddingVertical: 14,
-            paddingHorizontal: 14,
-            backgroundColor: outlet.isOpen ? success[50] : danger[50],
-          }}
-        >
-          {outlet.isOpen ? (
-            <AppIcon name="checkCircle" size={24} color={success[500]} />
-          ) : (
-            <AppIcon name="closeCircle" size={24} color={danger[500]} />
-          )}
-          <AppText variant="bodySemibold" color={outlet.isOpen ? success[600] : danger[500]}>
-            {outlet.isOpen ? "Buka sekarang" : `Tutup, buka pukul ${outlet.opensAt}`}
-          </AppText>
-        </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-            marginTop: 10,
-            borderRadius: 14,
-            paddingVertical: 14,
-            paddingHorizontal: 14,
-            backgroundColor: outlet.appOrderAvailable ? "#EFF5F1" : ink[100],
-          }}
-        >
-          {outlet.appOrderAvailable ? (
-            <AppIcon name="checkCircle" size={24} color={success[500]} />
-          ) : (
-            <AppIcon name="closeCircle" size={24} color={ink[400]} />
-          )}
-          <AppText
-            variant="bodySemibold"
-            color={outlet.appOrderAvailable ? success[600] : ink[500]}
-          >
-            {outlet.appOrderAvailable
-              ? "Pemesanan via Good Will Grow tersedia"
-              : "Pemesanan via aplikasi belum tersedia"}
-          </AppText>
-        </View>
-
-        <AppText variant="h3" style={{ marginTop: 26, marginBottom: 6 }}>
-          Jam Operasional
-        </AppText>
-
-        {days.map(({ key, label }) => {
-          const today = key === TODAY;
-          return (
-            <View
-              key={key}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <BrandLogo brandId={outlet.brandId} size={36} />
+          <View style={{ flex: 1 }}>
+            <UiText
+              color={LABEL_INK}
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingVertical: 9,
+                fontSize: 18,
+                lineHeight: 23,
+                fontFamily: fontFamilies.extrabold,
               }}
             >
-              <AppText
-                color={today ? brand[700] : ink[700]}
+              {outlet.name}
+            </UiText>
+            <UiText
+              color={QUIET_INK}
+              style={{
+                fontSize: 13,
+                lineHeight: 18,
+                fontFamily: fontFamilies.medium,
+              }}
+            >
+              {outlet.city} · {formatDistance(outlet.distanceKm)}
+            </UiText>
+          </View>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
+          <Glyph name="pin" size={16} color={brand[600]} />
+          <UiText
+            color={QUIET_INK}
+            style={{
+              flex: 1,
+              fontSize: 14,
+              lineHeight: 20,
+              fontFamily: fontFamilies.medium,
+            }}
+          >
+            {outlet.addressFull}
+          </UiText>
+        </View>
+
+        <View style={{ gap: 8, marginTop: 14 }}>
+          <Pill
+            ok={outlet.isOpen}
+            text={
+              outlet.isOpen
+                ? `Buka sekarang · ${outlet.weeklyHours[today]}`
+                : `Tutup, buka pukul ${outlet.opensAt}`
+            }
+          />
+          <Pill
+            ok={!!outlet.appOrderAvailable}
+            text={
+              outlet.appOrderAvailable
+                ? "Bisa pesan lewat aplikasi"
+                : "Pesan lewat aplikasi belum tersedia"
+            }
+          />
+        </View>
+
+        <UiText
+          color={QUIET_INK}
+          style={{
+            marginTop: 20,
+            marginBottom: 8,
+            fontSize: 12.5,
+            lineHeight: 16,
+            fontFamily: fontFamilies.semibold,
+          }}
+        >
+          Jam operasional
+        </UiText>
+        <View
+          style={{
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: RULE,
+            overflow: "hidden",
+          }}
+        >
+          {DAYS.map(({ key, label }, i) => {
+            const on = key === today;
+            return (
+              <View
+                key={key}
                 style={{
-                  flex: 1,
-                  fontSize: 15,
-                  lineHeight: 20,
-                  fontFamily: today ? "Urbanist_700Bold" : "Urbanist_400Regular",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  minHeight: 44,
+                  paddingHorizontal: 14,
+                  borderTopWidth: i === 0 ? 0 : 1,
+                  borderTopColor: RULE,
+                  backgroundColor: on ? "#F3F7FF" : "#FFFFFF",
                 }}
               >
-                {label}
-              </AppText>
-              <AppText
-                color={today ? brand[700] : ink[700]}
-                style={{
-                  fontSize: 15,
-                  lineHeight: 20,
-                  fontFamily: today ? "Urbanist_700Bold" : "Urbanist_400Regular",
-                }}
-              >
-                {outlet.weeklyHours[key]}
-              </AppText>
-            </View>
-          );
-        })}
+                <UiText
+                  color={on ? brand[700] : LABEL_INK}
+                  style={{
+                    fontSize: 14.5,
+                    lineHeight: 19,
+                    fontFamily: on ? fontFamilies.bold : fontFamilies.medium,
+                  }}
+                >
+                  {label}
+                </UiText>
+                {on ? (
+                  <View
+                    style={{
+                      borderRadius: 8,
+                      paddingHorizontal: 7,
+                      paddingVertical: 1,
+                      backgroundColor: "#EAF0FF",
+                    }}
+                  >
+                    <UiText
+                      color={brand[700]}
+                      style={{
+                        fontSize: 11,
+                        lineHeight: 15,
+                        fontFamily: fontFamilies.bold,
+                      }}
+                    >
+                      Hari ini
+                    </UiText>
+                  </View>
+                ) : null}
+                <View style={{ flex: 1 }} />
+                <UiText
+                  color={on ? brand[700] : QUIET_INK}
+                  style={{
+                    fontSize: 14.5,
+                    lineHeight: 19,
+                    fontFamily: on ? fontFamilies.bold : fontFamilies.medium,
+                  }}
+                >
+                  {outlet.weeklyHours[key]}
+                </UiText>
+              </View>
+            );
+          })}
+        </View>
       </ScrollView>
-    </BottomSheet>
+    </AccountSheet>
   );
 }

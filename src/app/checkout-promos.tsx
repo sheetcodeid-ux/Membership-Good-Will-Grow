@@ -3,6 +3,8 @@ import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
+import { ACCOUNT_BAR, AppHeader } from "../components/ui/AppHeader";
+import { useScrolled } from "../hooks/useScrolled";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { UiText } from "../components/ui/Text";
@@ -347,25 +349,25 @@ function HeroArt() {
         width={62}
         height={38}
         rx={9}
-        fill="rgba(255,255,255,0.22)"
+        fill="rgba(18,60,163,0.10)"
         transform="rotate(-18 95 37)"
       />
-      <Circle cx={80} cy={32} r={5} fill="rgba(11,43,115,0.35)" />
+      <Circle cx={80} cy={32} r={5} fill="rgba(18,60,163,0.18)" />
       <Path
         d="M92 36l10-12"
-        stroke="rgba(255,255,255,0.8)"
+        stroke="rgba(18,60,163,0.35)"
         strokeWidth={3}
         strokeLinecap="round"
       />
-      <Circle cx={92} cy={25} r={2.4} fill="rgba(255,255,255,0.85)" />
-      <Circle cx={102} cy={36} r={2.4} fill="rgba(255,255,255,0.85)" />
+      <Circle cx={92} cy={25} r={2.4} fill="rgba(18,60,163,0.35)" />
+      <Circle cx={102} cy={36} r={2.4} fill="rgba(18,60,163,0.35)" />
       <Rect
         x={96}
         y={64}
         width={48}
         height={30}
         rx={8}
-        fill="rgba(255,255,255,0.16)"
+        fill="rgba(18,60,163,0.07)"
         transform="rotate(24 120 79)"
       />
     </Svg>
@@ -380,6 +382,7 @@ function HeroArt() {
  */
 export default function CheckoutPromosScreen() {
   const insets = useSafeAreaInsets();
+  const scroll = useScrolled();
   const now = useNow(1000);
   const couponId = useCartStore((s) => s.couponId);
   const setCoupon = useCartStore((s) => s.setCoupon);
@@ -441,58 +444,36 @@ export default function CheckoutPromosScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
+      <AppHeader
+        tone="account"
+        title="Promo untuk kamu"
+        divider={scroll.scrolled}
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
       >
+        {/* the bar's blue runs on into the best promo, as on Detail Profil */}
         <LinearGradient
-          colors={[brand[900], brand[600], "#3F6BD6"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          colors={[ACCOUNT_BAR, "#E7EEFF", surface]}
+          locations={[0, 0.7, 1]}
           style={{
-            paddingTop: insets.top + 8,
             paddingHorizontal: EDGE,
-            paddingBottom: top ? 22 : 28,
-            borderBottomLeftRadius: 26,
-            borderBottomRightRadius: 26,
+            paddingTop: 8,
+            paddingBottom: 6,
             overflow: "hidden",
           }}
         >
-          <View style={{ position: "absolute", right: 0, top: insets.top }}>
+          <View style={{ position: "absolute", right: -6, top: -18 }}>
             <HeroArt />
           </View>
-          <View
-            style={{ flexDirection: "row", alignItems: "center", height: 52 }}
-          >
-            <PressableScale
-              onPress={() => router.back()}
-              hitSlop={10}
-              style={{
-                width: 44,
-                height: 44,
-                marginRight: 6,
-                alignItems: "flex-start",
-                justifyContent: "center",
-              }}
-            >
-              <Glyph name="arrowRight" rotate={180} size={22} color="#FFFFFF" />
-            </PressableScale>
-            <UiText
-              color="#FFFFFF"
-              style={{
-                fontSize: 20,
-                lineHeight: 26,
-                fontFamily: fontFamilies.extrabold,
-              }}
-            >
-              Promo untuk kamu
-            </UiText>
-          </View>
           <UiText
-            color="#FFFFFF"
+            color={LABEL_INK}
             style={{
-              marginTop: 14,
+              marginTop: 8,
               fontSize: 17,
               lineHeight: 22,
               fontFamily: fontFamilies.extrabold,
@@ -504,9 +485,10 @@ export default function CheckoutPromosScreen() {
             ticket(top)
           ) : (
             <UiText
-              color="rgba(255,255,255,0.85)"
+              color={QUIET_INK}
               style={{
                 marginTop: 6,
+                marginBottom: 10,
                 fontSize: 14,
                 lineHeight: 19,
                 fontFamily: fontFamilies.medium,

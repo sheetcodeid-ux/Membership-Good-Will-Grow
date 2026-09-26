@@ -11,6 +11,8 @@ import { PressableScale } from "../components/ui/PressableScale";
 import { Glyph } from "../components/icons/Glyph";
 import { BrandLogo } from "../components/BrandLogo";
 import { EmptyArt, AccountEmpty } from "../components/EmptyArt";
+import { CartLineRow } from "../components/checkout/CartLineRow";
+import { useScrolled } from "../hooks/useScrolled";
 import {
   LABEL_INK,
   QUIET_INK,
@@ -43,7 +45,6 @@ import { placeOrder } from "../utils/orderFlow";
 import { menuItems, outletFullName } from "../data/mock";
 import {
   defaultSelections,
-  selectionSummary,
   unitPrice,
   useCartStore,
 } from "../store/cartStore";
@@ -134,156 +135,6 @@ function SavingsStrip({ amount }: { amount: number }) {
   );
 }
 
-/** − qty + in round outlined buttons. */
-function Stepper({
-  qty,
-  onChange,
-}: {
-  qty: number;
-  onChange: (n: number) => void;
-}) {
-  const btn = (glyph: "minus" | "plus", next: number) => (
-    <PressableScale
-      onPress={() => {
-        tapSelect();
-        onChange(next);
-      }}
-      hitSlop={6}
-      scaleTo={0.9}
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        borderWidth: 1.5,
-        borderColor: brand[600],
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Glyph name={glyph} size={13} color={brand[700]} />
-    </PressableScale>
-  );
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-      {btn("minus", qty - 1)}
-      <UiText
-        color={LABEL_INK}
-        style={{
-          minWidth: 16,
-          textAlign: "center",
-          fontSize: 16,
-          lineHeight: 20,
-          fontFamily: fontFamilies.bold,
-        }}
-      >
-        {qty}
-      </UiText>
-      {btn("plus", qty + 1)}
-    </View>
-  );
-}
-
-function LineRow({
-  line,
-  onQty,
-}: {
-  line: CartLine;
-  onQty: (n: number) => void;
-}) {
-  const unit = unitPrice(line.menuItem, line.selections);
-  // Every single choice (variant, spice level...), then priced add-ons;
-  // the variant is priced too, so it is not listed twice.
-  const choices = line.menuItem.optionGroups
-    .filter((g) => g.selection === "single")
-    .flatMap((g) => g.options.filter((o) => (line.selections[o.id] ?? 0) > 0))
-    .map((o) => o.name);
-  const extras = selectionSummary(line.menuItem, line.selections).filter(
-    (x) => !choices.includes(x),
-  );
-  return (
-    <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
-      <View style={{ flexDirection: "row", gap: 12 }}>
-        <View style={{ flex: 1 }}>
-          <UiText
-            color={LABEL_INK}
-            numberOfLines={2}
-            style={{
-              fontSize: 16,
-              lineHeight: 21,
-              fontFamily: fontFamilies.bold,
-            }}
-          >
-            {line.menuItem.name}
-          </UiText>
-          <UiText
-            color={QUIET_INK}
-            style={{
-              marginTop: 4,
-              fontSize: 13.5,
-              lineHeight: 18,
-              fontFamily: fontFamilies.medium,
-            }}
-          >
-            {[...(choices.length ? choices : ["Original"]), ...extras].join(
-              " · ",
-            )}
-          </UiText>
-          {line.note ? (
-            <UiText
-              color={QUIET_INK}
-              numberOfLines={2}
-              style={{
-                marginTop: 2,
-                fontSize: 12.5,
-                lineHeight: 17,
-                fontFamily: fontFamilies.medium,
-                fontStyle: "italic",
-              }}
-            >
-              “{line.note}”
-            </UiText>
-          ) : null}
-          <UiText
-            color={LABEL_INK}
-            style={{
-              marginTop: 10,
-              fontSize: 15,
-              lineHeight: 19,
-              fontFamily: fontFamilies.semibold,
-            }}
-          >
-            {formatRupiah(unit * line.qty)}
-          </UiText>
-        </View>
-        <ImagePlaceholder
-          seed={line.menuItem.id}
-          radius={14}
-          iconSize={20}
-          style={{ width: 84, height: 84 }}
-        />
-      </View>
-      <View
-        style={{
-          marginTop: 12,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <OutlinePill
-          small
-          icon="pencil"
-          label="Ubah"
-          onPress={() =>
-            router.push(`/product/${line.menuItem.id}?lineId=${line.lineId}`)
-          }
-        />
-        <Stepper qty={line.qty} onChange={onQty} />
-      </View>
-    </View>
-  );
-}
-
 export default function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const usePoints = useCartStore((s) => s.usePoints);
@@ -314,6 +165,9 @@ export default function CheckoutScreen() {
   const [confirming, setConfirming] = useState(false);
   const [removing, setRemoving] = useState<CartLine | null>(null);
   const [feesOpen, setFeesOpen] = useState(false);
+  const [noteLine, setNoteLine] = useState<CartLine | null>(null);
+  const setLineNote = useCartStore((s) => s.setLineNote);
+  const scroll = useScrolled();
 
   const { breakdown, coupon, check, held, lines, outlet } = useCheckout();
   const usable = held
@@ -336,7 +190,7 @@ export default function CheckoutScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: surface }}>
         <StatusBar style="dark" />
-        <AppHeader title="Selesaikan Pesanan" />
+        <AppHeader tone="account" title="Selesaikan Pesanan" />
         <AccountEmpty
           glyph="cart"
           title="Keranjang masih kosong"
@@ -399,12 +253,18 @@ export default function CheckoutScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title={outletFullName(outlet)}>
+      <AppHeader
+        tone="account"
+        title={outletFullName(outlet)}
+        divider={scroll.scrolled}
+      >
         {saved > 0 ? <SavingsStrip amount={saved} /> : null}
       </AppHeader>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: EDGE, paddingBottom: 28, gap: 12 }}
       >
@@ -682,12 +542,13 @@ export default function CheckoutScreen() {
           {lines.map((line, i) => (
             <View key={line.lineId}>
               {i > 0 ? <Hairline inset={16} /> : null}
-              <LineRow
+              <CartLineRow
                 line={line}
                 onQty={(n) => {
                   if (n <= 0) setRemoving(line);
                   else setLineQty(line.lineId, n);
                 }}
+                onNote={() => setNoteLine(line)}
               />
             </View>
           ))}
@@ -1321,6 +1182,18 @@ export default function CheckoutScreen() {
           onSave={(v) => {
             setOrderNote(v);
             setSheet(null);
+          }}
+        />
+      ) : null}
+      {noteLine ? (
+        <NoteSheet
+          title={`Catatan ${noteLine.menuItem.name}`}
+          placeholder="Contoh: tanpa bawang, es sedikit"
+          value={noteLine.note ?? ""}
+          onClose={() => setNoteLine(null)}
+          onSave={(v) => {
+            setLineNote(noteLine.lineId, v);
+            setNoteLine(null);
           }}
         />
       ) : null}

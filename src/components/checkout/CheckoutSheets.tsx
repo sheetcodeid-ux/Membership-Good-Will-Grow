@@ -210,20 +210,27 @@ export function OutletSheet({
   );
 }
 
-/** Free-text note for the outlet, up to 200 characters. */
+/**
+ * Free-text note, up to 200 characters: for the outlet by default, or
+ * for one item with `title` and `placeholder` set.
+ */
 export function NoteSheet({
   value,
   onSave,
   onClose,
+  title = "Catatan untuk outlet",
+  placeholder = "Contoh: es sedikit, saus dipisah",
 }: {
   value: string;
   onSave: (v: string) => void;
   onClose: () => void;
+  title?: string;
+  placeholder?: string;
 }) {
   const [text, setText] = useState(value);
   return (
     <AccountSheet
-      title="Catatan untuk outlet"
+      title={title}
       onClose={onClose}
       footer={
         <PrimaryButton label="Simpan" onPress={() => onSave(text.trim())} />
@@ -245,7 +252,7 @@ export function NoteSheet({
             maxLength={200}
             value={text}
             onChangeText={setText}
-            placeholder="Contoh: es sedikit, saus dipisah"
+            placeholder={placeholder}
             placeholderTextColor="#A0A4AE"
             style={[
               {

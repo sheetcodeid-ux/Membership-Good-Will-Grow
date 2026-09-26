@@ -1,26 +1,38 @@
 import React, { useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
-import { Platform, ScrollView, TextInput, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { AppText } from "../components/ui/AppText";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { EmptyState } from "../components/ui/EmptyState";
-import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
-import { QuantityStepper } from "../components/ui/QuantityStepper";
-import { OutletBar } from "../components/OutletBar";
-import { brand, danger, ink, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { Glyph } from "../components/icons/Glyph";
+import { BrandLogo } from "../components/BrandLogo";
+import { AccountEmpty } from "../components/EmptyArt";
+import { LABEL_INK, QUIET_INK, RULE } from "../components/AccountMenu";
+import { CartLineRow } from "../components/checkout/CartLineRow";
+import { Block, EDGE, OutlinePill, SumRow } from "../components/checkout/parts";
+import { NoteSheet, SERVICE_META } from "../components/checkout/CheckoutSheets";
+import { brand, danger, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
 import { computeBreakdown } from "../utils/pricing";
-import { getOutlet } from "../data/mock";
-import { selectionSummary, unitPrice, useCartStore } from "../store/cartStore";
+import { tapPress } from "../utils/haptics";
+import { getOutlet, outletFullName } from "../data/mock";
+import { useCartStore } from "../store/cartStore";
 import { useOrderStore } from "../store/orderStore";
+import { useScrolled } from "../hooks/useScrolled";
+import type { CartLine } from "../data/types";
 
+/**
+ * Keranjang: the outlet the order goes to, the lines (the same rows as
+ * checkout, with a note per item), and the bill before promos; coupons,
+ * points and the way to pay come on the next page.
+ */
 export default function CartScreen() {
+  const insets = useSafeAreaInsets();
+  const scroll = useScrolled();
   const lines = useCartStore((s) => s.lines);
   const setLineQty = useCartStore((s) => s.setLineQty);
   const setLineNote = useCartStore((s) => s.setLineNote);
@@ -30,244 +42,299 @@ export default function CartScreen() {
 
   const outletId = useOrderStore((s) => s.outletId);
   const serviceType = useOrderStore((s) => s.serviceType);
+  const reopenOutletSheet = useOrderStore((s) => s.reopenOutletSheet);
   const outlet = getOutlet(outletId);
 
-  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
-  const deleting = lines.find((l) => l.lineId === pendingDelete);
+  const [removing, setRemoving] = useState<CartLine | null>(null);
+  const [noteLine, setNoteLine] = useState<CartLine | null>(null);
 
   const breakdown = computeBreakdown(subtotal, false, 0);
-  const empty = lines.length === 0;
+
+  if (lines.length === 0) {
+    return (
+      <View style={{ flex: 1, backgroundColor: surface }}>
+        <StatusBar style="dark" />
+        <AppHeader tone="account" title="Keranjang" />
+        <AccountEmpty
+          glyph="cart"
+          title="Keranjang masih kosong"
+          subtitle="Pilih menu favoritmu dulu, nanti muncul di sini."
+          action={{
+            label: "Pilih menu",
+            onPress: () => router.replace("/order"),
+          }}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
+      <AppHeader tone="account" title="Keranjang" divider={scroll.scrolled} />
 
-      <AppHeader title="Keranjang">
-        <OutletBar outlet={outlet} serviceType={serviceType} />
-      </AppHeader>
-
-      {empty ? (
-        <EmptyState
-          icon={<AppIcon name="cart" size={50} color={ink[300]} />}
-          title="Keranjang masih kosong"
-          subtitle="Tambahkan menu favoritmu dulu."
-          style={{ paddingTop: 80 }}
-        />
-      ) : (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ padding: 16, paddingBottom: 30, gap: 12 }}
-        >
-          {lines.map((line) => (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={scroll.scrollEventThrottle}
+        contentContainerStyle={{ padding: EDGE, paddingBottom: 28, gap: 12 }}
+      >
+        {outlet ? (
+          <Block style={{ padding: 14 }}>
             <View
-              key={line.lineId}
-              style={{
-                backgroundColor: "#FFFFFF",
-                borderRadius: 15,
-                padding: 12,
-                gap: 10,
-                ...(shadow.xs as object),
-              }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
             >
-              <View style={{ flexDirection: "row", gap: 11 }}>
-                <ImagePlaceholder radius={10} iconSize={18} style={{ width: 60, height: 60 }} />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 6 }}>
-                    <AppText variant="h3" numberOfLines={1} style={{ flex: 1 }}>
-                      {line.menuItem.name}
-                    </AppText>
-                    <PressableScale
-                      onPress={() =>
-                        router.push(`/product/${line.menuItem.id}?lineId=${line.lineId}`)
-                      }
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 4,
-                        backgroundColor: ink[50],
-                        borderRadius: 7,
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                      }}
-                    >
-                      <AppIcon name="compose" size={11} color={brand[700]} />
-                      <AppText variant="caption" color={brand[700]}>
-                        Edit
-                      </AppText>
-                    </PressableScale>
-                    <PressableScale
-                      onPress={() => setPendingDelete(line.lineId)}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 4,
-                        backgroundColor: danger[50],
-                        borderRadius: 7,
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                      }}
-                    >
-                      <AppIcon name="trash" size={11} color={danger[500]} />
-                      <AppText variant="caption" color={danger[500]}>
-                        Hapus
-                      </AppText>
-                    </PressableScale>
-                  </View>
-                  <AppText variant="caption" color={ink[500]} numberOfLines={2}>
-                    {selectionSummary(line.menuItem, line.selections).join(", ")}
-                  </AppText>
-                  <AppText variant="h3" color={brand[800]}>
-                    {formatRupiah(unitPrice(line.menuItem, line.selections))}
-                  </AppText>
-                </View>
-              </View>
-
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View
+              <BrandLogo brandId={outlet.brandId} size={32} />
+              <View style={{ flex: 1 }}>
+                <UiText
+                  color={LABEL_INK}
+                  numberOfLines={1}
                   style={{
-                    flex: 1,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 7,
-                    height: 38,
-                    borderRadius: 10,
-                    backgroundColor: ink[50],
-                    paddingHorizontal: 10,
+                    fontSize: 16,
+                    lineHeight: 21,
+                    fontFamily: fontFamilies.extrabold,
                   }}
                 >
-                  <AppIcon name="postAdd" size={13} color={ink[400]} />
-                  <TextInput
-                    value={line.note ?? ""}
-                    onChangeText={(v) => setLineNote(line.lineId, v)}
-                    placeholder="Tekan untuk menambah catatan"
-                    placeholderTextColor={ink[400]}
-                    style={[
-                      {
-                        flex: 1,
-                        minWidth: 0,
-                        padding: 0,
-                        fontFamily: "Urbanist_400Regular",
-                        fontStyle: "italic",
-                        fontSize: 11,
-                        color: ink[900],
-                      },
-                      Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
-                    ]}
+                  {outletFullName(outlet)}
+                </UiText>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+                >
+                  <Glyph
+                    name={SERVICE_META[serviceType].glyph}
+                    size={12}
+                    color={brand[700]}
                   />
+                  <UiText
+                    color={QUIET_INK}
+                    style={{
+                      fontSize: 12.5,
+                      lineHeight: 17,
+                      fontFamily: fontFamilies.semibold,
+                    }}
+                  >
+                    {SERVICE_META[serviceType].label} · {outlet.city}
+                  </UiText>
                 </View>
-                <QuantityStepper
-                  value={line.qty}
-                  onChange={(n) => setLineQty(line.lineId, n)}
-                  min={1}
-                  size={32}
-                />
               </View>
+              <OutlinePill
+                label="Ubah"
+                onPress={() => {
+                  // Back to Daftar Menu with the outlet sheet open.
+                  reopenOutletSheet();
+                  router.dismissTo("/order");
+                }}
+              />
+            </View>
+          </Block>
+        ) : null}
+
+        <Block>
+          {lines.map((line, i) => (
+            <View key={line.lineId}>
+              {i > 0 ? (
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: RULE,
+                    marginHorizontal: 16,
+                  }}
+                />
+              ) : null}
+              <CartLineRow
+                line={line}
+                onQty={(n) => {
+                  if (n <= 0) setRemoving(line);
+                  else setLineQty(line.lineId, n);
+                }}
+                onNote={() => setNoteLine(line)}
+              />
             </View>
           ))}
-
+          <View style={{ height: 1, backgroundColor: RULE }} />
           <View
             style={{
-              backgroundColor: "#FFFFFF",
-              borderRadius: 15,
-              padding: 14,
-              ...(shadow.xs as object),
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+              padding: 16,
             }}
           >
-            <AppText variant="h3" style={{ marginBottom: 6 }}>
-              Detail Pembayaran
-            </AppText>
-            <Row label="Subtotal" value={formatRupiah(breakdown.subtotal)} />
-            <Row label="Pb1" value={formatRupiah(breakdown.tax)} />
-            <Row label="Pembulatan" value={formatRupiah(breakdown.rounding)} />
-            <View style={{ height: 1, backgroundColor: ink[100], marginVertical: 6 }} />
-            <Row label="Total" value={formatRupiah(breakdown.total)} emphasis />
-          </View>
-        </ScrollView>
-      )}
-
-      {!empty ? (
-        <View
-          style={{
-            backgroundColor: "#FFFFFF",
-            borderTopLeftRadius: 18,
-            borderTopRightRadius: 18,
-            ...(shadow.lg as object),
-          }}
-        >
-          <SafeAreaView edges={["bottom"]}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                gap: 12,
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <AppText variant="caption" color={ink[500]}>
-                  Total
-                </AppText>
-                <AppText variant="h3" color={brand[800]}>
-                  {formatRupiah(breakdown.total)}
-                </AppText>
-              </View>
-              <PressableScale
-                onPress={() => router.push("/checkout")}
-                scaleTo={0.98}
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={LABEL_INK}
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 9,
-                  height: 46,
-                  paddingHorizontal: 26,
-                  borderRadius: 23,
-                  backgroundColor: brand[900],
+                  fontSize: 17,
+                  lineHeight: 22,
+                  fontFamily: fontFamilies.extrabold,
                 }}
               >
-                <AppText variant="titleLg" color="#FFFFFF">
-                  Checkout ({itemCount})
-                </AppText>
-                <AppIcon name="member" size={17} color="#FFFFFF" />
-              </PressableScale>
+                Butuh yang lain?
+              </UiText>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  marginTop: 2,
+                  fontSize: 13.5,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                Tambah menu lain, kalau mau.
+              </UiText>
             </View>
-          </SafeAreaView>
-        </View>
-      ) : null}
+            <OutlinePill
+              label="Tambah"
+              onPress={() => router.dismissTo("/order")}
+            />
+          </View>
+        </Block>
 
-      {deleting ? (
-        <ConfirmDialog
-          icon={<AppIcon name="trash" size={21} color={danger[500]} />}
-          title="Hapus Item"
-          message={`Apakah Anda yakin ingin menghapus "${deleting.menuItem.name}" dari keranjang?`}
-          cancelLabel="Batal"
-          confirmLabel="Hapus"
-          cancelColor={brand[700]}
-          confirmColor={danger[500]}
-          onCancel={() => setPendingDelete(null)}
-          onConfirm={() => {
-            removeLine(deleting.lineId);
-            setPendingDelete(null);
+        <View style={{ marginTop: 6, marginLeft: 2 }}>
+          <UiText
+            color={LABEL_INK}
+            style={{
+              fontSize: 17,
+              lineHeight: 22,
+              fontFamily: fontFamilies.extrabold,
+            }}
+          >
+            Rincian pembayaran
+          </UiText>
+        </View>
+        <Block style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+          <SumRow label="Harga" value={formatRupiah(breakdown.subtotal)} />
+          <SumRow label="PB1 10%" value={formatRupiah(breakdown.tax)} />
+          <SumRow label="Pembulatan" value={formatRupiah(breakdown.rounding)} />
+          <View
+            style={{
+              marginVertical: 8,
+              borderTopWidth: 1,
+              borderStyle: "dashed",
+              borderColor: "#D5D8DE",
+            }}
+          />
+          <SumRow bold label="Total" value={formatRupiah(breakdown.total)} />
+        </Block>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            borderRadius: 14,
+            backgroundColor: "#FFF8E1",
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+          }}
+        >
+          <Glyph name="ticketPercent" size={16} color="#A36A00" />
+          <UiText
+            color="#7A4B00"
+            style={{
+              flex: 1,
+              fontSize: 13,
+              lineHeight: 18,
+              fontFamily: fontFamilies.semibold,
+            }}
+          >
+            Kupon, voucher dan poin bisa dipakai di langkah berikutnya.
+          </UiText>
+        </View>
+      </ScrollView>
+
+      <View
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderTopWidth: 1,
+          borderTopColor: RULE,
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: Math.max(insets.bottom, 12),
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <UiText
+            color={QUIET_INK}
+            style={{
+              fontSize: 12.5,
+              lineHeight: 16,
+              fontFamily: fontFamilies.medium,
+            }}
+          >
+            Total · {itemCount} item
+          </UiText>
+          <UiText
+            color={LABEL_INK}
+            style={{
+              fontSize: 18,
+              lineHeight: 23,
+              fontFamily: fontFamilies.extrabold,
+            }}
+          >
+            {formatRupiah(breakdown.total)}
+          </UiText>
+        </View>
+        <PressableScale
+          onPress={() => {
+            tapPress();
+            router.push("/checkout");
+          }}
+          scaleTo={0.97}
+          style={{
+            height: 50,
+            paddingHorizontal: 26,
+            borderRadius: 25,
+            backgroundColor: brand[600],
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <UiText
+            color="#FFFFFF"
+            style={{
+              fontSize: 16,
+              lineHeight: 20,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
+            Lanjut bayar
+          </UiText>
+          <Glyph name="arrowRight" size={15} color="#FFFFFF" />
+        </PressableScale>
+      </View>
+
+      {noteLine ? (
+        <NoteSheet
+          title={`Catatan ${noteLine.menuItem.name}`}
+          placeholder="Contoh: tanpa bawang, es sedikit"
+          value={noteLine.note ?? ""}
+          onClose={() => setNoteLine(null)}
+          onSave={(v) => {
+            setLineNote(noteLine.lineId, v);
+            setNoteLine(null);
           }}
         />
       ) : null}
-    </View>
-  );
-}
 
-function Row({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6 }}>
-      <AppText
-        style={{ flex: 1 }}
-        variant={emphasis ? "h3" : "body"}
-        color={emphasis ? brand[800] : ink[700]}
-      >
-        {label}
-      </AppText>
-      <AppText variant={emphasis ? "h3" : "body"} color={emphasis ? brand[800] : ink[700]}>
-        {value}
-      </AppText>
+      {removing ? (
+        <ConfirmDialog
+          title="Hapus item ini?"
+          message={`${removing.menuItem.name} akan dihapus dari keranjang.`}
+          cancelLabel="Batal"
+          confirmLabel="Hapus"
+          cancelColor={QUIET_INK}
+          confirmColor={danger[500]}
+          onCancel={() => setRemoving(null)}
+          onConfirm={() => {
+            removeLine(removing.lineId);
+            setRemoving(null);
+          }}
+        />
+      ) : null}
     </View>
   );
 }

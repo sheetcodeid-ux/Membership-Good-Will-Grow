@@ -7,6 +7,7 @@ import { Glyph, type GlyphName } from "../icons/Glyph";
 import { LABEL_INK, RULE } from "../AccountMenu";
 import { brand } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
+import { tapSelect } from "../../utils/haptics";
 
 /** Page side margin on the checkout and order status screens. */
 export const EDGE = 13.5;
@@ -251,5 +252,86 @@ export function CutleryIcon({
         />
       ) : null}
     </Svg>
+  );
+}
+
+/**
+ * − qty + in round outlined buttons. A button at its limit dims and stops
+ * answering; below `min` the minus still answers when `allowZero` so the
+ * caller can ask before removing.
+ */
+export function Stepper({
+  qty,
+  onChange,
+  min = 0,
+  max = 99,
+  size = 32,
+  filledPlus,
+}: {
+  qty: number;
+  onChange: (n: number) => void;
+  min?: number;
+  max?: number;
+  size?: number;
+  /** The plus in solid blue, for the product sheet's main counter. */
+  filledPlus?: boolean;
+}) {
+  const btn = (glyph: "minus" | "plus", next: number, off: boolean) => (
+    <PressableScale
+      onPress={() => {
+        tapSelect();
+        onChange(next);
+      }}
+      disabled={off}
+      hitSlop={6}
+      scaleTo={0.9}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        borderWidth: 1.5,
+        borderColor: off ? "#D5D8DE" : brand[600],
+        backgroundColor:
+          glyph === "plus" && filledPlus && !off ? brand[600] : "#FFFFFF",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Glyph
+        name={glyph}
+        size={Math.round(size * 0.4)}
+        color={
+          off
+            ? "#B0B7C6"
+            : glyph === "plus" && filledPlus
+              ? "#FFFFFF"
+              : brand[700]
+        }
+      />
+    </PressableScale>
+  );
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: size * 0.4,
+      }}
+    >
+      {btn("minus", qty - 1, qty <= min)}
+      <UiText
+        color={LABEL_INK}
+        style={{
+          minWidth: 16,
+          textAlign: "center",
+          fontSize: size >= 30 ? 16 : 14.5,
+          lineHeight: 20,
+          fontFamily: fontFamilies.bold,
+        }}
+      >
+        {qty}
+      </UiText>
+      {btn("plus", qty + 1, qty >= max)}
+    </View>
   );
 }
