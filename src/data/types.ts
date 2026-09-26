@@ -70,6 +70,8 @@ export interface MenuItem {
   /** Price shown in the menu list; equals the first variant's price. */
   price: number;
   isBestSeller?: boolean;
+  /** Photo URL, once shot; until then the menu shows a grey category tile. */
+  image?: string;
   optionGroups: MenuOptionGroup[];
 }
 
@@ -193,6 +195,8 @@ export interface FeedPost {
    */
   outletId?: string;
   brandId?: string;
+  /** The photo the member attached; the placeholder shows without one. */
+  image?: string;
   likes: number;
   comments: number;
   liked?: boolean;

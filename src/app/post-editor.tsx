@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useRef } from "react";
 import { AppIcon, type AppIconName } from "../components/ui/AppIcon";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,12 +16,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
 import { AppText } from "../components/ui";
 import { AppHeader } from "../components/ui/AppHeader";
-import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
 import { brand, ink, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { outlets, outletFullName } from "../data/mock";
 import { useFeedStore } from "../store/feedStore";
+import { pickImage } from "../utils/pickImage";
+import { formatDistance } from "../utils/format";
 import type { PostVisibility } from "../data/types";
 
 const visibilityOptions: {
@@ -45,7 +47,8 @@ export default function PostEditorScreen() {
   const isCheckIn = type === "checkin";
 
   const [caption, setCaption] = useState("");
-  const [hasPhoto, setHasPhoto] = useState(false);
+  const [photo, setPhoto] = useState<string>();
+  const hasPhoto = !!photo;
   const [visibility, setVisibility] = useState<PostVisibility>("publik");
   const [sourceSheet, setSourceSheet] = useState(false);
   const addPost = useFeedStore((s) => s.addPost);
@@ -74,7 +77,8 @@ export default function PostEditorScreen() {
     addPost(
       caption.trim(),
       isCheckIn ? outletFullName(selectedOutlet) : undefined,
-      isCheckIn ? selectedOutlet.brandId : undefined
+      isCheckIn ? selectedOutlet.brandId : undefined,
+      photo
     );
     router.dismissAll();
     router.replace("/(tabs)");
@@ -157,7 +161,7 @@ export default function PostEditorScreen() {
                         {outletFullName(outlet)}
                       </AppText>
                       <AppText variant="caption" color={ink[400]}>
-                        {outlet.city} · ~{outlet.distanceKm} km
+                        {outlet.city} · {formatDistance(outlet.distanceKm)}
                       </AppText>
                     </View>
                     {active ? <AppIcon name="checkCircle" size={20} color={brand[800]} /> : null}
@@ -169,9 +173,15 @@ export default function PostEditorScreen() {
 
           {hasPhoto ? (
             <View>
-              <ImagePlaceholder label="Foto Post" radius={18} iconSize={34} style={{ height: 240 }} />
+              <Image
+                source={{ uri: photo }}
+                resizeMode="cover"
+                accessibilityLabel="Foto post"
+                style={{ height: 240, borderRadius: 18 }}
+              />
               <PressableScale
-                onPress={() => setHasPhoto(false)}
+                onPress={() => setPhoto(undefined)}
+                accessibilityLabel="Hapus foto"
                 hitSlop={10}
                 style={{
                   position: "absolute",
@@ -285,14 +295,15 @@ export default function PostEditorScreen() {
 
                 <View style={{ flexDirection: "row", gap: 14, padding: 20, paddingBottom: 26 }}>
                   {([
-                    { icon: "camera", label: "Kamera" },
-                    { icon: "images", label: "Galeri" },
-                  ] as { icon: AppIconName; label: string }[]).map(({ icon, label }) => (
+                    { icon: "camera", label: "Kamera", source: "camera" },
+                    { icon: "images", label: "Galeri", source: "library" },
+                  ] as { icon: AppIconName; label: string; source: "camera" | "library" }[]).map(({ icon, label, source }) => (
                     <PressableScale
                       key={label}
-                      onPress={() => {
-                        setHasPhoto(true);
+                      onPress={async () => {
                         setSourceSheet(false);
+                        const uri = await pickImage(source);
+                        if (uri) setPhoto(uri);
                       }}
                       style={{
                         flex: 1,

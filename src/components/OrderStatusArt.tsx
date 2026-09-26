@@ -14,7 +14,8 @@ import { brand } from "../theme/colors";
 /**
  * The scene over Status Pesanan: a street of shops in the brand's pale
  * blues, the outlet in the middle under a striped awning, and in front of
- * it a modelled takeaway cup, steaming — the order being made. Soft
+ * it what was ordered, modelled and steaming: a takeaway cup for drinks,
+ * a bowl for food, both side by side for both. No marks on either. Soft
  * shapes only, lit from the top left like the account scene.
  *
  * Coordinates are on a 360 × 300 canvas; the scene is anchored to its
@@ -24,24 +25,18 @@ import { brand } from "../theme/colors";
  */
 export const SCENE_TUCK = 30;
 
-/** Where a scene point lands on screen, for things laid over the art. */
-export function scenePoint(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const vh = (height * 360) / width;
-  const top = 300 + SCENE_TUCK - vh;
-  return { x: (x * width) / 360, y: ((y - top) * height) / vh };
-}
-
 export function OrderStatusArt({
   width,
   height,
+  drink = true,
+  food = false,
 }: {
   width: number;
   height: number;
+  /** Draw the takeaway cup: the order has something to drink. */
+  drink?: boolean;
+  /** Draw the bowl: the order has something to eat. */
+  food?: boolean;
 }) {
   const vh = (height * 360) / width;
   const awning = Array.from({ length: 8 }, (_, i) => i);
@@ -70,6 +65,10 @@ export function OrderStatusArt({
           <Stop offset="0" stopColor="#FFE680" />
           <Stop offset="0.55" stopColor="#FFD233" />
           <Stop offset="1" stopColor="#E0A800" />
+        </LinearGradient>
+        <LinearGradient id="osFood" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFF1D2" />
+          <Stop offset="1" stopColor="#F2C27A" />
         </LinearGradient>
         <LinearGradient id="osShop" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#FFFFFF" />
@@ -167,57 +166,116 @@ export function OrderStatusArt({
         <Rect x={330} y={278} width={34} height={5} rx={2.5} />
       </G>
 
-      {/* the cup, steaming, in front */}
-      <Ellipse cx={186} cy={290} rx={40} ry={6} fill="#9FB6EC" opacity={0.55} />
-      <G
-        stroke="#FFFFFF"
-        strokeWidth={4.5}
-        strokeLinecap="round"
-        fill="none"
-        opacity={0.95}
-      >
-        <Path d="M172 168c-8-10 8-14 0-26" />
-        <Path d="M190 162c-8-10 8-14 0-26" />
-      </G>
-      <Path
-        d="M154 196h64l-7 86a8 8 0 0 1 -8 7h-34a8 8 0 0 1 -8 -7z"
-        fill="url(#osCup)"
-      />
-      <Path d="M157 232h58l-2.4 30h-53.2z" fill="url(#osSleeve)" />
-      <Circle cx={186} cy={247} r={9} fill="#FFFFFF" opacity={0.9} />
-      <Path
-        d="M190.5 243.5a6 6 0 1 0 1.2 4.5h-5"
-        stroke={brand[700]}
-        strokeWidth={2.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <Rect
-        x={148}
-        y={182}
-        width={76}
-        height={17}
-        rx={8.5}
-        fill="url(#osLid)"
-      />
-      <Rect x={160} y={176} width={52} height={10} rx={5} fill="#5A80DA" />
-      <Rect
-        x={160}
-        y={186}
-        width={30}
-        height={4}
-        rx={2}
-        fill="#FFFFFF"
-        opacity={0.45}
-      />
-      <Path
-        d="M162 204l-1 6"
-        stroke="#FFFFFF"
-        strokeWidth={3}
-        strokeLinecap="round"
-        opacity={0.9}
-      />
+      {/* what was ordered, in front: the cup, the bowl, or both */}
+      {drink ? (
+        <G transform={`translate(${food ? -40 : 0} 0)`}>
+          <Ellipse
+            cx={186}
+            cy={290}
+            rx={40}
+            ry={6}
+            fill="#9FB6EC"
+            opacity={0.55}
+          />
+          <G
+            stroke="#FFFFFF"
+            strokeWidth={4.5}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.95}
+          >
+            <Path d="M172 168c-8-10 8-14 0-26" />
+            <Path d="M190 162c-8-10 8-14 0-26" />
+          </G>
+          <Path
+            d="M154 196h64l-7 86a8 8 0 0 1 -8 7h-34a8 8 0 0 1 -8 -7z"
+            fill="url(#osCup)"
+          />
+          <Path d="M157 232h58l-2.4 30h-53.2z" fill="url(#osSleeve)" />
+          <Rect
+            x={148}
+            y={182}
+            width={76}
+            height={17}
+            rx={8.5}
+            fill="url(#osLid)"
+          />
+          <Rect x={160} y={176} width={52} height={10} rx={5} fill="#5A80DA" />
+          <Rect
+            x={160}
+            y={186}
+            width={30}
+            height={4}
+            rx={2}
+            fill="#FFFFFF"
+            opacity={0.45}
+          />
+          <Path
+            d="M162 204l-1 6"
+            stroke="#FFFFFF"
+            strokeWidth={3}
+            strokeLinecap="round"
+            opacity={0.9}
+          />
+        </G>
+      ) : null}
+      {food ? (
+        <G transform={`translate(${drink ? 46 : 0} 0)`}>
+          <Ellipse
+            cx={186}
+            cy={291}
+            rx={50}
+            ry={6}
+            fill="#9FB6EC"
+            opacity={0.55}
+          />
+          <G
+            stroke="#FFFFFF"
+            strokeWidth={4}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.9}
+          >
+            <Path d="M176 206c-7-9 7-12 0-22" />
+            <Path d="M196 202c-7-9 7-12 0-22" />
+          </G>
+          {/* the dish, heaped above the rim */}
+          <Path d="M146 238a40 30 0 0 1 80 0z" fill="url(#osFood)" />
+          <Circle cx={170} cy={222} r={7} fill="#E07B36" />
+          <Circle cx={168} cy={220} r={2.4} fill="#FFFFFF" opacity={0.5} />
+          <Circle cx={196} cy={216} r={4} fill="#5FB35A" />
+          <Circle cx={206} cy={226} r={3.2} fill="#5FB35A" />
+          <Circle cx={184} cy={212} r={3} fill="#F6C453" />
+          {/* bowl, rim and foot */}
+          <Path d="M138 240h96a48 44 0 0 1 -96 0z" fill="url(#osCup)" />
+          <Rect
+            x={134}
+            y={233}
+            width={104}
+            height={12}
+            rx={6}
+            fill="url(#osLid)"
+          />
+          <Rect
+            x={142}
+            y={235}
+            width={40}
+            height={3.4}
+            rx={1.7}
+            fill="#FFFFFF"
+            opacity={0.45}
+          />
+          <Rect x={168} y={280} width={36} height={8} rx={4} fill="#C9D7F7" />
+          <Path
+            d="M150 252c3 10 9 17 18 21"
+            stroke="#FFFFFF"
+            strokeWidth={3}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.85}
+          />
+        </G>
+      ) : null}
 
       {/* sparkles */}
       <G fill="#FFFFFF">

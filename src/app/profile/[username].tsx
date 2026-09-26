@@ -82,7 +82,7 @@ export default function MemberProfileScreen() {
       >
         <View style={{ paddingHorizontal: space.xl, paddingTop: space.sm, paddingBottom: space.lg }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: space.lg }}>
-            <Avatar name={name} size={78} />
+            <Avatar uri={isMe ? me.avatarUri : undefined} name={name} size={78} />
 
             {/* Counts read as a row of three, which is what people scan for
                 on a profile before they read anything else. */}

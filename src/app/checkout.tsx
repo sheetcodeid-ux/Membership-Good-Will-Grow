@@ -473,7 +473,9 @@ export default function CheckoutScreen() {
                 </UiText>
                 <UiText
                   color={tooFar ? danger[500] : QUIET_INK}
+                  numberOfLines={1}
                   style={{
+                    flexShrink: 0,
                     fontSize: 12.5,
                     lineHeight: 17,
                     fontFamily: fontFamilies.bold,
@@ -518,7 +520,6 @@ export default function CheckoutScreen() {
             scaleTo={0.99}
             style={{
               marginTop: 12,
-              marginLeft: 42,
               flexDirection: "row",
               alignItems: "center",
               gap: 8,

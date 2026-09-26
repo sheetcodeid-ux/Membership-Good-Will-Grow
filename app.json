@@ -37,7 +37,22 @@
       "output": "single"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Good Will Grow memakai galeri untuk mengganti foto profilmu.",
+          "cameraPermission": "Good Will Grow memakai kamera untuk mengambil foto profilmu."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Good Will Grow perlu akses galeri untuk menyimpan kode QR pembayaran.",
+          "savePhotosPermission": "Good Will Grow perlu izin untuk menyimpan kode QR pembayaran ke galeri.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

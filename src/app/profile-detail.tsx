@@ -116,7 +116,12 @@ export default function ProfileDetailScreen() {
               borderColor: surface,
             }}
           >
-            <Avatar name={profile.name} size={AVATAR} initialsSize={24} />
+            <Avatar
+              uri={profile.avatarUri}
+              name={profile.name}
+              size={AVATAR}
+              initialsSize={24}
+            />
           </View>
           <UiText
             color={LABEL_INK}

@@ -24,7 +24,12 @@ interface FeedState {
   reportPost: (postId: string, reason: string) => void;
   addComment: (postId: string, text: string) => void;
   commentsFor: (postId: string) => FeedComment[];
-  addPost: (caption: string, outletName?: string, brandId?: string) => void;
+  addPost: (
+    caption: string,
+    outletName?: string,
+    brandId?: string,
+    image?: string,
+  ) => void;
 }
 
 /** Stands in for a network round trip until the API exists. */
@@ -99,7 +104,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
       ),
     })),
   commentsFor: (postId) => get().comments.filter((c) => c.postId === postId),
-  addPost: (caption, outletName, brandId) =>
+  addPost: (caption, outletName, brandId, image) =>
     set((state) => ({
       posts: [
         {
@@ -111,6 +116,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
           type: outletName ? "checkin" : "post",
           outletName,
           brandId,
+          image,
           likes: 0,
           comments: 0,
         },

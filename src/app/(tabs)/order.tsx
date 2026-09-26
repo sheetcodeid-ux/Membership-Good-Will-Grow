@@ -141,7 +141,11 @@ export default function OrderScreen() {
                     color={tooFar ? danger[500] : ink[500]}
                     style={{ fontSize: 10.5, lineHeight: 14, fontFamily: "Urbanist_700Bold" }}
                   >
-                    {outlet ? `${(outlet.distanceKm * 1000).toFixed(2)} m` : ""}
+                    {outlet
+                      ? outlet.distanceKm < 1
+                        ? `${(outlet.distanceKm * 1000).toFixed(2)} m`
+                        : `${outlet.distanceKm.toFixed(2)} km`
+                      : ""}
                   </AppText>
                   {tooFar ? <AppIcon name="alertTriangle" size={11} color={danger[500]} /> : null}
                 </View>

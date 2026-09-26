@@ -12,11 +12,7 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Glyph, type GlyphName } from "../../components/icons/Glyph";
 import { BrandLogo } from "../../components/BrandLogo";
 import { AccountEmpty } from "../../components/EmptyArt";
-import {
-  HelpArt,
-  OrderStatusArt,
-  scenePoint,
-} from "../../components/OrderStatusArt";
+import { HelpArt, OrderStatusArt } from "../../components/OrderStatusArt";
 import { LABEL_INK, QUIET_INK, RULE } from "../../components/AccountMenu";
 import {
   Block,
@@ -28,7 +24,9 @@ import {
 import { SERVICE_META } from "../../components/checkout/CheckoutSheets";
 import { brand, danger, surface } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
-import { getOutlet, menuItems } from "../../data/mock";
+import { getOutlet, menuItems, outlets } from "../../data/mock";
+import { useOrderStore } from "../../store/orderStore";
+import { orderKinds } from "../../utils/menuKinds";
 import { MenuArt } from "../../components/MenuArt";
 import { promoBanners } from "../../data/banners";
 import { useOrderRecord } from "../../store/ordersStore";
@@ -215,11 +213,26 @@ export default function OrderStatusScreen() {
   const left = Math.max(0, 1 - (now - placedAt) / CANCEL_WINDOW_MS);
   const readyAt = placedAt + READY_MINUTES * 60_000;
   const outlet = getOutlet(order.outletId);
+  // Drinks draw the cup, food the bowl; an order of both shows both.
+  const kinds = orderKinds(order.lines.map((l) => l.name));
   const service = SERVICE_META[order.serviceType];
   const unpaid = order.status === "belum-bayar";
   const today =
     new Date(placedAt).toDateString() === new Date(now).toDateString();
   const discounts = (order.couponDiscount ?? 0) + (order.pointsUsed ?? 0);
+
+  // "Mau coba brand lain?": open Daftar Menu on the nearest Lesung Pipi
+  // outlet, with the outlet sheet up to pick Dine In or Take Away.
+  const tryOtherBrand = () => {
+    const next = [...outlets]
+      .filter((o) => o.brandId === "lesung-pipi" && o.isOpen)
+      .sort((a, b) => a.distanceKm - b.distanceKm)[0];
+    if (next) {
+      useOrderStore.getState().setOutlet(next.id);
+      useOrderStore.getState().reopenOutletSheet();
+    }
+    router.push("/order");
+  };
 
   const copy = () => {
     Clipboard.setStringAsync(order.nota).catch(() => {});
@@ -236,47 +249,14 @@ export default function OrderStatusScreen() {
           paddingBottom: insets.bottom + (bannerOpen ? 120 : 32),
         }}
       >
-        {/* the scene, with the step's bubble over the cup */}
+        {/* the scene, with what was ordered in front of the outlet */}
         <View style={{ height: ART_H + insets.top }}>
-          <OrderStatusArt width={width} height={ART_H + insets.top} />
-          <View
-            style={{
-              position: "absolute",
-              // the bubble's tip on the cup's lid, to its right
-              left: scenePoint(214, 170, width, ART_H + insets.top).x - 23,
-              top: scenePoint(214, 170, width, ART_H + insets.top).y - 52,
-              alignItems: "center",
-            }}
-          >
-            <View
-              style={{
-                width: 46,
-                height: 46,
-                borderRadius: 23,
-                backgroundColor: cancelled ? danger[500] : brand[600],
-                borderWidth: 3,
-                borderColor: "#FFFFFF",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Glyph
-                name={cancelled ? "close" : STEPS[Math.max(0, stage)].glyph}
-                size={20}
-                color="#FFFFFF"
-              />
-            </View>
-            <View
-              style={{
-                width: 10,
-                height: 10,
-                marginTop: -6,
-                transform: [{ rotate: "45deg" }],
-                backgroundColor: cancelled ? danger[500] : brand[600],
-                borderRadius: 2,
-              }}
-            />
-          </View>
+          <OrderStatusArt
+            width={width}
+            height={ART_H + insets.top}
+            drink={kinds.drink}
+            food={kinds.food}
+          />
           <PressableScale
             onPress={leave}
             hitSlop={8}
@@ -506,9 +486,8 @@ export default function OrderStatusScreen() {
                 {order.outletName}
               </UiText>
               <PressableScale
-                onPress={() =>
-                  showToast("Chat dengan outlet segera hadir", "info")
-                }
+                onPress={() => router.push(`/order-chat/${order.id}`)}
+                accessibilityLabel="Chat outlet"
                 hitSlop={6}
                 style={{
                   width: 40,
@@ -1104,7 +1083,7 @@ export default function OrderStatusScreen() {
             }}
           />
           <PressableScale
-            onPress={() => router.push("/order")}
+            onPress={tryOtherBrand}
             scaleTo={0.99}
             style={{
               flexDirection: "row",

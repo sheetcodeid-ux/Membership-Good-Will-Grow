@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
-import Svg, { Circle, G, Path, Rect } from "react-native-svg";
+import Svg, { G, Rect } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   Easing,
@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { brand } from "../theme/colors";
+import { BrandLogo } from "./BrandLogo";
 
 const N = 29;
 
@@ -55,7 +56,7 @@ function Finder({ x, y }: { x: number; y: number }) {
 
 /**
  * The payment code as it will look: rounded dots in the brand's navy,
- * three soft corner finders and the Good Will Grow mark in the middle,
+ * three soft corner finders and the outlet's logo in the middle,
  * drawn from the order so it stays put. A light sweeps down over it while
  * the member pays. Once the payment gateway is wired in, its real code
  * takes this one's place.
@@ -63,12 +64,17 @@ function Finder({ x, y }: { x: number; y: number }) {
 export function QrArt({
   seed,
   size,
+  brandId,
   scanning = true,
 }: {
   seed: string;
   size: number;
+  /** The outlet's brand, whose logo sits in the middle. */
+  brandId?: string;
   scanning?: boolean;
 }) {
+  // 7.4 modules wide out of the 31 the drawing spans.
+  const tile = (size * 7.4) / (N + 2);
   const cells = useMemo(() => {
     const next = rng(seed);
     const out: { x: number; y: number }[] = [];
@@ -97,7 +103,6 @@ export function QrArt({
     transform: [{ translateY: sweep.value * (h - 40) }],
   }));
 
-  const c = (N - 1) / 2;
   return (
     <View
       style={{ width: size, height: size }}
@@ -118,24 +123,24 @@ export function QrArt({
         <Finder x={0} y={0} />
         <Finder x={N - 7} y={0} />
         <Finder x={0} y={N - 7} />
-        <Rect
-          x={c - 3.2}
-          y={c - 3.2}
-          width={7.4}
-          height={7.4}
-          rx={2.2}
-          fill="#FFFFFF"
-        />
-        <Circle cx={c + 0.5} cy={c + 0.5} r={2.9} fill={brand[600]} />
-        <Path
-          d={`M${c + 1.9} ${c - 0.4}a1.9 1.9 0 1 0 0.35 1.45h-1.5`}
-          stroke="#FFFFFF"
-          strokeWidth={0.75}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
       </Svg>
+      {/* the outlet's logo on a white tile, dead centre over the gap */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          left: (size - tile) / 2,
+          top: (size - tile) / 2,
+          width: tile,
+          height: tile,
+          borderRadius: tile * 0.28,
+          backgroundColor: "#FFFFFF",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {brandId ? <BrandLogo brandId={brandId} size={tile * 0.78} /> : null}
+      </View>
       {scanning ? (
         <Animated.View
           pointerEvents="none"

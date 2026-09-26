@@ -79,6 +79,7 @@ export default function AccountScreen() {
   const top = Math.max(insets.top, 24);
   const r = useResponsive();
   const name = useAuthStore((s) => s.name);
+  const avatarUri = useAuthStore((s) => s.avatarUri);
   const phone = useAuthStore((s) => s.phone);
   const email = useAuthStore((s) => s.email);
   const referralCode = useAuthStore((s) => s.referralCode);
@@ -147,7 +148,7 @@ export default function AccountScreen() {
               zIndex: 2,
             }}
           >
-            <Avatar name={name} size={48} initialsSize={12} />
+            <Avatar uri={avatarUri} name={name} size={48} initialsSize={12} />
             <View
               // Baselines measured at 242 / 278 / 311 on the 2x reference: the block
               // sits 4.5 below plain centring, with 18 and 16.5 between lines.

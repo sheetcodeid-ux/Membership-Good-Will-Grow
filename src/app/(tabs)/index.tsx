@@ -99,6 +99,7 @@ export default function HomeScreen() {
   const load = useFeedStore((s) => s.load);
   const refresh = useFeedStore((s) => s.refresh);
   const name = useAuthStore((s) => s.name);
+  const avatarUri = useAuthStore((s) => s.avatarUri);
   const username = useAuthStore((s) => s.username);
   const unread = useNotificationStore((s) => s.items.some((n) => !n.read));
 
@@ -403,7 +404,7 @@ export default function HomeScreen() {
               onPress={() => router.push(`/profile/${username}` as never)}
               rippleBorderless
             >
-              <Avatar name={name} size={32} />
+              <Avatar uri={avatarUri} name={name} size={32} />
             </PressableScale>
 
             <View style={{ flex: 1 }} />

@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Platform, ScrollView, View, useWindowDimensions } from "react-native";
+import { captureRef } from "react-native-view-shot";
+import * as MediaLibrary from "expo-media-library/legacy";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -30,7 +32,7 @@ import {
 import { brand, danger, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
-import { tapPress, tapSuccess } from "../utils/haptics";
+import { tapError, tapPress, tapSuccess } from "../utils/haptics";
 import { useOrderRecord } from "../store/ordersStore";
 import { showToast } from "../store/toastStore";
 import { useScrolled } from "../hooks/useScrolled";
@@ -114,6 +116,9 @@ export default function QrisScreen() {
   const scroll = useScrolled();
   const { width } = useWindowDimensions();
   const qrSize = Math.min(250, Math.round(width * 0.6));
+  // The white QR card, captured as a picture for "Simpan kode QR".
+  const qrCard = useRef<View>(null);
+  const [saving, setSaving] = useState(false);
   const [remaining, setRemaining] = useState(PAY_WINDOW_SECONDS);
 
   useEffect(() => {
@@ -151,6 +156,33 @@ export default function QrisScreen() {
     Clipboard.setStringAsync(value).catch(() => {});
     tapSuccess();
     showToast(`${label} disalin`);
+  };
+  // Saves the code to the gallery so it can be paid from another app on
+  // this phone. The scan line is paused while the picture is taken.
+  const saveQr = async () => {
+    if (saving) return;
+    if (Platform.OS === "web") {
+      showToast("Screenshot layar ini untuk menyimpan kode QR", "info");
+      return;
+    }
+    setSaving(true);
+    try {
+      const perm = await MediaLibrary.requestPermissionsAsync(true);
+      if (!perm.granted) {
+        tapError();
+        showToast("Izinkan akses galeri untuk menyimpan kode QR", "error");
+        return;
+      }
+      const uri = await captureRef(qrCard, { format: "png", quality: 1 });
+      await MediaLibrary.saveToLibraryAsync(uri);
+      tapSuccess();
+      showToast("Kode QR tersimpan di galeri");
+    } catch {
+      tapError();
+      showToast("Kode QR gagal disimpan, coba lagi", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -279,6 +311,8 @@ export default function QrisScreen() {
 
             {/* the code on its own white card, corners marked */}
             <View
+              ref={qrCard}
+              collapsable={false}
               style={{
                 marginTop: 16,
                 padding: 14,
@@ -288,7 +322,12 @@ export default function QrisScreen() {
                 ...LIFT,
               }}
             >
-              <QrArt seed={order.id} size={qrSize} scanning={!expired} />
+              <QrArt
+                seed={order.id}
+                size={qrSize}
+                brandId={order.brandId}
+                scanning={!expired && !saving}
+              />
               {(["tl", "tr", "bl", "br"] as const).map((k) => (
                 <View
                   key={k}
@@ -368,8 +407,8 @@ export default function QrisScreen() {
               <OutlinePill
                 small
                 icon="download"
-                label="Simpan kode QR"
-                onPress={() => showToast("Simpan kode QR segera hadir", "info")}
+                label={saving ? "Menyimpan..." : "Simpan kode QR"}
+                onPress={saveQr}
               />
             </View>
           </View>

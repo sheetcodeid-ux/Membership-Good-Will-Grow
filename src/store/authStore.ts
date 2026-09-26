@@ -16,6 +16,8 @@ export interface ProfileFields {
   village: string;
   address: string;
   bio: string;
+  /** Profile photo picked on Ubah Profil; initials show until one is set. */
+  avatarUri?: string;
 }
 
 interface AuthState extends ProfileFields {

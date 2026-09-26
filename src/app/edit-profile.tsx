@@ -16,6 +16,7 @@ import { PressableScale } from "../components/ui/PressableScale";
 import { Glyph, type GlyphName } from "../components/icons/Glyph";
 import { SkylineBand } from "../components/AccountHeroArt";
 import { DatePickerSheet } from "../components/DatePickerSheet";
+import { PhotoSourceSheet } from "../components/PhotoSourceSheet";
 import { AccountBottomBar } from "../components/AccountBottomBar";
 import {
   AccountSection,
@@ -30,6 +31,7 @@ import { showToast } from "../store/toastStore";
 import { emailError, nameError, usernameError } from "../utils/profile";
 import { formatIndoDate, parseIndoDate } from "../utils/dates";
 import { tapError, tapSelect, tapSuccess } from "../utils/haptics";
+import { pickImage, type ImageSource } from "../utils/pickImage";
 import { useScrolled } from "../hooks/useScrolled";
 
 const EDGE = 13.5;
@@ -305,6 +307,8 @@ export default function EditProfileScreen() {
   const [gender, setGender] = useState<Gender | undefined>(profile.gender);
   const [address, setAddress] = useState(profile.address);
   const [bio, setBio] = useState(profile.bio);
+  const [avatarUri, setAvatarUri] = useState(profile.avatarUri);
+  const [photoSheet, setPhotoSheet] = useState(false);
   const [picking, setPicking] = useState(false);
   const [tried, setTried] = useState(false);
 
@@ -338,7 +342,17 @@ export default function EditProfileScreen() {
     birthDate !== profile.birthDate ||
     gender !== profile.gender ||
     address !== profile.address ||
-    bio !== profile.bio;
+    bio !== profile.bio ||
+    avatarUri !== profile.avatarUri;
+
+  const choosePhoto = async (source: ImageSource) => {
+    setPhotoSheet(false);
+    const uri = await pickImage(source, { square: true });
+    if (!uri) return;
+    tapSuccess();
+    setAvatarUri(uri);
+    showToast("Foto dipasang. Simpan untuk memakainya");
+  };
 
   const save = () => {
     if (!valid) {
@@ -355,10 +369,12 @@ export default function EditProfileScreen() {
       gender,
       address,
       bio,
+      avatarUri,
     });
     tapSuccess();
     showToast("Profil berhasil disimpan");
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace("/profile-detail");
   };
 
   return (
@@ -384,6 +400,7 @@ export default function EditProfileScreen() {
               }}
             >
               <Avatar
+                uri={avatarUri}
                 name={name || profile.name}
                 size={AVATAR}
                 initialsSize={27}
@@ -391,7 +408,11 @@ export default function EditProfileScreen() {
             </View>
             <PressableScale
               scaleTo={0.92}
-              onPress={() => showToast("Ganti foto segera hadir", "info")}
+              onPress={() => {
+                tapSelect();
+                setPhotoSheet(true);
+              }}
+              accessibilityLabel="Ganti foto profil"
               style={{
                 position: "absolute",
                 right: -2,
@@ -507,6 +528,21 @@ export default function EditProfileScreen() {
         onPress={save}
         disabled={!changed}
       />
+
+      {photoSheet ? (
+        <PhotoSourceSheet
+          onClose={() => setPhotoSheet(false)}
+          onPick={choosePhoto}
+          onRemove={
+            avatarUri
+              ? () => {
+                  setPhotoSheet(false);
+                  setAvatarUri(undefined);
+                }
+              : undefined
+          }
+        />
+      ) : null}
 
       {picking ? (
         <DatePickerSheet

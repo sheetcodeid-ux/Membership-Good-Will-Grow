@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Image, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
@@ -279,13 +279,21 @@ function PostCardBase({ post }: { post: FeedPost }) {
       >
         <GestureDetector gesture={mediaGesture}>
           <View>
-          <ImagePlaceholder
-            label="Foto Post"
-            radius={radius.lg}
-            iconSize={r.s(32)}
-            seed={post.id}
-            style={{ height: r.s(252) }}
-          />
+          {post.image ? (
+            <Image
+              source={{ uri: post.image }}
+              resizeMode="cover"
+              style={{ height: r.s(252) }}
+            />
+          ) : (
+            <ImagePlaceholder
+              label="Foto Post"
+              radius={radius.lg}
+              iconSize={r.s(32)}
+              seed={post.id}
+              style={{ height: r.s(252) }}
+            />
+          )}
 
           {/* A scrim along the bottom so anything laid over the picture —
               today the check-in chip — has something to sit against whatever

@@ -34,6 +34,7 @@ export default function CommentsSheet() {
   );
   const addComment = useFeedStore((s) => s.addComment);
   const name = useAuthStore((s) => s.name);
+  const avatarUri = useAuthStore((s) => s.avatarUri);
   const [text, setText] = useState("");
   const toggleCommentLike = useFeedStore((s) => s.toggleCommentLike);
 
@@ -211,7 +212,7 @@ export default function CommentsSheet() {
                 paddingVertical: space.md,
               }}
             >
-              <Avatar name={name} size={40} />
+              <Avatar uri={avatarUri} name={name} size={40} />
               <View
                 style={{
                   flex: 1,
