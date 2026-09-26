@@ -1,174 +1,250 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import Svg, { Path, Rect } from "react-native-svg";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
-import { SegmentedTabs } from "../components/ui/SegmentedTabs";
+import { Glyph } from "../components/icons/Glyph";
 import { BrandLogo } from "../components/BrandLogo";
-import { brand, ink, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { AccountEmpty } from "../components/EmptyArt";
+import {
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+  WARN_INK,
+} from "../components/AccountMenu";
+import { brand, success, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { coupons } from "../data/mock";
 import type { Coupon } from "../data/types";
 
-/* Ticket metrics, taken as ratios off the reference card (2.87 : 1). */
-const CARD_H = 114;
-const SEAM_X = 118;
-/** Radius of each scallop; the seam swings a full diameter across. */
-const LOBE_R = 4;
+const EDGE = 13.5;
+const CARD_H = 108;
+const ART_W = 104;
+const NOTCH = 8;
 
-/**
- * The seam is a row of alternating half circles, so the coloured panel bulges
- * towards the photo and is bitten back in equal measure and never shows a
- * straight edge. Drawing it as a filled path (rather than painting notches on
- * top) leaves the bites genuinely transparent, so the photo shows through.
- */
-function seamPath(r: number, height: number) {
-  let d = `M ${r} 0`;
-  let sweep = 1;
-  for (let y = 0; y < height; y += 2 * r) {
-    d += ` a ${r} ${r} 0 0 ${sweep} 0 ${2 * r}`;
-    sweep = sweep === 1 ? 0 : 1;
-  }
-  return `${d} L ${2 * r} ${height + 2 * r} L ${2 * r} 0 Z`;
-}
+type Tab = "mine" | "available";
 
-/** Two overlapping tickets, drawn for the empty state. */
-function EmptyTickets({ size = 120 }: { size?: number }) {
+/** Two-way switch under the bar, in the filter chips' style. */
+function TabPill({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
-    <Svg width={size} height={size * 0.72} viewBox="0 0 120 86">
-      <Rect
-        x={14}
-        y={6}
-        width={80}
-        height={46}
-        rx={7}
-        transform="rotate(-8 54 29)"
-        fill={brand[300]}
-      />
-      <Path
-        d="M20 34h74a7 7 0 0 1 7 7v4a7 7 0 0 0 0 14v4a7 7 0 0 1-7 7H20a7 7 0 0 1-7-7v-4a7 7 0 0 0 0-14v-4a7 7 0 0 1 7-7Z"
-        fill={brand[200]}
-      />
-      <Path
-        d="M52 43l14 0-9 9 5 0-14 0 9-9-5 0Z"
-        fill="#E8B838"
-        transform="translate(4 4) scale(1.5)"
-      />
-    </Svg>
+    <PressableScale
+      onPress={onPress}
+      scaleTo={0.97}
+      style={{
+        flex: 1,
+        height: 38,
+        borderRadius: 19,
+        borderWidth: active ? 1.5 : 1,
+        borderColor: active ? brand[600] : RULE,
+        backgroundColor: active ? "#EEF3FF" : "#FFFFFF",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <UiText
+        color={active ? brand[700] : LABEL_INK}
+        style={{
+          fontSize: 14,
+          lineHeight: 18,
+          fontFamily: active ? fontFamilies.bold : fontFamilies.semibold,
+        }}
+      >
+        {label}
+      </UiText>
+    </PressableScale>
   );
 }
 
+/**
+ * A coupon as a paper ticket: the artwork on the stub, a perforation with
+ * a notch bitten out at each end, the offer on the right. White with the
+ * cards' hairline rather than a solid navy slab, so it sits with the rest
+ * of the account pages.
+ */
 function TicketCard({ coupon }: { coupon: Coupon }) {
+  const urgent = coupon.daysLeft <= 1;
   return (
     <PressableScale
       scaleTo={0.99}
       style={{
         height: CARD_H,
         borderRadius: 16,
-        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: RULE,
         backgroundColor: "#FFFFFF",
-        ...(shadow.xs as object),
+        overflow: "hidden",
+        flexDirection: "row",
       }}
     >
-      {/* The artwork runs under the seam so the scallops reveal it. */}
-      <ImagePlaceholder
-        radius={0}
-        iconSize={22}
-        style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: SEAM_X + LOBE_R }}
-      />
-      <View style={{ position: "absolute", top: 8, left: 8 }}>
-        <BrandLogo brandId={coupon.brandId} size={18} />
+      <View style={{ width: ART_W }}>
+        <ImagePlaceholder radius={0} iconSize={22} style={{ flex: 1 }} />
+        <View
+          style={{
+            position: "absolute",
+            top: 8,
+            left: 8,
+            width: 26,
+            height: 26,
+            borderRadius: 13,
+            backgroundColor: "#FFFFFF",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <BrandLogo brandId={coupon.brandId} size={17} />
+        </View>
       </View>
 
-      <Svg
-        width={2 * LOBE_R}
-        height={CARD_H}
-        pointerEvents="none"
-        style={{ position: "absolute", left: SEAM_X - LOBE_R, top: 0 }}
-      >
-        <Path d={seamPath(LOBE_R, CARD_H)} fill={brand[900]} />
-      </Svg>
+      {/* perforation, with the page showing through a notch at each end */}
+      <View style={{ width: 0 }}>
+        <View
+          style={{
+            position: "absolute",
+            top: NOTCH + 4,
+            bottom: NOTCH + 4,
+            left: -0.75,
+            borderLeftWidth: 1.5,
+            borderStyle: "dashed",
+            borderColor: "#D5D8DE",
+          }}
+        />
+        {[-NOTCH - 1, CARD_H - NOTCH - 1].map((top) => (
+          <View
+            key={top}
+            style={{
+              position: "absolute",
+              top,
+              left: -NOTCH,
+              width: NOTCH * 2,
+              height: NOTCH * 2,
+              borderRadius: NOTCH,
+              backgroundColor: surface,
+              borderWidth: 1,
+              borderColor: RULE,
+            }}
+          />
+        ))}
+      </View>
 
       <View
         style={{
-          position: "absolute",
-          left: SEAM_X + LOBE_R,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          backgroundColor: brand[900],
-          paddingLeft: 13,
+          flex: 1,
+          paddingLeft: 14,
           paddingRight: 14,
-          paddingTop: 11,
+          paddingTop: 12,
           paddingBottom: 12,
         }}
       >
-        <AppText
-          color="#FFFFFF"
+        <UiText
+          color={LABEL_INK}
           numberOfLines={2}
-          style={{ fontSize: 16, lineHeight: 21, fontFamily: "Urbanist_700Bold" }}
+          style={{
+            fontSize: 15,
+            lineHeight: 19,
+            fontFamily: fontFamilies.bold,
+          }}
         >
           {coupon.title}
-        </AppText>
+        </UiText>
         <View style={{ flex: 1 }} />
-        <AppText
-          color="rgba(255,255,255,0.92)"
-          style={{ fontSize: 11.5, lineHeight: 16, fontFamily: "Urbanist_400Regular" }}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+          <Glyph name="clock" size={13} color={urgent ? WARN_INK : QUIET_INK} />
+          <UiText
+            color={urgent ? WARN_INK : QUIET_INK}
+            style={{
+              fontSize: 12,
+              lineHeight: 16,
+              fontFamily: fontFamilies.semibold,
+            }}
+          >
+            Berlaku {coupon.daysLeft} hari lagi
+          </UiText>
+        </View>
+        <View
+          style={{
+            alignSelf: "flex-start",
+            marginTop: 6,
+            borderRadius: 6,
+            paddingHorizontal: 7,
+            paddingVertical: 2,
+            backgroundColor: coupon.used ? "#F2F3F5" : success[50],
+          }}
         >
-          Tersisa {coupon.daysLeft} hari
-        </AppText>
-        <AppText
-          color="rgba(255,255,255,0.5)"
-          style={{ fontSize: 11.5, lineHeight: 16, fontFamily: "Urbanist_400Regular" }}
-        >
-          {coupon.used ? "Sudah Digunakan" : "Belum Digunakan"}
-        </AppText>
+          <UiText
+            color={coupon.used ? QUIET_INK : success[600]}
+            style={{
+              fontSize: 11.5,
+              lineHeight: 15,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
+            {coupon.used ? "Sudah dipakai" : "Belum dipakai"}
+          </UiText>
+        </View>
       </View>
     </PressableScale>
   );
 }
 
 export default function CouponsScreen() {
-  const [tab, setTab] = useState("member");
-  const mine = coupons;
+  const [tab, setTab] = useState<Tab>("mine");
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
+      <AppHeader tone="account" title="Kupon Saya" />
 
-      <AppHeader title="Daftar Kupon">
-        <SegmentedTabs
-          value={tab}
-          onChange={setTab}
-          tabs={[
-            { key: "member", label: "Member Kupon" },
-            { key: "tersedia", label: "Kupon Tersedia" },
-          ]}
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 8,
+          paddingHorizontal: EDGE,
+          paddingTop: 12,
+          paddingBottom: 4,
+        }}
+      >
+        <TabPill
+          label={`Kupon saya (${coupons.length})`}
+          active={tab === "mine"}
+          onPress={() => setTab("mine")}
         />
-      </AppHeader>
+        <TabPill
+          label="Kupon tersedia"
+          active={tab === "available"}
+          onPress={() => setTab("available")}
+        />
+      </View>
 
-      {tab === "member" ? (
+      {tab === "mine" ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 30 }}
+          contentContainerStyle={{
+            paddingHorizontal: EDGE,
+            paddingTop: 10,
+            paddingBottom: 40,
+            gap: 10,
+          }}
         >
-          {mine.map((coupon) => (
+          {coupons.map((coupon) => (
             <TicketCard key={coupon.id} coupon={coupon} />
           ))}
         </ScrollView>
       ) : (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 14, paddingHorizontal: 32 }}>
-          <EmptyTickets />
-          <AppText variant="h3" color={ink[500]} center>
-            Belum ada kupon tersedia
-          </AppText>
-          <AppText variant="body" color={ink[400]} center>
-            Tidak ada kupon yang dapat dibeli saat ini
-          </AppText>
-        </View>
+        <AccountEmpty
+          glyph="ticket"
+          title="Belum ada kupon tersedia"
+          subtitle="Kupon yang bisa dibeli akan muncul di sini. Cek lagi nanti, ya."
+        />
       )}
     </View>
   );

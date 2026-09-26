@@ -1,45 +1,83 @@
 import React, { useState } from "react";
-import { AppIcon, type AppIconName } from "../components/ui/AppIcon";
 import { ScrollView, Share, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Clipboard from "expo-clipboard";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
-import { brand, ink, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { Glyph, type GlyphName } from "../components/icons/Glyph";
+import { RewardArt, REWARD_ART_W } from "../components/RewardArt";
+import {
+  AccountCard,
+  AccountSection,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../components/AccountMenu";
+import { brand, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { useAuthStore } from "../store/authStore";
 
-const steps: { icon: AppIconName; title: string; body: string }[] = [
+const EDGE = 13.5;
+/** The referral strip's gold and ink, carried over from the profile. */
+const GOLD = ["#FFDD00", "#FFDD00", "#FFFDEF"] as const;
+const STRIP_INK = "#702B00";
+
+const steps: { icon: GlyphName; title: string; body: string }[] = [
   {
     icon: "share",
-    title: "Bagikan Kode",
-    body: "Ajak teman untuk bergabung dengan membagikan kode referal Anda",
+    title: "Bagikan kode",
+    body: "Kirim kode referal kamu ke teman lewat chat atau media sosial.",
   },
   {
     icon: "userPlus",
-    title: "Teman Mendaftar",
-    body: "Teman menggunakan kode referal saat mendaftar di Good Will Grow",
+    title: "Teman mendaftar",
+    body: "Teman memasukkan kode kamu saat mendaftar di Good Will Grow.",
   },
   {
     icon: "gift",
-    title: "Dapatkan Reward",
-    body: "Anda akan mendapatkan reward berupa kupon ketika teman Anda berhasil mendaftar & melakukan transaksi pertama",
+    title: "Kamu dapat reward",
+    body: "Kupon masuk ke akunmu setelah teman menyelesaikan transaksi pertama.",
   },
 ];
 
-function Card({ children }: { children: React.ReactNode }) {
+function PillButton({
+  icon,
+  label,
+  onPress,
+  solid,
+}: {
+  icon: GlyphName;
+  label: string;
+  onPress: () => void;
+  solid?: boolean;
+}) {
   return (
-    <View
+    <PressableScale
+      onPress={onPress}
+      scaleTo={0.97}
       style={{
-        backgroundColor: "#FFFFFF",
-        borderRadius: 16,
-        padding: 16,
-        ...(shadow.xs as object),
+        flex: 1,
+        height: 44,
+        borderRadius: 22,
+        borderWidth: solid ? 0 : 1,
+        borderColor: RULE,
+        backgroundColor: solid ? brand[600] : "#FFFFFF",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
       }}
     >
-      {children}
-    </View>
+      <Glyph name={icon} size={17} color={solid ? "#FFFFFF" : LABEL_INK} />
+      <UiText
+        color={solid ? "#FFFFFF" : LABEL_INK}
+        style={{ fontSize: 15, lineHeight: 19, fontFamily: fontFamilies.bold }}
+      >
+        {label}
+      </UiText>
+    </PressableScale>
   );
 }
 
@@ -62,186 +100,172 @@ export default function ReferralScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Kode Referal" />
+      <AppHeader tone="account" title="Kode Referal" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 30, paddingBottom: 34 }}
+        contentContainerStyle={{
+          paddingHorizontal: EDGE,
+          paddingTop: 16,
+          paddingBottom: 40,
+        }}
       >
-        <View style={{ alignItems: "center" }}>
-          <View
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: 60,
-              backgroundColor: brand[100],
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <AppIcon name="gift" size={54} color={brand[900]} />
-          </View>
-        </View>
-
-        <AppText
-          center
-          color={ink[900]}
+        {/* The profile's gold strip, opened up: the invitation with the
+            gift that the reward card already uses. */}
+        <LinearGradient
+          colors={GOLD}
+          locations={[0, 0.5, 1]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
           style={{
-            marginTop: 26,
-            fontSize: 21,
-            lineHeight: 29,
-            fontFamily: "Urbanist_700Bold",
+            borderRadius: 16,
+            overflow: "hidden",
+            minHeight: 116,
+            paddingLeft: 16,
+            paddingVertical: 18,
+            paddingRight: REWARD_ART_W - 12,
+            justifyContent: "center",
           }}
         >
-          Ajak Teman, Dapatkan Reward!
-        </AppText>
-        <AppText
-          center
-          color={ink[400]}
-          style={{ marginTop: 12, fontSize: 14, lineHeight: 20, paddingHorizontal: 8 }}
-        >
-          Bagikan kode referal Anda dan nikmati reward setiap kali teman Anda bergabung dan
-          melakukan transaksi pertama.
-        </AppText>
+          <View style={{ position: "absolute", right: 0, bottom: -4 }}>
+            <RewardArt />
+          </View>
+          <UiText
+            color={STRIP_INK}
+            style={{
+              fontSize: 18,
+              lineHeight: 22,
+              fontFamily: fontFamilies.extrabold,
+            }}
+          >
+            Ajak teman, dapat reward bareng
+          </UiText>
+          <UiText
+            color={STRIP_INK}
+            style={{
+              marginTop: 6,
+              fontSize: 13,
+              lineHeight: 17,
+              fontFamily: fontFamilies.medium,
+              opacity: 0.85,
+            }}
+          >
+            Tiap teman yang bergabung dan bertransaksi pertama kali, kamu dapat
+            kupon.
+          </UiText>
+        </LinearGradient>
 
-        <View style={{ height: 26 }} />
-
-        <Card>
-          <AppText center color={ink[500]} style={{ fontSize: 13.5, lineHeight: 19 }}>
-            Kode Referal Anda
-          </AppText>
-
+        <AccountSection title="Kode referal kamu" />
+        <AccountCard style={{ padding: 14 }}>
           <View
             style={{
-              marginTop: 12,
-              height: 62,
+              height: 64,
               borderRadius: 12,
-              borderWidth: 1.4,
-              borderColor: brand[200],
-              backgroundColor: brand[50],
+              borderWidth: 1.5,
+              borderStyle: "dashed",
+              borderColor: "#E9B800",
+              backgroundColor: "#FFFBE6",
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
               gap: 12,
             }}
           >
-            <AppIcon name="ticketPercent" size={21} color={brand[900]} />
-            <AppText
-              color={brand[900]}
+            <Glyph name="qr" size={22} color={STRIP_INK} />
+            <UiText
+              color={STRIP_INK}
               style={{
-                fontSize: 23,
-                lineHeight: 30,
-                letterSpacing: 2,
-                fontFamily: "Urbanist_700Bold",
+                fontSize: 26,
+                lineHeight: 32,
+                letterSpacing: 3,
+                fontFamily: fontFamilies.extrabold,
               }}
             >
               {code}
-            </AppText>
+            </UiText>
           </View>
-
-          <View style={{ flexDirection: "row", gap: 12, marginTop: 14 }}>
-            <PressableScale
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+            <PillButton
+              icon={copied ? "check" : "copy"}
+              label={copied ? "Tersalin" : "Salin"}
               onPress={copy}
-              scaleTo={0.98}
-              style={{
-                flex: 1,
-                height: 48,
-                borderRadius: 10,
-                borderWidth: 1.4,
-                borderColor: brand[900],
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 9,
-              }}
-            >
-              {copied ? (
-                <AppIcon name="check" size={17} color={brand[900]} />
-              ) : (
-                <AppIcon name="copy" size={17} color={brand[900]} />
-              )}
-              <AppText color={brand[900]} style={{ fontSize: 14.5, lineHeight: 20 }}>
-                {copied ? "Tersalin" : "Salin"}
-              </AppText>
-            </PressableScale>
-
-            <PressableScale
-              onPress={share}
-              scaleTo={0.98}
-              style={{
-                flex: 1,
-                height: 48,
-                borderRadius: 10,
-                backgroundColor: brand[950],
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 9,
-              }}
-            >
-              <AppIcon name="share" size={17} color="#FFFFFF" />
-              <AppText color="#FFFFFF" style={{ fontSize: 14.5, lineHeight: 20 }}>
-                Bagikan
-              </AppText>
-            </PressableScale>
+            />
+            <PillButton icon="share" label="Bagikan" onPress={share} solid />
           </View>
-        </Card>
+        </AccountCard>
 
-        <View style={{ height: 18 }} />
-
-        <Card>
-          <AppText
-            color={ink[900]}
-            style={{ fontSize: 17, lineHeight: 23, fontFamily: "Urbanist_700Bold" }}
-          >
-            Cara Kerja Referral
-          </AppText>
-
-          <View style={{ marginTop: 16, gap: 18 }}>
-            {steps.map((step, i) => {
-              const icon = step.icon;
-              return (
-                <View key={step.title} style={{ flexDirection: "row", gap: 14 }}>
+        <AccountSection title="Cara kerjanya" />
+        <AccountCard style={{ paddingVertical: 6 }}>
+          {steps.map((step, i) => (
+            <View
+              key={step.title}
+              style={{ flexDirection: "row", paddingHorizontal: 14 }}
+            >
+              {/* step marker, with a dotted thread down to the next one */}
+              <View style={{ width: 38, alignItems: "center" }}>
+                <View
+                  style={{
+                    marginTop: 10,
+                    width: 38,
+                    height: 38,
+                    borderRadius: 19,
+                    backgroundColor: "#FFF3C4",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Glyph name={step.icon} size={19} color={STRIP_INK} />
+                </View>
+                {i < steps.length - 1 ? (
                   <View
                     style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      backgroundColor: brand[950],
-                      alignItems: "center",
-                      justifyContent: "center",
+                      flex: 1,
+                      width: 0,
+                      marginVertical: 4,
+                      borderLeftWidth: 1.5,
+                      borderStyle: "dashed",
+                      borderColor: "#E9C75A",
                     }}
-                  >
-                    <AppText
-                      color="#FFFFFF"
-                      style={{ fontSize: 15, lineHeight: 20, fontFamily: "Urbanist_600SemiBold" }}
-                    >
-                      {i + 1}
-                    </AppText>
-                  </View>
-                  <View style={{ flex: 1, gap: 4 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}>
-                      <AppIcon name={icon} size={18} color={brand[900]} />
-                      <AppText
-                        color={ink[900]}
-                        style={{
-                          fontSize: 15.5,
-                          lineHeight: 21,
-                          fontFamily: "Urbanist_600SemiBold",
-                        }}
-                      >
-                        {step.title}
-                      </AppText>
-                    </View>
-                    <AppText color={ink[400]} style={{ fontSize: 13.5, lineHeight: 19 }}>
-                      {step.body}
-                    </AppText>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        </Card>
+                  />
+                ) : null}
+              </View>
+              <View style={{ flex: 1, marginLeft: 12, paddingVertical: 10 }}>
+                <UiText
+                  color={QUIET_INK}
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  Langkah {i + 1}
+                </UiText>
+                <UiText
+                  color={LABEL_INK}
+                  style={{
+                    marginTop: 1,
+                    fontSize: 15,
+                    lineHeight: 19,
+                    fontFamily: fontFamilies.semibold,
+                  }}
+                >
+                  {step.title}
+                </UiText>
+                <UiText
+                  color={QUIET_INK}
+                  style={{
+                    marginTop: 3,
+                    fontSize: 13,
+                    lineHeight: 18,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  {step.body}
+                </UiText>
+              </View>
+            </View>
+          ))}
+        </AccountCard>
       </ScrollView>
     </View>
   );

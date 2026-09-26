@@ -1,23 +1,30 @@
 import React, { useState } from "react";
-import { AppIcon } from "../../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Clipboard from "expo-clipboard";
-import { AppText } from "../../components/ui/AppText";
+import { UiText } from "../../components/ui/Text";
 import { AppHeader } from "../../components/ui/AppHeader";
-import { EmptyState } from "../../components/ui/EmptyState";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
+import { Glyph, type GlyphName } from "../../components/icons/Glyph";
+import { BrandLogo } from "../../components/BrandLogo";
+import { AccountEmpty } from "../../components/EmptyArt";
+import {
+  AccountCard,
+  AccountSection,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../../components/AccountMenu";
 import { statusMeta, channelMeta } from "../../components/OrderIcons";
-import { brand, ink, surface } from "../../theme/colors";
-import { shadow } from "../../theme/shadows";
+import { brand, surface } from "../../theme/colors";
+import { fontFamilies } from "../../theme/typography";
 import { formatRupiah } from "../../utils/format";
 import { getBrand, getOrder } from "../../data/mock";
 import type { ServiceType } from "../../data/types";
 
-/** Width reserved for the copy button column on every info row. */
-const COPY_COL = 28;
+const EDGE = 13.5;
 
 const serviceLabels: Record<ServiceType, string> = {
   dine_in: "Dine In",
@@ -27,21 +34,13 @@ const serviceLabels: Record<ServiceType, string> = {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <View
-      style={{
-        backgroundColor: "#FFFFFF",
-        borderRadius: 15,
-        padding: 14,
-        ...(shadow.xs as object),
-      }}
-    >
+    <AccountCard style={{ paddingHorizontal: 14, paddingVertical: 8 }}>
       {children}
-    </View>
+    </AccountCard>
   );
 }
 
-/** Label / value pair. The copy slot is always reserved at the right edge so
- *  every copy button lines up in one column, whatever the value's length. */
+/** Label on the left, value on the right, an optional copy button after it. */
 function InfoRow({
   label,
   value,
@@ -52,20 +51,38 @@ function InfoRow({
   onCopy?: () => void;
 }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "flex-start", paddingVertical: 5 }}>
-      {/* Fixed, non-shrinking label column so every colon lines up. */}
-      <AppText variant="body" color={ink[600]} style={{ width: 128, flexShrink: 0 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        minHeight: 36,
+        paddingVertical: 6,
+        gap: 12,
+      }}
+    >
+      <UiText
+        color={QUIET_INK}
+        style={{
+          fontSize: 13.5,
+          lineHeight: 18,
+          fontFamily: fontFamilies.medium,
+        }}
+      >
         {label}
-      </AppText>
-      <AppText variant="body" color={ink[600]} style={{ flexShrink: 0 }}>
-        :{" "}
-      </AppText>
-      <AppText variant="bodySemibold" color={ink[900]} style={{ flex: 1 }}>
+      </UiText>
+      <UiText
+        color={LABEL_INK}
+        style={{
+          flex: 1,
+          textAlign: "right",
+          fontSize: 14,
+          lineHeight: 18,
+          fontFamily: fontFamilies.semibold,
+        }}
+      >
         {value}
-      </AppText>
-      <View style={{ width: COPY_COL, alignItems: "flex-end" }}>
-        {onCopy ? <CopyButton onPress={onCopy} /> : null}
-      </View>
+      </UiText>
+      {onCopy ? <CopyButton onPress={onCopy} /> : null}
     </View>
   );
 }
@@ -75,25 +92,26 @@ function CopyButton({ onPress }: { onPress: () => void }) {
   return (
     <PressableScale
       hitSlop={8}
+      scaleTo={0.9}
       onPress={() => {
         onPress();
         setCopied(true);
         setTimeout(() => setCopied(false), 1400);
       }}
       style={{
-        width: 20,
-        height: 20,
-        borderRadius: 6,
-        backgroundColor: brand[900],
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: copied ? "#EEF3FF" : "#F2F3F5",
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      {copied ? (
-        <AppIcon name="check" size={12} color="#FFFFFF" />
-      ) : (
-        <AppIcon name="copy" size={12} color="#FFFFFF" />
-      )}
+      <Glyph
+        name={copied ? "check" : "copy"}
+        size={12}
+        color={copied ? brand[600] : QUIET_INK}
+      />
     </PressableScale>
   );
 }
@@ -109,23 +127,43 @@ function AmountRow({
   bold?: boolean;
   emphasis?: boolean;
 }) {
-  const size = emphasis ? 16 : 13;
-  const family = bold || emphasis ? "Urbanist_700Bold" : "Urbanist_400Regular";
-  const color = emphasis ? brand[800] : ink[800];
+  const size = emphasis ? 17 : 14;
+  const family = emphasis
+    ? fontFamilies.extrabold
+    : bold
+      ? fontFamilies.bold
+      : fontFamilies.medium;
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8 }}>
-      <AppText style={{ flex: 1, fontSize: size, lineHeight: size + 6, fontFamily: family }} color={color}>
+    <View
+      style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8 }}
+    >
+      <UiText
+        color={emphasis || bold ? LABEL_INK : QUIET_INK}
+        style={{
+          flex: 1,
+          fontSize: size,
+          lineHeight: size + 5,
+          fontFamily: family,
+        }}
+      >
         {label}
-      </AppText>
-      <AppText style={{ fontSize: size, lineHeight: size + 6, fontFamily: family }} color={color}>
+      </UiText>
+      <UiText
+        color={LABEL_INK}
+        style={{
+          fontSize: size,
+          lineHeight: size + 5,
+          fontFamily: emphasis ? family : bold ? family : fontFamilies.semibold,
+        }}
+      >
         {value}
-      </AppText>
+      </UiText>
     </View>
   );
 }
 
 function Rule() {
-  return <View style={{ height: 1, backgroundColor: ink[100] }} />;
+  return <View style={{ height: 1, backgroundColor: RULE }} />;
 }
 
 export default function OrderDetailScreen() {
@@ -135,11 +173,11 @@ export default function OrderDetailScreen() {
   if (!order) {
     return (
       <View style={{ flex: 1, backgroundColor: surface }}>
-        <AppHeader title="Detail Pesanan" />
-        <EmptyState
-          icon={<AppIcon name="receipt" size={54} color={ink[300]} />}
+        <AppHeader tone="account" title="Detail Pesanan" />
+        <AccountEmpty
+          glyph="receipt"
           title="Pesanan tidak ditemukan"
-          style={{ paddingTop: 80 }}
+          subtitle="Pesanan ini mungkin sudah dihapus atau tautannya salah."
         />
       </View>
     );
@@ -154,131 +192,233 @@ export default function OrderDetailScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Detail Pesanan" />
+      <AppHeader tone="account" title="Detail Pesanan" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 32, gap: 12 }}
+        contentContainerStyle={{
+          paddingHorizontal: EDGE,
+          paddingTop: 16,
+          paddingBottom: 40,
+        }}
       >
-        <Card>
-          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+        {/* Summary: status, where, when, and what was paid. */}
+        <AccountCard style={{ padding: 14 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View
               style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
                 backgroundColor: `${meta.tint}1A`,
-                borderRadius: 10,
-                paddingHorizontal: 14,
-                paddingVertical: 8,
+                borderRadius: 12,
+                paddingLeft: 7,
+                paddingRight: 9,
+                height: 24,
               }}
             >
-              <AppText variant="bodySemibold" color={meta.tint}>
+              <Glyph
+                name={meta.icon as GlyphName}
+                size={12}
+                color={meta.tint}
+              />
+              <UiText
+                color={meta.tint}
+                style={{
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
                 {meta.label}
-              </AppText>
+              </UiText>
             </View>
             <View style={{ flex: 1 }} />
-            <View style={{ alignItems: "flex-end" }}>
-              <AppText variant="caption" color={ink[400]}>
-                Dibuat Pada
-              </AppText>
-              <AppText variant="bodyMedium" color={ink[700]}>
-                {order.createdAt}
-              </AppText>
-            </View>
+            <UiText
+              color={QUIET_INK}
+              style={{
+                fontSize: 12,
+                lineHeight: 16,
+                fontFamily: fontFamilies.medium,
+              }}
+            >
+              {order.createdAt}
+            </UiText>
           </View>
-
-          <View style={{ marginTop: 16 }}>
-            <InfoRow label="Nota" value={order.nota} onCopy={() => copy(order.nota)} />
-            <InfoRow
-              label="Kode Pesanan"
-              value={order.orderCode}
-              onCopy={() => copy(order.orderCode)}
-            />
-            <InfoRow
-              label="ID Transaksi"
-              value={order.transactionId}
-              onCopy={() => copy(order.transactionId)}
-            />
-            <InfoRow label="Tipe Pesanan" value={serviceLabels[order.serviceType]} />
-            <InfoRow label="Metode Pembayaran" value={order.paymentMethod} />
-          </View>
-
           <View
             style={{
-              marginTop: 14,
-              backgroundColor: brand[50],
-              borderRadius: 12,
-              paddingVertical: 16,
+              flexDirection: "row",
               alignItems: "center",
+              gap: 9,
+              marginTop: 12,
             }}
           >
-            <AppText variant="h3" color={brand[800]}>
-              Total • {formatRupiah(order.paid)}
-            </AppText>
+            <BrandLogo brandId={order.brandId} size={22} />
+            <UiText
+              color={LABEL_INK}
+              numberOfLines={1}
+              style={{
+                flex: 1,
+                fontSize: 17,
+                lineHeight: 22,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
+              {order.outletName}
+            </UiText>
           </View>
+          <View
+            style={{ height: 1, backgroundColor: RULE, marginVertical: 12 }}
+          />
+          <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+            <UiText
+              color={QUIET_INK}
+              style={{
+                flex: 1,
+                fontSize: 13,
+                lineHeight: 17,
+                fontFamily: fontFamilies.medium,
+              }}
+            >
+              Total bayar
+            </UiText>
+            <UiText
+              color={LABEL_INK}
+              style={{
+                fontSize: 22,
+                lineHeight: 27,
+                fontFamily: fontFamilies.extrabold,
+              }}
+            >
+              {formatRupiah(order.paid)}
+            </UiText>
+          </View>
+        </AccountCard>
+
+        <AccountSection title="Info pesanan" />
+        <Card>
+          <InfoRow
+            label="Nota"
+            value={order.nota}
+            onCopy={() => copy(order.nota)}
+          />
+          <InfoRow
+            label="Kode pesanan"
+            value={order.orderCode}
+            onCopy={() => copy(order.orderCode)}
+          />
+          <InfoRow
+            label="ID transaksi"
+            value={order.transactionId}
+            onCopy={() => copy(order.transactionId)}
+          />
+          <InfoRow
+            label="Tipe pesanan"
+            value={serviceLabels[order.serviceType]}
+          />
+          <InfoRow label="Metode pembayaran" value={order.paymentMethod} />
         </Card>
 
+        <AccountSection title="Info outlet" />
         <Card>
-          <AppText variant="h3" style={{ marginBottom: 10 }}>
-            Informasi Outlet
-          </AppText>
-          <InfoRow label="Nama Outlet" value={order.outletName} />
+          <InfoRow label="Nama outlet" value={order.outletName} />
           <InfoRow label="Brand" value={getBrand(order.brandId)?.name ?? "-"} />
-          <InfoRow label="Channel Pemesanan" value={channelMeta[order.channel].label} />
+          <InfoRow
+            label="Channel pemesanan"
+            value={channelMeta[order.channel].label}
+          />
         </Card>
 
-        <Card>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <AppText variant="h3" style={{ flex: 1 }}>
-              Ringkasan Pesanan
-            </AppText>
-            <AppText variant="micro" color={ink[300]} numberOfLines={1}>
-              {order.nota}
-            </AppText>
-          </View>
-
-          <View style={{ gap: 12 }}>
-            {order.lines.map((line) => (
-              <View key={line.id} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                <ImagePlaceholder radius={10} iconSize={18} style={{ width: 46, height: 46 }} />
-                <View style={{ flex: 1 }}>
-                  <AppText variant="titleLg" numberOfLines={2}>
-                    {line.name}
-                  </AppText>
-                  <AppText variant="caption" color={ink[400]}>
-                    {line.qty}× {line.variant} @ {formatRupiah(line.unitPrice)}
-                  </AppText>
-                </View>
-                <AppText variant="titleLg" color={brand[800]}>
-                  {formatRupiah(line.unitPrice * line.qty)}
-                </AppText>
+        <AccountSection title="Ringkasan pesanan" />
+        <AccountCard style={{ padding: 14, gap: 12 }}>
+          {order.lines.map((line) => (
+            <View
+              key={line.id}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+            >
+              <ImagePlaceholder
+                radius={10}
+                iconSize={18}
+                style={{ width: 46, height: 46 }}
+              />
+              <View style={{ flex: 1 }}>
+                <UiText
+                  color={LABEL_INK}
+                  numberOfLines={2}
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 19,
+                    fontFamily: fontFamilies.semibold,
+                  }}
+                >
+                  {line.name}
+                </UiText>
+                <UiText
+                  color={QUIET_INK}
+                  style={{
+                    marginTop: 2,
+                    fontSize: 12.5,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  {line.qty}× {line.variant} @ {formatRupiah(line.unitPrice)}
+                </UiText>
               </View>
-            ))}
-          </View>
-        </Card>
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  fontSize: 15,
+                  lineHeight: 19,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                {formatRupiah(line.unitPrice * line.qty)}
+              </UiText>
+            </View>
+          ))}
+        </AccountCard>
 
+        <AccountSection title="Detail pembayaran" />
         <Card>
-          <AppText variant="h3" style={{ marginBottom: 4 }}>
-            Detail Pembayaran
-          </AppText>
-          <AmountRow label="Nominal Belanja" value={formatRupiah(order.subtotal)} />
+          <AmountRow
+            label="Nominal belanja"
+            value={formatRupiah(order.subtotal)}
+          />
           <Rule />
-          <AmountRow label="Sub Total" value={formatRupiah(order.subtotal)} bold />
+          <AmountRow
+            label="Subtotal"
+            value={formatRupiah(order.subtotal)}
+            bold
+          />
           <AmountRow label="PB1" value={formatRupiah(order.tax)} />
           <AmountRow label="Pembulatan" value={formatRupiah(order.rounding)} />
           <Rule />
-          <AmountRow label="Total Tagihan" value={formatRupiah(total)} bold />
+          <AmountRow label="Total tagihan" value={formatRupiah(total)} bold />
           <Rule />
-          <AmountRow label="Total Bayar" value={formatRupiah(order.paid)} emphasis />
+          <AmountRow
+            label="Total bayar"
+            value={formatRupiah(order.paid)}
+            emphasis
+          />
         </Card>
 
         {order.note ? (
-          <Card>
-            <AppText variant="h3" style={{ marginBottom: 6 }}>
-              Catatan
-            </AppText>
-            <AppText variant="body" color={ink[500]}>
-              {order.note}
-            </AppText>
-          </Card>
+          <>
+            <AccountSection title="Catatan" />
+            <AccountCard style={{ padding: 14 }}>
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  fontSize: 14,
+                  lineHeight: 20,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                {order.note}
+              </UiText>
+            </AccountCard>
+          </>
         ) : null}
       </ScrollView>
     </View>

@@ -1,23 +1,33 @@
 import React, { useMemo, useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
+import { Glyph } from "../components/icons/Glyph";
+import {
+  AccountCard,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../components/AccountMenu";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
-import { brand, ink, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { brand, surface } from "../theme/colors";
 import { provinces } from "../data/regions";
 import { useAuthStore } from "../store/authStore";
 import { fontFamilies } from "../theme/typography";
 
 type Step = 0 | 1 | 2 | 3;
 
-const stepLabels = ["Provinsi", "Kabupaten/Kota", "Kecamatan", "Desa/Kelurahan"] as const;
+const stepLabels = [
+  "Provinsi",
+  "Kabupaten/Kota",
+  "Kecamatan",
+  "Desa/Kelurahan",
+] as const;
 
 /**
- * Four-level picker for Edit Profil. There is no reference screen for it yet,
+ * Four-level picker for Ubah Profil. There is no reference screen for it yet,
  * so this is our own take: one column at a time, each pick opening the next.
  */
 export default function LocationPickerScreen() {
@@ -36,7 +46,9 @@ export default function LocationPickerScreen() {
     return district?.villages ?? [];
   }, [picked, step]);
 
-  const visible = options.filter((o) => o.toLowerCase().includes(query.trim().toLowerCase()));
+  const visible = options.filter((o) =>
+    o.toLowerCase().includes(query.trim().toLowerCase()),
+  );
 
   const choose = (value: string) => {
     const next = [...picked.slice(0, step), value];
@@ -58,17 +70,40 @@ export default function LocationPickerScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Pilih Lokasi" />
+      <AppHeader tone="account" title="Pilih Lokasi" />
 
-      <View style={{ paddingHorizontal: 16, paddingTop: 14, gap: 12 }}>
+      <View style={{ paddingHorizontal: 13.5, paddingTop: 14, gap: 10 }}>
+        <UiText
+          color={QUIET_INK}
+          style={{
+            fontSize: 12,
+            lineHeight: 16,
+            fontFamily: fontFamilies.medium,
+          }}
+        >
+          Langkah {step + 1} dari {stepLabels.length}
+        </UiText>
         {/* Breadcrumb: tap a completed step to go back and change it. */}
-        <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            flexWrap: "wrap",
+            rowGap: 4,
+            columnGap: 4,
+          }}
+        >
           {stepLabels.map((label, i) => {
             const done = i < picked.length;
             const active = i === step;
             return (
-              <View key={label} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                {i > 0 ? <AppIcon name="chevronRight" size={13} color={ink[300]} /> : null}
+              <View
+                key={label}
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
+                {i > 0 ? (
+                  <Glyph name="chevronRight" size={10} color="#A0A4AE" />
+                ) : null}
                 <PressableScale
                   hitSlop={6}
                   disabled={!done && !active}
@@ -77,12 +112,20 @@ export default function LocationPickerScreen() {
                     setQuery("");
                   }}
                 >
-                  <AppText
-                    variant={active ? "captionMedium" : "caption"}
-                    color={active ? brand[700] : done ? ink[700] : ink[300]}
+                  <UiText
+                    color={active ? brand[700] : done ? LABEL_INK : "#A0A4AE"}
+                    style={{
+                      fontSize: 13,
+                      lineHeight: 17,
+                      fontFamily: active
+                        ? fontFamilies.bold
+                        : done
+                          ? fontFamilies.semibold
+                          : fontFamilies.medium,
+                    }}
                   >
-                    {done ? picked[i] : label}
-                  </AppText>
+                    {done && !active ? picked[i] : label}
+                  </UiText>
                 </PressableScale>
               </View>
             );
@@ -93,26 +136,27 @@ export default function LocationPickerScreen() {
           style={{
             height: 44,
             borderRadius: 12,
+            borderWidth: 1,
+            borderColor: RULE,
             backgroundColor: "#FFFFFF",
             flexDirection: "row",
             alignItems: "center",
             paddingHorizontal: 13,
             gap: 9,
-            ...(shadow.xs as object),
           }}
         >
-          <AppIcon name="search" size={17} color={ink[400]} />
+          <Glyph name="search" size={17} color={QUIET_INK} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder={`Cari ${stepLabels[step].toLowerCase()}`}
-            placeholderTextColor={ink[400]}
+            placeholderTextColor="#A0A4AE"
             style={{
               flex: 1,
               padding: 0,
-              fontFamily: fontFamilies.regular,
-              fontSize: 13.5,
-              color: ink[900],
+              fontFamily: fontFamilies.semibold,
+              fontSize: 14.5,
+              color: LABEL_INK,
             }}
           />
         </View>
@@ -120,14 +164,21 @@ export default function LocationPickerScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 34 }}
+        contentContainerStyle={{ padding: 13.5, paddingBottom: 40 }}
       >
-        <View style={{ borderRadius: 14, backgroundColor: "#FFFFFF", ...(shadow.xs as object) }}>
+        <AccountCard>
           {visible.length === 0 ? (
-            <View style={{ paddingVertical: 30, alignItems: "center" }}>
-              <AppText variant="body" color={ink[400]}>
+            <View style={{ paddingVertical: 28, alignItems: "center" }}>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  fontSize: 14,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
                 Tidak ada hasil untuk &quot;{query}&quot;
-              </AppText>
+              </UiText>
             </View>
           ) : (
             visible.map((option, i) => {
@@ -136,7 +187,12 @@ export default function LocationPickerScreen() {
                 <View key={option}>
                   {i > 0 ? (
                     <View
-                      style={{ height: 1, backgroundColor: ink[100], marginHorizontal: 14 }}
+                      style={{
+                        height: 1,
+                        backgroundColor: RULE,
+                        marginLeft: 14.5,
+                        marginRight: 9.5,
+                      }}
                     />
                   ) : null}
                   <PressableScale
@@ -146,29 +202,36 @@ export default function LocationPickerScreen() {
                       height: 48,
                       flexDirection: "row",
                       alignItems: "center",
-                      paddingHorizontal: 14,
+                      paddingLeft: 14.5,
+                      paddingRight: 13,
                       gap: 10,
                     }}
                   >
-                    <AppText
-                      variant="bodyMedium"
-                      color={selected ? brand[700] : ink[800]}
+                    <UiText
+                      color={selected ? brand[700] : LABEL_INK}
                       numberOfLines={1}
-                      style={{ flex: 1 }}
+                      style={{
+                        flex: 1,
+                        fontSize: 15,
+                        lineHeight: 19,
+                        fontFamily: selected
+                          ? fontFamilies.bold
+                          : fontFamilies.semibold,
+                      }}
                     >
                       {option}
-                    </AppText>
+                    </UiText>
                     {selected ? (
-                      <AppIcon name="check" size={17} color={brand[600]} />
-                    ) : (
-                      <AppIcon name="chevronRight" size={16} color={ink[300]} />
-                    )}
+                      <Glyph name="check" size={16} color={brand[600]} />
+                    ) : step < 3 ? (
+                      <Glyph name="chevronRight" size={15} color={QUIET_INK} />
+                    ) : null}
                   </PressableScale>
                 </View>
               );
             })
           )}
-        </View>
+        </AccountCard>
       </ScrollView>
     </View>
   );

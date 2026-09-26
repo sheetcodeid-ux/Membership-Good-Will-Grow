@@ -1,46 +1,38 @@
 import React, { useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
+import { Glyph } from "../components/icons/Glyph";
+import {
+  AccountCard,
+  AccountSection,
+  LABEL_INK,
+  RULE,
+  WARN_INK,
+} from "../components/AccountMenu";
+import { AccountBottomBar } from "../components/AccountBottomBar";
+import { LegalBullets } from "../components/LegalDoc";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { brand, danger, ink, surface, warning } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { brand, danger, ink, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { useAuthStore } from "../store/authStore";
 
-const reasons = ["Sudah tidak tertarik lagi", "Mulai akun dari awal", "Lainnya"];
+const reasons = [
+  "Sudah tidak tertarik lagi",
+  "Mulai akun dari awal",
+  "Lainnya",
+];
 
 const consequences = [
   "Akun kamu akan dihapus secara permanen dari sistem kami dan tidak bisa dipulihkan lagi.",
   "Seluruh postingan, komentar, dan interaksi kamu di Good Will Grow akan dihapus.",
-  "Seluruh transaksi dan data terkait akun, tidak dapat diakses lagi.",
+  "Seluruh transaksi dan data terkait akun tidak dapat diakses lagi.",
 ];
 
-function Bullet({ text }: { text: string }) {
-  return (
-    <View style={{ flexDirection: "row", gap: 12 }}>
-      <View
-        style={{
-          width: 7,
-          height: 7,
-          borderRadius: 3.5,
-          backgroundColor: ink[300],
-          marginTop: 7,
-        }}
-      />
-      <AppText color={ink[400]} style={{ flex: 1, fontSize: 14, lineHeight: 21 }}>
-        {text}
-      </AppText>
-    </View>
-  );
-}
-
 export default function DeleteAccountScreen() {
-  const insets = useSafeAreaInsets();
   const logout = useAuthStore((s) => s.logout);
   const [reason, setReason] = useState(reasons[0]);
   const [confirm, setConfirm] = useState(false);
@@ -48,151 +40,109 @@ export default function DeleteAccountScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Hapus Akun" />
+      <AppHeader tone="account" title="Hapus Akun" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}
+        contentContainerStyle={{
+          paddingHorizontal: 13.5,
+          paddingTop: 16,
+          paddingBottom: 24,
+        }}
       >
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            gap: 11,
+            gap: 10,
             borderRadius: 12,
-            backgroundColor: "#FDF3CF",
-            paddingHorizontal: 14,
-            paddingVertical: 13,
+            borderWidth: 1,
+            borderColor: "#F3DFA2",
+            backgroundColor: "#FFF8E1",
+            paddingHorizontal: 13,
+            paddingVertical: 12,
           }}
         >
-          <AppIcon name="info" size={19} color={warning[500]} />
-          <AppText color={ink[700]} style={{ flex: 1, fontSize: 13, lineHeight: 18 }}>
-            Akun tidak dapat dipulihkan setelah dihapus
-          </AppText>
+          <Glyph name="alertCircle" size={18} color={WARN_INK} />
+          <UiText
+            color={WARN_INK}
+            style={{
+              flex: 1,
+              fontSize: 13.5,
+              lineHeight: 18,
+              fontFamily: fontFamilies.semibold,
+            }}
+          >
+            Akun yang sudah dihapus tidak bisa dipulihkan.
+          </UiText>
         </View>
 
-        <AppText
-          color={ink[900]}
-          style={{
-            marginTop: 22,
-            fontSize: 17,
-            lineHeight: 24,
-            fontFamily: "Urbanist_700Bold",
-          }}
-        >
-          Kenapa kamu ingin menghapus akun?
-        </AppText>
-
-        <View
-          style={{
-            marginTop: 14,
-            borderRadius: 14,
-            backgroundColor: "#FFFFFF",
-            overflow: "hidden",
-            ...(shadow.xs as object),
-          }}
-        >
+        <AccountSection title="Kenapa kamu ingin menghapus akun?" />
+        <AccountCard>
           {reasons.map((item, i) => {
             const selected = reason === item;
             return (
               <View key={item}>
-                {i > 0 ? <View style={{ height: 1, backgroundColor: ink[100] }} /> : null}
+                {i > 0 ? (
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: RULE,
+                      marginLeft: 48,
+                      marginRight: 9.5,
+                    }}
+                  />
+                ) : null}
                 <PressableScale
                   scaleTo={0.995}
                   onPress={() => setReason(item)}
                   style={{
-                    height: 60,
+                    height: 52,
                     flexDirection: "row",
                     alignItems: "center",
-                    gap: 14,
-                    paddingHorizontal: 18,
-                    backgroundColor: selected ? brand[50] : "#FFFFFF",
+                    gap: 12,
+                    paddingHorizontal: 14.5,
                   }}
                 >
                   <View
                     style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      borderWidth: 2,
-                      borderColor: selected ? brand[950] : ink[300],
-                      alignItems: "center",
-                      justifyContent: "center",
+                      width: 21,
+                      height: 21,
+                      borderRadius: 10.5,
+                      borderWidth: selected ? 6 : 1.5,
+                      borderColor: selected ? brand[600] : "#B8BCC6",
+                      backgroundColor: "#FFFFFF",
                     }}
-                  >
-                    {selected ? (
-                      <View
-                        style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: 5,
-                          backgroundColor: brand[950],
-                        }}
-                      />
-                    ) : null}
-                  </View>
-                  <AppText
-                    color={selected ? brand[900] : ink[600]}
+                  />
+                  <UiText
+                    color={LABEL_INK}
                     style={{
                       fontSize: 15,
-                      lineHeight: 20,
-                      fontFamily: selected ? "Urbanist_600SemiBold" : "Urbanist_400Regular",
+                      lineHeight: 19,
+                      fontFamily: selected
+                        ? fontFamilies.bold
+                        : fontFamilies.semibold,
                     }}
                   >
                     {item}
-                  </AppText>
+                  </UiText>
                 </PressableScale>
               </View>
             );
           })}
-        </View>
+        </AccountCard>
 
-        <AppText
-          color={ink[900]}
-          style={{
-            marginTop: 26,
-            fontSize: 17,
-            lineHeight: 24,
-            fontFamily: "Urbanist_700Bold",
-          }}
-        >
-          Hal yang terjadi setelah hapus akun :
-        </AppText>
-
-        <View style={{ marginTop: 16, gap: 16 }}>
-          {consequences.map((text) => (
-            <Bullet key={text} text={text} />
-          ))}
-        </View>
+        <AccountSection title="Yang terjadi setelah akun dihapus" />
+        <AccountCard style={{ padding: 16 }}>
+          <LegalBullets items={consequences} />
+        </AccountCard>
       </ScrollView>
 
-      <View
-        style={{
-          paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: insets.bottom + 14,
-          backgroundColor: surface,
-        }}
-      >
-        <PressableScale
-          onPress={() => setConfirm(true)}
-          scaleTo={0.98}
-          style={{
-            height: 56,
-            borderRadius: 14,
-            backgroundColor: ink[100],
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AppText
-            color={danger[500]}
-            style={{ fontSize: 16.5, lineHeight: 22, fontFamily: "Urbanist_600SemiBold" }}
-          >
-            Hapus
-          </AppText>
-        </PressableScale>
-      </View>
+      <AccountBottomBar
+        label="Hapus akun"
+        tone="danger"
+        onPress={() => setConfirm(true)}
+      />
 
       {confirm ? (
         <ConfirmDialog

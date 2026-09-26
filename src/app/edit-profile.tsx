@@ -1,43 +1,158 @@
 import React, { useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
-import { ScrollView, TextInput, View } from "react-native";
+import { ScrollView, TextInput, View, type TextInputProps } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
+import { Avatar } from "../components/ui/Avatar";
 import { PressableScale } from "../components/ui/PressableScale";
-import { brand, ink, surface } from "../theme/colors";
+import { Glyph, type GlyphName } from "../components/icons/Glyph";
+import {
+  AccountSection,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../components/AccountMenu";
+import { AccountBottomBar } from "../components/AccountBottomBar";
+import { brand, iconGrey, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { useAuthStore, type Gender } from "../store/authStore";
 
+const EDGE = 13.5;
 const BIO_MAX = 150;
+const FIELD_H = 48;
+const PLACEHOLDER = "#A0A4AE";
 
-const fieldStyle = {
-  borderWidth: 1.4,
-  borderColor: ink[200],
-  borderRadius: 12,
-  backgroundColor: "rgba(255,255,255,0.55)",
-  paddingHorizontal: 14,
-};
-
-const textStyle = {
-  fontFamily: fontFamilies.regular,
-  fontSize: 14.5,
-  color: ink[900],
+const inputText = {
+  fontFamily: fontFamilies.semibold,
+  fontSize: 15,
+  color: LABEL_INK,
   padding: 0,
-};
+} as const;
 
-/** Icon in its own gutter to the left of the field, as the reference draws it. */
-function FieldRow({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+/** A white field with the cards' border that firms up to brand blue while in use. */
+function useFocusBorder() {
+  const [focused, setFocused] = useState(false);
+  return {
+    focused,
+    handlers: {
+      onFocus: () => setFocused(true),
+      onBlur: () => setFocused(false),
+    },
+    border: {
+      borderWidth: focused ? 1.5 : 1,
+      borderColor: focused ? brand[600] : RULE,
+    },
+  };
+}
+
+function FieldLabel({ children }: { children: string }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-      <View style={{ width: 26, alignItems: "center" }}>{icon}</View>
-      <View style={{ flex: 1 }}>{children}</View>
+    <UiText
+      color={QUIET_INK}
+      style={{
+        marginBottom: 6,
+        fontSize: 12,
+        lineHeight: 16,
+        fontFamily: fontFamilies.medium,
+      }}
+    >
+      {children}
+    </UiText>
+  );
+}
+
+/** One labelled single-line field with its glyph inside, on the left. */
+function Field({
+  label,
+  icon,
+  ...input
+}: { label: string; icon: GlyphName } & TextInputProps) {
+  const f = useFocusBorder();
+  return (
+    <View>
+      <FieldLabel>{label}</FieldLabel>
+      <View
+        style={{
+          height: FIELD_H,
+          borderRadius: 12,
+          backgroundColor: "#FFFFFF",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          paddingHorizontal: 13,
+          ...f.border,
+        }}
+      >
+        <Glyph
+          name={icon}
+          size={19}
+          color={f.focused ? brand[600] : iconGrey}
+        />
+        <TextInput
+          {...input}
+          {...f.handlers}
+          placeholderTextColor={PLACEHOLDER}
+          style={[inputText, { flex: 1 }]}
+        />
+      </View>
     </View>
   );
 }
 
-function Radio({
+function Area({
+  label,
+  height,
+  counter,
+  ...input
+}: {
+  label: string;
+  height: number;
+  counter?: string;
+} & TextInputProps) {
+  const f = useFocusBorder();
+  return (
+    <View>
+      <FieldLabel>{label}</FieldLabel>
+      <TextInput
+        {...input}
+        {...f.handlers}
+        multiline
+        textAlignVertical="top"
+        placeholderTextColor={PLACEHOLDER}
+        style={[
+          inputText,
+          {
+            height,
+            borderRadius: 12,
+            backgroundColor: "#FFFFFF",
+            paddingHorizontal: 13,
+            paddingTop: 13,
+            paddingBottom: 13,
+            ...f.border,
+          },
+        ]}
+      />
+      {counter ? (
+        <UiText
+          color={QUIET_INK}
+          style={{
+            marginTop: 6,
+            textAlign: "right",
+            fontSize: 12,
+            lineHeight: 16,
+            fontFamily: fontFamilies.medium,
+          }}
+        >
+          {counter}
+        </UiText>
+      ) : null}
+    </View>
+  );
+}
+
+/** Two-way choice as pills, the chosen one tinted and ticked. */
+function Choice({
   label,
   selected,
   onPress,
@@ -49,29 +164,33 @@ function Radio({
   return (
     <PressableScale
       onPress={onPress}
-      hitSlop={8}
-      style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+      scaleTo={0.97}
+      style={{
+        flex: 1,
+        height: FIELD_H,
+        borderRadius: FIELD_H / 2,
+        borderWidth: selected ? 1.5 : 1,
+        borderColor: selected ? brand[600] : RULE,
+        backgroundColor: selected ? "#EEF3FF" : "#FFFFFF",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+      }}
     >
-      <View
+      {selected ? (
+        <Glyph name="checkCircle" size={18} color={brand[600]} />
+      ) : null}
+      <UiText
+        color={selected ? brand[800] : LABEL_INK}
         style={{
-          width: 21,
-          height: 21,
-          borderRadius: 11,
-          borderWidth: 2,
-          borderColor: selected ? brand[900] : ink[400],
-          alignItems: "center",
-          justifyContent: "center",
+          fontSize: 15,
+          lineHeight: 19,
+          fontFamily: selected ? fontFamilies.bold : fontFamilies.semibold,
         }}
       >
-        {selected ? (
-          <View
-            style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: brand[900] }}
-          />
-        ) : null}
-      </View>
-      <AppText color={ink[900]} style={{ fontSize: 15, lineHeight: 20 }}>
         {label}
-      </AppText>
+      </UiText>
     </PressableScale>
   );
 }
@@ -87,7 +206,12 @@ export default function EditProfileScreen() {
   const [address, setAddress] = useState(profile.address);
   const [bio, setBio] = useState(profile.bio);
 
-  const location = [profile.village, profile.district, profile.regency, profile.province]
+  const location = [
+    profile.village,
+    profile.district,
+    profile.regency,
+    profile.province,
+  ]
     .filter(Boolean)
     .join(", ");
 
@@ -99,174 +223,156 @@ export default function EditProfileScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Edit Profil" />
+      <AppHeader tone="account" title="Ubah Profil" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 34 }}
+        contentContainerStyle={{
+          paddingHorizontal: EDGE,
+          paddingTop: 24,
+          paddingBottom: 24,
+        }}
       >
         <View style={{ alignItems: "center" }}>
-          <View style={{ width: 120, height: 120 }}>
-            <View
-              style={{
-                width: 120,
-                height: 120,
-                borderRadius: 60,
-                backgroundColor: brand[400],
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-              }}
-            >
-              <AppIcon name="profile" size={80} color={ink[50]} />
-            </View>
+          <View>
+            <Avatar name={name || profile.name} size={92} initialsSize={27} />
             <PressableScale
+              scaleTo={0.92}
               style={{
                 position: "absolute",
-                right: -2,
-                bottom: 2,
-                width: 38,
-                height: 38,
-                borderRadius: 19,
-                backgroundColor: ink[400],
+                right: -4,
+                bottom: -2,
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                borderWidth: 3,
+                borderColor: surface,
+                backgroundColor: brand[600],
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <AppIcon name="camera" size={19} color="#FFFFFF" />
+              <Glyph name="camera" size={16} color="#FFFFFF" />
             </PressableScale>
           </View>
+          <UiText
+            color={QUIET_INK}
+            style={{
+              marginTop: 10,
+              fontSize: 12,
+              lineHeight: 16,
+              fontFamily: fontFamilies.medium,
+            }}
+          >
+            Ketuk kamera untuk ganti foto
+          </UiText>
         </View>
 
-        <View style={{ marginTop: 28, gap: 16 }}>
-          <FieldRow icon={<AppIcon name="profile" size={21} color={ink[500]} />}>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Nama"
-              placeholderTextColor={ink[400]}
-              style={[fieldStyle, textStyle, { height: 50 }]}
-            />
-          </FieldRow>
-
-          <FieldRow icon={<AppIcon name="atSign" size={21} color={ink[500]} />}>
-            <TextInput
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-              placeholder="Username"
-              placeholderTextColor={ink[400]}
-              style={[fieldStyle, textStyle, { height: 50 }]}
-            />
-          </FieldRow>
-
-          <FieldRow icon={<AppIcon name="calendar" size={21} color={ink[500]} />}>
-            <TextInput
-              value={birthDate}
-              onChangeText={setBirthDate}
-              placeholder="Tanggal Lahir"
-              placeholderTextColor={ink[400]}
-              style={[fieldStyle, textStyle, { height: 50 }]}
-            />
-          </FieldRow>
-        </View>
-
-        <AppText color={ink[900]} style={{ marginTop: 22, fontSize: 15, lineHeight: 20 }}>
-          Gender
-        </AppText>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 26, marginTop: 12 }}>
-          <Radio label="Male" selected={gender === "male"} onPress={() => setGender("male")} />
-          <Radio
-            label="Female"
-            selected={gender === "female"}
-            onPress={() => setGender("female")}
+        <AccountSection title="Info akun" />
+        <View style={{ gap: 14 }}>
+          <Field
+            label="Nama"
+            icon="tabProfile"
+            value={name}
+            onChangeText={setName}
+            placeholder="Nama lengkap"
+          />
+          <Field
+            label="Username"
+            icon="atSign"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            placeholder="username"
           />
         </View>
 
-        <PressableScale
-          scaleTo={0.99}
-          onPress={() => router.push("/location-picker")}
-          style={[
-            fieldStyle,
-            {
-              marginTop: 22,
-              height: 58,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-            },
-          ]}
-        >
-          <AppIcon name="pin" size={21} color={ink[500]} />
-          <AppText
-            numberOfLines={1}
-            color={location ? ink[900] : ink[400]}
-            style={{ flex: 1, fontSize: 14.5, lineHeight: 20 }}
-          >
-            {location || "Pilih Lokasi"}
-          </AppText>
-          <AppIcon name="chevronRight" size={19} color={ink[400]} />
-        </PressableScale>
+        <AccountSection title="Data diri" />
+        <View style={{ gap: 14 }}>
+          <Field
+            label="Tanggal lahir"
+            icon="calendar"
+            value={birthDate}
+            onChangeText={setBirthDate}
+            placeholder="DD/MM/YYYY"
+          />
+          <View>
+            <FieldLabel>Jenis kelamin</FieldLabel>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Choice
+                label="Laki-laki"
+                selected={gender === "male"}
+                onPress={() => setGender("male")}
+              />
+              <Choice
+                label="Perempuan"
+                selected={gender === "female"}
+                onPress={() => setGender("female")}
+              />
+            </View>
+          </View>
+        </View>
 
-        <TextInput
-          value={address}
-          onChangeText={setAddress}
-          multiline
-          textAlignVertical="top"
-          placeholder="Alamat"
-          placeholderTextColor={ink[500]}
-          style={[
-            fieldStyle,
-            textStyle,
-            { marginTop: 16, height: 96, paddingTop: 14, paddingBottom: 14 },
-          ]}
-        />
+        <AccountSection title="Alamat" />
+        <View style={{ gap: 14 }}>
+          <View>
+            <FieldLabel>Lokasi</FieldLabel>
+            <PressableScale
+              scaleTo={0.99}
+              onPress={() => router.push("/location-picker")}
+              style={{
+                minHeight: FIELD_H,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: RULE,
+                backgroundColor: "#FFFFFF",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                paddingLeft: 13,
+                paddingRight: 11,
+                paddingVertical: 10,
+              }}
+            >
+              <Glyph name="pin" size={19} color={iconGrey} />
+              <UiText
+                numberOfLines={2}
+                color={location ? LABEL_INK : PLACEHOLDER}
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  lineHeight: 19,
+                  fontFamily: fontFamilies.semibold,
+                }}
+              >
+                {location || "Pilih provinsi sampai kelurahan"}
+              </UiText>
+              <Glyph name="chevronRight" size={15} color={QUIET_INK} />
+            </PressableScale>
+          </View>
+          <Area
+            label="Alamat lengkap"
+            height={96}
+            value={address}
+            onChangeText={setAddress}
+            placeholder="Nama jalan, nomor rumah, RT/RW"
+          />
+        </View>
 
-        <AppText color={ink[900]} style={{ marginTop: 22, fontSize: 15, lineHeight: 20 }}>
-          Bio
-        </AppText>
-        <TextInput
+        <AccountSection title="Tentang kamu" />
+        <Area
+          label="Bio"
+          height={104}
           value={bio}
           onChangeText={(t) => setBio(t.slice(0, BIO_MAX))}
-          multiline
-          textAlignVertical="top"
-          placeholder={`Ceritakan tentang diri Anda (maksimal ${BIO_MAX} karakter)`}
-          placeholderTextColor={ink[300]}
-          style={[
-            fieldStyle,
-            textStyle,
-            { marginTop: 12, height: 108, paddingTop: 14, paddingBottom: 14 },
-          ]}
+          placeholder={`Ceritakan tentang dirimu (maks. ${BIO_MAX} karakter)`}
+          counter={`${bio.length}/${BIO_MAX}`}
         />
-        <AppText
-          variant="caption"
-          color={ink[500]}
-          style={{ marginTop: 8, textAlign: "right", fontSize: 12.5 }}
-        >
-          {bio.length}/{BIO_MAX}
-        </AppText>
-
-        <PressableScale
-          onPress={save}
-          scaleTo={0.98}
-          style={{
-            marginTop: 22,
-            height: 56,
-            borderRadius: 14,
-            backgroundColor: brand[950],
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AppText
-            color="#FFFFFF"
-            style={{ fontSize: 16, lineHeight: 22, fontFamily: "Urbanist_600SemiBold" }}
-          >
-            Update
-          </AppText>
-        </PressableScale>
       </ScrollView>
+
+      {/* Save stays in reach wherever the form is scrolled to. */}
+      <AccountBottomBar label="Simpan" onPress={save} />
     </View>
   );
 }

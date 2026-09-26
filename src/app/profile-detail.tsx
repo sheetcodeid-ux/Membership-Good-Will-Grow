@@ -1,59 +1,44 @@
 import React from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
+import { Avatar } from "../components/ui/Avatar";
 import { PressableScale } from "../components/ui/PressableScale";
-import { brand, ink, surface } from "../theme/colors";
+import { Glyph } from "../components/icons/Glyph";
+import {
+  AccountSection,
+  InfoRows,
+  LABEL_INK,
+  QUIET_INK,
+  WARN_INK,
+} from "../components/AccountMenu";
+import { iconGrey, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { localPhone, useAuthStore } from "../store/authStore";
 
-/** Reference row pitch is 117px at DPR2. */
-const ROW_H = 58.5;
+const EDGE = 13.5;
 
-function Row({ label, children }: { label: string; children?: React.ReactNode }) {
-  return (
-    <View
-      style={{
-        height: ROW_H,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 14,
-      }}
-    >
-      <AppText color={ink[500]} style={{ fontSize: 14, lineHeight: 19 }}>
-        {label}
-      </AppText>
-      <View style={{ flex: 1, alignItems: "flex-end" }}>{children}</View>
-    </View>
-  );
-}
-
-function Value({ text }: { text: string }) {
-  return (
-    <AppText
-      color={ink[900]}
-      numberOfLines={1}
-      style={{ fontSize: 14.5, lineHeight: 20, fontFamily: "Urbanist_500Medium" }}
-    >
-      {text}
-    </AppText>
-  );
-}
-
-/** Purple call to action shown where a field is still empty. */
-function AddLink({ label, onPress }: { label: string; onPress: () => void }) {
+/** The same prompt the profile card shows for a missing email. */
+function AddEmail({ onPress }: { onPress: () => void }) {
   return (
     <PressableScale
       onPress={onPress}
       hitSlop={10}
-      style={{ flexDirection: "row", alignItems: "center", gap: 7 }}
+      style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
     >
-      <AppText color={brand[700]} style={{ fontSize: 14, lineHeight: 19 }}>
-        {label}
-      </AppText>
-      <AppIcon name="plus" size={15} color={brand[700]} />
+      <UiText
+        color={WARN_INK}
+        style={{
+          fontSize: 14,
+          lineHeight: 18,
+          fontFamily: fontFamilies.semibold,
+        }}
+      >
+        Tambahkan email
+      </UiText>
+      <Glyph name="alertCircle" size={14} color={WARN_INK} />
     </PressableScale>
   );
 }
@@ -61,102 +46,115 @@ function AddLink({ label, onPress }: { label: string; onPress: () => void }) {
 export default function ProfileDetailScreen() {
   const profile = useAuthStore();
   const toEdit = () => router.push("/edit-profile");
+  const gender =
+    profile.gender === "male"
+      ? "Laki-laki"
+      : profile.gender === "female"
+        ? "Perempuan"
+        : undefined;
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
       <AppHeader
+        tone="account"
         title="Detail Profil"
         right={
-          <PressableScale onPress={toEdit} hitSlop={12}>
-            <AppText color={brand[700]} style={{ fontSize: 14.5, lineHeight: 20 }}>
-              Edit
-            </AppText>
+          <PressableScale
+            onPress={toEdit}
+            hitSlop={12}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+          >
+            <Glyph name="pencil" size={16} color={iconGrey} />
+            <UiText
+              color={LABEL_INK}
+              style={{
+                fontSize: 14,
+                lineHeight: 18,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
+              Ubah
+            </UiText>
           </PressableScale>
         }
       />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 34 }}
+        contentContainerStyle={{ paddingHorizontal: EDGE, paddingBottom: 40 }}
       >
-        <View style={{ alignItems: "center", paddingTop: 22, paddingBottom: 26, gap: 12 }}>
-          <View
+        <View
+          style={{ alignItems: "center", paddingTop: 24, paddingBottom: 4 }}
+        >
+          <Avatar name={profile.name} size={76} initialsSize={22} />
+          <UiText
+            color={LABEL_INK}
             style={{
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              backgroundColor: brand[400],
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
+              marginTop: 12,
+              fontSize: 18,
+              lineHeight: 23,
+              fontFamily: fontFamilies.extrabold,
             }}
           >
-            <AppIcon name="profile" size={54} color={ink[50]} />
-          </View>
-          <AppText
-            color={ink[900]}
-            style={{ fontSize: 17, lineHeight: 23, fontFamily: "Urbanist_700Bold" }}
-          >
             {profile.name}
-          </AppText>
+          </UiText>
+          <UiText
+            color={QUIET_INK}
+            style={{
+              marginTop: 2,
+              fontSize: 13,
+              lineHeight: 17,
+              fontFamily: fontFamilies.medium,
+            }}
+          >
+            @{profile.username}
+          </UiText>
         </View>
 
-        <Row label="Nama">
-          <Value text={profile.name} />
-        </Row>
-        <Row label="Username">
-          <Value text={profile.username} />
-        </Row>
-        <Row label="Phone number">
-          <Value text={localPhone(profile.phone)} />
-        </Row>
-        <Row label="Email">
-          {profile.email ? (
-            <Value text={profile.email} />
-          ) : (
-            <AddLink label="Tambahkan email" onPress={toEdit} />
-          )}
-        </Row>
-        <Row label="Tgl Lahir">
-          {profile.birthDate ? <Value text={profile.birthDate} /> : null}
-        </Row>
-        <Row label="Jenis kelamin">
-          {profile.gender ? (
-            <Value text={profile.gender === "male" ? "Male" : "Female"} />
-          ) : null}
-        </Row>
-        <Row label="Provinsi">{profile.province ? <Value text={profile.province} /> : null}</Row>
-        <Row label="Kabupaten/Kota">
-          {profile.regency ? <Value text={profile.regency} /> : null}
-        </Row>
-        <Row label="Kecamatan">{profile.district ? <Value text={profile.district} /> : null}</Row>
-        <Row label="Desa/Kelurahan">
-          {profile.village ? <Value text={profile.village} /> : null}
-        </Row>
-        <Row label="Alamat">
-          {profile.address ? (
-            <AppText
-              color={ink[900]}
-              numberOfLines={2}
-              style={{
-                fontSize: 14.5,
-                lineHeight: 20,
-                fontFamily: "Urbanist_500Medium",
-                textAlign: "right",
-              }}
-            >
-              {profile.address}
-            </AppText>
-          ) : null}
-        </Row>
-        <Row label="PIN Akses">
-          <PressableScale onPress={() => router.push("/create-pin")} hitSlop={10}>
-            <AppText color={brand[700]} style={{ fontSize: 14.5, lineHeight: 20 }}>
-              Ubah PIN
-            </AppText>
-          </PressableScale>
-        </Row>
+        <AccountSection title="Info akun" />
+        <InfoRows
+          rows={[
+            { label: "Nama", value: profile.name },
+            { label: "Username", value: profile.username },
+            { label: "Nomor HP", value: localPhone(profile.phone) },
+            {
+              label: "Email",
+              value: profile.email,
+              placeholder: <AddEmail onPress={toEdit} />,
+            },
+          ]}
+        />
+
+        <AccountSection title="Data diri" />
+        <InfoRows
+          rows={[
+            { label: "Tanggal lahir", value: profile.birthDate },
+            { label: "Jenis kelamin", value: gender },
+          ]}
+        />
+
+        <AccountSection title="Alamat" />
+        <InfoRows
+          rows={[
+            { label: "Provinsi", value: profile.province },
+            { label: "Kabupaten/Kota", value: profile.regency },
+            { label: "Kecamatan", value: profile.district },
+            { label: "Desa/Kelurahan", value: profile.village },
+            { label: "Alamat", value: profile.address, multiline: true },
+          ]}
+        />
+
+        <AccountSection title="Keamanan" />
+        <InfoRows
+          rows={[
+            {
+              label: "PIN akses",
+              value: "Ubah PIN",
+              onPress: () => router.push("/create-pin"),
+            },
+          ]}
+        />
       </ScrollView>
     </View>
   );

@@ -1,116 +1,128 @@
 import React, { useState } from "react";
 import { TextInput, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import Svg, { Path, Rect } from "react-native-svg";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
-import { EmptyState } from "../components/ui/EmptyState";
 import { PressableScale } from "../components/ui/PressableScale";
-import { GiftGlyph } from "../components/AccountIcons";
-import { brand, ink, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { Glyph } from "../components/icons/Glyph";
+import { AccountEmpty } from "../components/EmptyArt";
+import {
+  AccountCard,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../components/AccountMenu";
+import { brand, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 
-/** Outlined gift box, the mark the reference uses for the empty list. */
-function EmptyGift({ size = 92 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size * 0.86} viewBox="0 0 24 21">
-      <Path
-        d="M12 5.6C10.5 2.5 8.7 1.2 7.2 2c-1.5.8-1.2 2.9.6 3.6m4.2 0c1.5-3.1 3.3-4.4 4.8-3.6 1.5.8 1.2 2.9-.6 3.6"
-        stroke={ink[300]}
-        strokeWidth={1.7}
-        strokeLinecap="round"
-        fill="none"
-      />
-      <Rect
-        x={3.1}
-        y={5.7}
-        width={17.8}
-        height={14.2}
-        rx={1.6}
-        stroke={ink[300]}
-        strokeWidth={1.7}
-        fill="none"
-      />
-      <Path d="M3.1 11.2h17.8M3.1 15h17.8" stroke={ink[300]} strokeWidth={1.7} />
-    </Svg>
-  );
-}
+const EDGE = 13.5;
+const FIELD_H = 46;
 
 export default function VouchersScreen() {
   const [code, setCode] = useState("");
+  const [focused, setFocused] = useState(false);
+  const ready = code.trim().length > 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Voucher Saya" />
+      <AppHeader tone="account" title="Voucher Saya" />
 
-      <View
-        style={{
-          margin: 16,
-          backgroundColor: "#FFFFFF",
-          borderRadius: 16,
-          padding: 16,
-          ...(shadow.xs as object),
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 11 }}>
-          <GiftGlyph size={22} color={brand[900]} detail="#FFFFFF" />
-          <AppText
-            color={ink[900]}
-            style={{ fontSize: 16.5, lineHeight: 22, fontFamily: "Urbanist_700Bold" }}
-          >
-            Punya Kode Voucher?
-          </AppText>
-        </View>
-
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 14 }}>
-          <TextInput
-            value={code}
-            onChangeText={setCode}
-            autoCapitalize="characters"
-            placeholder="Masukkan kode voucher"
-            placeholderTextColor={ink[300]}
-            style={{
-              flex: 1,
-              height: 50,
-              borderRadius: 11,
-              borderWidth: 1.4,
-              borderColor: ink[200],
-              backgroundColor: ink[50],
-              paddingHorizontal: 14,
-              padding: 0,
-              fontFamily: fontFamilies.regular,
-              fontSize: 14.5,
-              color: ink[900],
-            }}
-          />
-          <PressableScale
-            scaleTo={0.97}
-            style={{
-              height: 50,
-              paddingHorizontal: 24,
-              borderRadius: 11,
-              backgroundColor: brand[950],
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <AppText
-              color="#FFFFFF"
-              style={{ fontSize: 15, lineHeight: 20, fontFamily: "Urbanist_600SemiBold" }}
+      <View style={{ paddingHorizontal: EDGE, paddingTop: 16 }}>
+        <AccountCard style={{ padding: 14 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                backgroundColor: "#FFF3C4",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              Klaim
-            </AppText>
-          </PressableScale>
-        </View>
+              <Glyph name="gift" size={18} color="#702B00" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  fontSize: 15,
+                  lineHeight: 19,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                Punya kode voucher?
+              </UiText>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  marginTop: 1,
+                  fontSize: 12.5,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                Masukkan kodenya untuk menukar voucher.
+              </UiText>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
+            <TextInput
+              value={code}
+              onChangeText={setCode}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              autoCapitalize="characters"
+              placeholder="Contoh: GWG2026"
+              placeholderTextColor="#A0A4AE"
+              style={{
+                flex: 1,
+                height: FIELD_H,
+                borderRadius: 12,
+                borderWidth: focused ? 1.5 : 1,
+                borderColor: focused ? brand[600] : RULE,
+                backgroundColor: "#FFFFFF",
+                paddingHorizontal: 13,
+                fontFamily: fontFamilies.semibold,
+                fontSize: 15,
+                letterSpacing: code ? 1 : 0,
+                color: LABEL_INK,
+              }}
+            />
+            <PressableScale
+              scaleTo={0.97}
+              disabled={!ready}
+              style={{
+                height: FIELD_H,
+                paddingHorizontal: 22,
+                borderRadius: FIELD_H / 2,
+                backgroundColor: brand[600],
+                opacity: ready ? 1 : 0.4,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <UiText
+                color="#FFFFFF"
+                style={{
+                  fontSize: 15,
+                  lineHeight: 19,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                Klaim
+              </UiText>
+            </PressableScale>
+          </View>
+        </AccountCard>
       </View>
 
-      <EmptyState
-        icon={<EmptyGift />}
+      <AccountEmpty
+        glyph="gift"
         title="Belum ada voucher"
-        subtitle="Voucher yang kamu klaim akan muncul di sini"
-        style={{ marginTop: -60 }}
+        subtitle="Voucher yang berhasil kamu klaim akan tersimpan di sini."
       />
     </View>
   );

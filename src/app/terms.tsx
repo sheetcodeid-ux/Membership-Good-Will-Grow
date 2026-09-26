@@ -1,53 +1,38 @@
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
-import { brand, ink, surface } from "../theme/colors";
+import {
+  LegalBody,
+  LegalBullets,
+  LegalCard,
+  LegalHeading,
+  LegalIntro,
+  updatedLabel,
+} from "../components/LegalDoc";
+import { LABEL_INK } from "../components/AccountMenu";
+import { surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { memberTiers } from "../data/mock";
-import { TERMS_UPDATED_AT, termsSections, type TermsSection } from "../data/terms";
+import {
+  TERMS_UPDATED_AT,
+  termsSections,
+  type TermsSection,
+} from "../data/terms";
 import { formatRupiah } from "../utils/format";
-
-const bodyStyle = { lineHeight: 21, textAlign: "justify" as const };
-
-function Body({ children }: { children: React.ReactNode }) {
-  return (
-    <AppText variant="body" color={brand[800]} style={bodyStyle}>
-      {children}
-    </AppText>
-  );
-}
-
-function Bullets({ items }: { items: string[] }) {
-  return (
-    <View style={{ gap: 7 }}>
-      {items.map((item) => (
-        <View key={item} style={{ flexDirection: "row", gap: 9, paddingLeft: 4 }}>
-          <AppText variant="body" color={brand[800]}>
-            •
-          </AppText>
-          <AppText variant="body" color={brand[800]} style={[bodyStyle, { flex: 1 }]}>
-            {item}
-          </AppText>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function Rule() {
-  return <View style={{ height: 1, backgroundColor: ink[200], marginVertical: 18 }} />;
-}
 
 function Section({ section }: { section: TermsSection }) {
   return (
-    <View style={{ gap: 12 }}>
-      <AppText variant="h3" color={brand[800]}>
-        {section.heading}
-      </AppText>
-      {section.paragraphs?.map((p) => <Body key={p}>{p}</Body>)}
-      {section.bullets ? <Bullets items={section.bullets} /> : null}
-      {section.footnotes?.map((p) => <Body key={p}>{p}</Body>)}
+    <View style={{ gap: 10 }}>
+      <LegalHeading>{section.heading}</LegalHeading>
+      {section.paragraphs?.map((p) => (
+        <LegalBody key={p}>{p}</LegalBody>
+      ))}
+      {section.bullets ? <LegalBullets items={section.bullets} /> : null}
+      {section.footnotes?.map((p) => (
+        <LegalBody key={p}>{p}</LegalBody>
+      ))}
     </View>
   );
 }
@@ -55,30 +40,39 @@ function Section({ section }: { section: TermsSection }) {
 /** Clause 7 is generated from the tier data so the two can never drift apart. */
 function LevelingSection() {
   return (
-    <View style={{ gap: 12 }}>
-      <AppText variant="h3" color={brand[800]}>
-        7. Ketentuan Leveling Membership
-      </AppText>
-      <Body>
+    <View style={{ gap: 10 }}>
+      <LegalHeading>7. Ketentuan Leveling Membership</LegalHeading>
+      <LegalBody>
         Good Will Grow memiliki {memberTiers.length} level membership, yaitu:{" "}
         {memberTiers.map((t) => t.name.toUpperCase()).join(", ")}.
-      </Body>
-      <Body>Setiap levelnya memiliki ketentuan dan benefit yang berbeda, yaitu :</Body>
+      </LegalBody>
+      <LegalBody>
+        Setiap level memiliki ketentuan dan benefit yang berbeda, yaitu:
+      </LegalBody>
 
       {memberTiers.map((tier) => (
         <View key={tier.id} style={{ gap: 10, marginTop: 6 }}>
-          <AppText variant="bodySemibold" color={brand[800]}>
+          <UiText
+            color={LABEL_INK}
+            style={{
+              fontSize: 14,
+              lineHeight: 19,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
             {tier.name.toUpperCase()}
-          </AppText>
+          </UiText>
           {tier.minTransactions === 0 ? (
-            <Body>
-              Level ini merupakan level default. Setiap member yang mendaftar akan berada di level
-              ini.
-            </Body>
+            <LegalBody>
+              Level ini merupakan level default. Setiap member yang mendaftar
+              akan berada di level ini.
+            </LegalBody>
           ) : (
             <>
-              <Body>Untuk naik ke level ini, Anda harus memenuhi kriteria berikut :</Body>
-              <Bullets
+              <LegalBody>
+                Untuk naik ke level ini, Anda harus memenuhi kriteria berikut:
+              </LegalBody>
+              <LegalBullets
                 items={[
                   `Melakukan ${tier.minTransactions}x transaksi`,
                   `Belanja minimal ${formatRupiah(tier.minSpend)}`,
@@ -86,8 +80,8 @@ function LevelingSection() {
               />
             </>
           )}
-          <Body>Benefit :</Body>
-          <Bullets items={tier.perks} />
+          <LegalBody>Benefit:</LegalBody>
+          <LegalBullets items={tier.perks} />
         </View>
       ))}
     </View>
@@ -101,44 +95,30 @@ export default function TermsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Syarat & Ketentuan" />
+      <AppHeader tone="account" title="Syarat & Ketentuan" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: 13.5,
+          paddingTop: 16,
+          paddingBottom: 40,
+        }}
       >
-        <AppText
-          center
-          color={brand[800]}
-          style={{ fontSize: 26, lineHeight: 33, fontFamily: "Urbanist_800ExtraBold" }}
-        >
-          Terms & Conditions.
-        </AppText>
-        <AppText variant="body" color={brand[700]} center style={{ marginTop: 8 }}>
-          Syarat dan Ketentuan Good Will Grow
-        </AppText>
-        <AppText variant="body" color={brand[700]} center>
-          Pembaharuan Terakhir : {TERMS_UPDATED_AT}
-        </AppText>
-
-        <View style={{ height: 28 }} />
-
-        {before.map((section, i) => (
-          <View key={section.heading}>
-            <Section section={section} />
-            {i < before.length - 1 ? <Rule /> : null}
-          </View>
-        ))}
-
-        <Rule />
-        <LevelingSection />
-
-        {after.map((section) => (
-          <View key={section.heading}>
-            <Rule />
-            <Section section={section} />
-          </View>
-        ))}
+        <LegalIntro
+          glyph="doc"
+          title="Syarat dan Ketentuan Good Will Grow"
+          subtitle={updatedLabel(TERMS_UPDATED_AT)}
+        />
+        <LegalCard>
+          {before.map((section) => (
+            <Section key={section.heading} section={section} />
+          ))}
+          <LevelingSection />
+          {after.map((section) => (
+            <Section key={section.heading} section={section} />
+          ))}
+        </LegalCard>
       </ScrollView>
     </View>
   );

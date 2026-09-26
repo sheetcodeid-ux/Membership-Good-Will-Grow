@@ -1,124 +1,94 @@
 import React, { useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
+import { Glyph } from "../components/icons/Glyph";
+import { AccountSection } from "../components/AccountMenu";
+import { AccountBottomBar } from "../components/AccountBottomBar";
+import { LegalBullets } from "../components/LegalDoc";
 import { AppHeader } from "../components/ui/AppHeader";
-import { PressableScale } from "../components/ui/PressableScale";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { brand, ink, success, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { useAuthStore } from "../store/authStore";
 
 const consequences = [
-  "Akun mu tidak bisa dicari oleh member lain.",
+  "Akunmu tidak bisa dicari oleh member lain.",
   "Komentar kamu sebelumnya tidak akan muncul di feed.",
   "Postingan akan disembunyikan dari timeline feed.",
   "Tidak bisa di-mention oleh member lain.",
 ];
 
-function Bullet({ text }: { text: string }) {
-  return (
-    <View style={{ flexDirection: "row", gap: 12 }}>
-      <View
-        style={{
-          width: 7,
-          height: 7,
-          borderRadius: 3.5,
-          backgroundColor: ink[300],
-          marginTop: 7,
-        }}
-      />
-      <AppText color={ink[400]} style={{ flex: 1, fontSize: 14, lineHeight: 21 }}>
-        {text}
-      </AppText>
-    </View>
-  );
-}
-
 export default function DeactivateAccountScreen() {
-  const insets = useSafeAreaInsets();
   const logout = useAuthStore((s) => s.logout);
   const [confirm, setConfirm] = useState(false);
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Nonaktifkan Akun Sementara" />
+      <AppHeader tone="account" title="Nonaktifkan Akun" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 13.5, paddingBottom: 24 }}
       >
-        <AppText
-          color={ink[900]}
-          style={{ fontSize: 17, lineHeight: 24, fontFamily: "Urbanist_700Bold" }}
+        <AccountSection title="Yang terjadi jika akun dinonaktifkan" />
+        <View
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: "#E6E6E6",
+            padding: 16,
+          }}
         >
-          Hal yang terjadi jika akun dinonaktifkan :
-        </AppText>
-
-        <View style={{ marginTop: 18, gap: 16 }}>
-          {consequences.map((text) => (
-            <Bullet key={text} text={text} />
-          ))}
+          <LegalBullets items={consequences} />
         </View>
 
         <View
           style={{
-            marginTop: 26,
-            borderRadius: 14,
-            borderWidth: 1.3,
-            borderColor: "#B7E4C2",
+            marginTop: 14,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: "#CDEBD7",
             backgroundColor: success[50],
             padding: 16,
-            gap: 8,
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <AppIcon name="checkCircle" size={21} color={success[600]} />
-            <AppText
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Glyph name="checkCircle" size={18} color={success[600]} />
+            <UiText
               color={success[600]}
-              style={{ fontSize: 16, lineHeight: 22, fontFamily: "Urbanist_700Bold" }}
+              style={{
+                fontSize: 15,
+                lineHeight: 19,
+                fontFamily: fontFamilies.bold,
+              }}
             >
-              Cara Mengaktifkan Kembali
-            </AppText>
+              Cara mengaktifkan kembali
+            </UiText>
           </View>
-          <AppText color={success[600]} style={{ fontSize: 14, lineHeight: 21 }}>
-            Cukup login ulang menggunakan nomor HP dan pin Good Will Grow kamu. Selanjutnya kamu
-            akan dikirimkan OTP untuk verifikasi. Jika berhasil, kamu akan mendapatkan akses
-            kembali ke semua data dan postingan.
-          </AppText>
+          <UiText
+            color="#1F5F37"
+            style={{
+              marginTop: 8,
+              fontSize: 14,
+              lineHeight: 21,
+              fontFamily: fontFamilies.regular,
+            }}
+          >
+            Cukup masuk lagi dengan nomor HP dan PIN Good Will Grow kamu. Kami
+            kirimkan kode OTP untuk verifikasi, lalu semua data dan postinganmu
+            kembali seperti semula.
+          </UiText>
         </View>
       </ScrollView>
 
-      <View
-        style={{
-          paddingHorizontal: 20,
-          paddingTop: 12,
-          paddingBottom: insets.bottom + 14,
-          backgroundColor: surface,
-        }}
-      >
-        <PressableScale
-          onPress={() => setConfirm(true)}
-          scaleTo={0.98}
-          style={{
-            height: 56,
-            borderRadius: 14,
-            backgroundColor: brand[950],
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AppText
-            color="#FFFFFF"
-            style={{ fontSize: 16.5, lineHeight: 22, fontFamily: "Urbanist_600SemiBold" }}
-          >
-            Nonaktifkan Akun
-          </AppText>
-        </PressableScale>
-      </View>
+      <AccountBottomBar
+        label="Nonaktifkan akun"
+        onPress={() => setConfirm(true)}
+      />
 
       {confirm ? (
         <ConfirmDialog
@@ -128,7 +98,7 @@ export default function DeactivateAccountScreen() {
           cancelLabel="Batal"
           confirmLabel="Ya, Nonaktifkan"
           cancelColor={ink[400]}
-          confirmColor={brand[950]}
+          confirmColor={brand[600]}
           onCancel={() => setConfirm(false)}
           onConfirm={() => {
             setConfirm(false);

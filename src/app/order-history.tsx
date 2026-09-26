@@ -1,18 +1,20 @@
 import React, { useMemo, useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
 import { BottomSheet } from "../components/ui/BottomSheet";
-import { EmptyState } from "../components/ui/EmptyState";
+import { UiText } from "../components/ui/Text";
+import { Glyph, type GlyphName } from "../components/icons/Glyph";
+import { AccountEmpty } from "../components/EmptyArt";
+import { LABEL_INK, QUIET_INK, RULE } from "../components/AccountMenu";
 import { PressableScale } from "../components/ui/PressableScale";
 import { BrandLogo } from "../components/BrandLogo";
 import { OptionRow } from "../components/OptionRow";
-import { InfinityIcon, channelMeta, statusMeta, StatusIcon } from "../components/OrderIcons";
+import { channelMeta, statusMeta } from "../components/OrderIcons";
 import { brand, ink, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
 import { brands, orders, outlets } from "../data/mock";
 import { useOrderStore } from "../store/orderStore";
@@ -26,18 +28,45 @@ const serviceLabels: Record<ServiceType, string> = {
   delivery: "Delivery",
 };
 
-const statusOrder: OrderStatus[] = ["dibayar", "belum-bayar", "ditahan", "dibatalkan"];
-const channelOrder: OrderChannel[] = ["member-apps", "kiosk", "pos", "qr-dine-in"];
+const statusOrder: OrderStatus[] = [
+  "dibayar",
+  "belum-bayar",
+  "ditahan",
+  "dibatalkan",
+];
+const channelOrder: OrderChannel[] = [
+  "member-apps",
+  "kiosk",
+  "pos",
+  "qr-dine-in",
+];
 
+const EDGE = 13.5;
+const META_INK = "#8A8F99";
+
+/** A 6-digit hex at the given alpha, for tints drawn from a status colour. */
+function alpha(hex: string, a: number) {
+  return `${hex}${Math.round(a * 255)
+    .toString(16)
+    .padStart(2, "0")}`;
+}
+
+/**
+ * Filter chip. Firms up to brand blue once it narrows the list, so a
+ * filtered view never passes for the whole history.
+ */
 function FilterPill({
   icon,
   label,
+  active,
   onPress,
 }: {
-  icon: React.ReactNode;
+  icon: GlyphName;
   label: string;
+  active: boolean;
   onPress: () => void;
 }) {
+  const tone = active ? brand[700] : LABEL_INK;
   return (
     <PressableScale
       onPress={onPress}
@@ -45,21 +74,80 @@ function FilterPill({
       style={{
         flexDirection: "row",
         alignItems: "center",
-        gap: 7,
+        gap: 6,
         height: 34,
-        paddingHorizontal: 13,
+        paddingLeft: 11,
+        paddingRight: 10,
         borderRadius: 17,
-        borderWidth: 1.5,
-        borderColor: ink[200],
-        backgroundColor: "#FFFFFF",
+        borderWidth: active ? 1.5 : 1,
+        borderColor: active ? brand[600] : RULE,
+        backgroundColor: active ? "#EEF3FF" : "#FFFFFF",
       }}
     >
-      {icon}
-      <AppText variant="bodyMedium" color={ink[800]}>
+      <Glyph name={icon} size={15} color={active ? brand[700] : QUIET_INK} />
+      <UiText
+        color={tone}
+        style={{
+          fontSize: 13,
+          lineHeight: 17,
+          fontFamily: fontFamilies.semibold,
+        }}
+      >
         {label}
-      </AppText>
-      <AppIcon name="chevronRight" rotate={90} size={14} color={ink[500]} />
+      </UiText>
+      <Glyph name="chevronRight" rotate={90} size={11} color={tone} />
     </PressableScale>
+  );
+}
+
+/** One quiet line of order detail with its glyph. */
+function MetaLine({
+  icon,
+  children,
+}: {
+  icon: GlyphName;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <Glyph name={icon} size={14} color={META_INK} />
+      <UiText
+        color={QUIET_INK}
+        numberOfLines={1}
+        style={{
+          flex: 1,
+          fontSize: 13,
+          lineHeight: 17,
+          fontFamily: fontFamilies.medium,
+        }}
+      >
+        {children}
+      </UiText>
+    </View>
+  );
+}
+
+function Tag({ label, tone }: { label: string; tone: "grey" | "brand" }) {
+  return (
+    <View
+      style={{
+        backgroundColor: tone === "brand" ? "#EEF3FF" : "#F2F3F5",
+        borderRadius: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+      }}
+    >
+      <UiText
+        color={tone === "brand" ? brand[700] : QUIET_INK}
+        style={{
+          fontSize: 12,
+          lineHeight: 16,
+          fontFamily: fontFamilies.semibold,
+        }}
+      >
+        {label}
+      </UiText>
+    </View>
   );
 }
 
@@ -76,69 +164,90 @@ export default function OrderHistoryScreen() {
         (o) =>
           (!filters.channel || o.channel === filters.channel) &&
           (!filters.status || o.status === filters.status) &&
-          (!filters.outletId || o.outletId === filters.outletId)
+          (!filters.outletId || o.outletId === filters.outletId),
       ),
-    [filters]
+    [filters],
   );
 
   const sheetOutlets = useMemo(() => {
     const q = outletQuery.trim().toLowerCase();
     return outlets
       .filter((o) => (q || !outletBrandId ? true : o.brandId === outletBrandId))
-      .filter((o) => !q || o.name.toLowerCase().includes(q) || o.address.toLowerCase().includes(q));
+      .filter(
+        (o) =>
+          !q ||
+          o.name.toLowerCase().includes(q) ||
+          o.address.toLowerCase().includes(q),
+      );
   }, [outletBrandId, outletQuery]);
 
-  const channelLabel = filters.channel ? channelMeta[filters.channel].label : "Semua Channel";
-  const statusLabel = filters.status ? statusMeta[filters.status].label : "Semua Status";
+  const channelLabel = filters.channel
+    ? channelMeta[filters.channel].label
+    : "Semua Channel";
+  const statusLabel = filters.status
+    ? statusMeta[filters.status].label
+    : "Semua Status";
   const outletLabel = filters.outletId
-    ? outlets.find((o) => o.id === filters.outletId)?.name ?? "Semua Outlet"
+    ? (outlets.find((o) => o.id === filters.outletId)?.name ?? "Semua Outlet")
     : "Semua Outlet";
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Riwayat Pesanan" />
+      <AppHeader tone="account" title="Riwayat Pesanan" />
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 13, gap: 10 }}
+        contentContainerStyle={{
+          paddingHorizontal: EDGE,
+          paddingVertical: 12,
+          gap: 8,
+        }}
         // Explicit height: a horizontal list inside a column flex parent
         // otherwise measures as zero on web and the cards ride over it.
-        style={{ flexGrow: 0, height: 60 }}
+        style={{ flexGrow: 0, height: 58 }}
       >
         <FilterPill
-          icon={<InfinityIcon size={16} color={ink[600]} />}
+          icon="infinity"
           label={channelLabel}
+          active={!!filters.channel}
           onPress={() => setSheet("channel")}
         />
         <FilterPill
-          icon={<AppIcon name="member" size={16} color={ink[600]} />}
+          icon="checkCircle"
           label={statusLabel}
+          active={!!filters.status}
           onPress={() => setSheet("status")}
         />
         <FilterPill
-          icon={<AppIcon name="store" size={16} color={ink[600]} />}
+          icon="store"
           label={outletLabel}
+          active={!!filters.outletId}
           onPress={() => setSheet("outlet")}
         />
       </ScrollView>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 26, gap: 12, flexGrow: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: EDGE,
+          paddingBottom: 30,
+          gap: 10,
+          flexGrow: 1,
+        }}
       >
         {visible.length === 0 ? (
-          <EmptyState
-            icon={<AppIcon name="receipt" size={54} color={ink[300]} />}
+          <AccountEmpty
+            glyph="receipt"
             title="Belum ada pesanan"
-            subtitle="Pesanan yang cocok dengan filter ini belum ada."
-            style={{ paddingTop: 60 }}
+            subtitle="Pesanan yang cocok dengan filter ini belum ada. Coba ubah filternya."
           />
         ) : null}
 
         {visible.map((o) => {
           const meta = statusMeta[o.status];
+          const items = o.lines.reduce((n, l) => n + l.qty, 0);
           return (
             <PressableScale
               key={o.id}
@@ -146,87 +255,115 @@ export default function OrderHistoryScreen() {
               scaleTo={0.99}
               style={{
                 backgroundColor: "#FFFFFF",
-                borderRadius: 15,
-                padding: 14,
-                gap: 8,
-                ...(shadow.xs as object),
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: RULE,
+                paddingHorizontal: 14,
+                paddingTop: 12,
+                paddingBottom: 12,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View
                   style={{
-                    borderWidth: 1.4,
-                    borderColor: meta.tint,
-                    borderRadius: 15,
-                    paddingHorizontal: 12,
-                    paddingVertical: 5,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 5,
+                    backgroundColor: alpha(meta.tint, 0.1),
+                    borderRadius: 12,
+                    paddingLeft: 7,
+                    paddingRight: 9,
+                    height: 24,
                   }}
                 >
-                  <AppText variant="bodySemibold" color={meta.tint}>
+                  <Glyph
+                    name={meta.icon as GlyphName}
+                    size={12}
+                    color={meta.tint}
+                  />
+                  <UiText
+                    color={meta.tint}
+                    style={{
+                      fontSize: 12,
+                      lineHeight: 16,
+                      fontFamily: fontFamilies.bold,
+                    }}
+                  >
                     {meta.label}
-                  </AppText>
+                  </UiText>
                 </View>
                 <View style={{ flex: 1 }} />
-                <AppText variant="caption" color={ink[500]}>
+                <UiText
+                  color={QUIET_INK}
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
                   {o.createdAt}
-                </AppText>
+                </UiText>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <BrandLogo brandId={o.brandId} size={19} />
-                <AppText variant="h3" numberOfLines={1} style={{ flex: 1 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 9,
+                  marginTop: 10,
+                }}
+              >
+                <BrandLogo brandId={o.brandId} size={20} />
+                <UiText
+                  color={LABEL_INK}
+                  numberOfLines={1}
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    lineHeight: 20,
+                    fontFamily: fontFamilies.bold,
+                  }}
+                >
                   {o.outletName}
-                </AppText>
+                </UiText>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <AppIcon name="receipt" size={15} color={ink[400]} />
-                <AppText variant="body" color={ink[400]} numberOfLines={1} style={{ flex: 1 }}>
-                  {o.nota}
-                </AppText>
+              <View style={{ gap: 5, marginTop: 8 }}>
+                <MetaLine icon="receipt">{o.nota}</MetaLine>
+                <MetaLine icon="hash">Kode pesanan {o.orderCode}</MetaLine>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <AppIcon name="hash" size={15} color={ink[400]} />
-                <AppText variant="body" color={ink[400]}>
-                  Kode Pesanan : {o.orderCode}
-                </AppText>
-              </View>
+              <View
+                style={{ height: 1, backgroundColor: RULE, marginVertical: 10 }}
+              />
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <AppIcon name="order" size={15} color={ink[400]} />
-                <AppText variant="body" color={ink[500]} style={{ flex: 1 }}>
-                  {o.lines.reduce((n, l) => n + l.qty, 0)} item
-                </AppText>
-                <AppText variant="h3" color={brand[800]}>
-                  {formatRupiah(o.paid)}
-                </AppText>
-              </View>
-
-              <View style={{ flexDirection: "row", gap: 8, marginTop: 2 }}>
-                <View
-                  style={{
-                    backgroundColor: ink[50],
-                    borderRadius: 8,
-                    paddingHorizontal: 9,
-                    paddingVertical: 5,
-                  }}
-                >
-                  <AppText variant="caption" color={ink[600]}>
-                    {serviceLabels[o.serviceType]}
-                  </AppText>
-                </View>
-                <View
-                  style={{
-                    backgroundColor: brand[50],
-                    borderRadius: 8,
-                    paddingHorizontal: 9,
-                    paddingVertical: 5,
-                  }}
-                >
-                  <AppText variant="caption" color={brand[700]}>
-                    {channelMeta[o.channel].label}
-                  </AppText>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              >
+                <Tag label={serviceLabels[o.serviceType]} tone="grey" />
+                <Tag label={channelMeta[o.channel].label} tone="brand" />
+                <View style={{ flex: 1 }} />
+                <View style={{ alignItems: "flex-end" }}>
+                  <UiText
+                    color={QUIET_INK}
+                    style={{
+                      fontSize: 11.5,
+                      lineHeight: 14,
+                      fontFamily: fontFamilies.medium,
+                    }}
+                  >
+                    {items} item
+                  </UiText>
+                  <UiText
+                    color={LABEL_INK}
+                    style={{
+                      fontSize: 16,
+                      lineHeight: 20,
+                      fontFamily: fontFamilies.extrabold,
+                    }}
+                  >
+                    {formatRupiah(o.paid)}
+                  </UiText>
                 </View>
               </View>
             </PressableScale>
@@ -235,13 +372,28 @@ export default function OrderHistoryScreen() {
       </ScrollView>
 
       {sheet === "channel" ? (
-        <BottomSheet title="Pilih Channel" onClose={() => setSheet(null)} maxHeightRatio={0.7}>
+        <BottomSheet
+          title="Pilih Channel"
+          onClose={() => setSheet(null)}
+          maxHeightRatio={0.7}
+        >
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 16, gap: 4 }}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 10,
+              paddingBottom: 16,
+              gap: 4,
+            }}
           >
             <OptionRow
-              icon={<InfinityIcon size={24} color={filters.channel ? ink[600] : brand[700]} />}
+              icon={
+                <Glyph
+                  name="infinity"
+                  size={22}
+                  color={filters.channel ? ink[600] : brand[700]}
+                />
+              }
               title="Semua Channel"
               description="Tampilkan pesanan dari semua channel"
               selected={!filters.channel}
@@ -256,7 +408,13 @@ export default function OrderHistoryScreen() {
               return (
                 <OptionRow
                   key={key}
-                  icon={<AppIcon name={icon} size={24} color={selected ? brand[700] : ink[600]} />}
+                  icon={
+                    <Glyph
+                      name={icon as GlyphName}
+                      size={22}
+                      color={selected ? brand[700] : ink[600]}
+                    />
+                  }
                   title={label}
                   description={description}
                   selected={selected}
@@ -272,13 +430,28 @@ export default function OrderHistoryScreen() {
       ) : null}
 
       {sheet === "status" ? (
-        <BottomSheet title="Pilih Status" onClose={() => setSheet(null)} maxHeightRatio={0.7}>
+        <BottomSheet
+          title="Pilih Status"
+          onClose={() => setSheet(null)}
+          maxHeightRatio={0.7}
+        >
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 16, gap: 4 }}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 10,
+              paddingBottom: 16,
+              gap: 4,
+            }}
           >
             <OptionRow
-              icon={<InfinityIcon size={24} color={filters.status ? ink[600] : brand[700]} />}
+              icon={
+                <Glyph
+                  name="infinity"
+                  size={22}
+                  color={filters.status ? ink[600] : brand[700]}
+                />
+              }
               title="Semua Status"
               description="Tampilkan pesanan dengan semua status"
               selected={!filters.status}
@@ -290,7 +463,13 @@ export default function OrderHistoryScreen() {
             {statusOrder.map((key) => (
               <OptionRow
                 key={key}
-                icon={<StatusIcon status={key} size={21} color={filters.status === key ? brand[700] : ink[600]} />}
+                icon={
+                  <Glyph
+                    name={statusMeta[key].icon as GlyphName}
+                    size={21}
+                    color={filters.status === key ? brand[700] : ink[600]}
+                  />
+                }
                 title={statusMeta[key].label}
                 description={statusMeta[key].description}
                 selected={filters.status === key}
@@ -305,7 +484,11 @@ export default function OrderHistoryScreen() {
       ) : null}
 
       {sheet === "outlet" ? (
-        <BottomSheet title="Pilih Outlet" onClose={() => setSheet(null)} maxHeightRatio={0.82}>
+        <BottomSheet
+          title="Pilih Outlet"
+          onClose={() => setSheet(null)}
+          maxHeightRatio={0.82}
+        >
           <View style={{ paddingHorizontal: 22, paddingTop: 12 }}>
             <View
               style={{
@@ -318,7 +501,7 @@ export default function OrderHistoryScreen() {
                 height: 50,
               }}
             >
-              <AppIcon name="search" size={18} color={ink[400]} />
+              <Glyph name="search" size={18} color={ink[400]} />
               <TextInput
                 value={outletQuery}
                 onChangeText={setOutletQuery}
@@ -333,7 +516,9 @@ export default function OrderHistoryScreen() {
                     fontSize: 15,
                     color: ink[900],
                   },
-                  Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
+                  Platform.OS === "web"
+                    ? ({ outlineStyle: "none" } as object)
+                    : null,
                 ]}
               />
             </View>
@@ -342,7 +527,11 @@ export default function OrderHistoryScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 22, paddingVertical: 14, gap: 10 }}
+            contentContainerStyle={{
+              paddingHorizontal: 22,
+              paddingVertical: 14,
+              gap: 10,
+            }}
             style={{ flexGrow: 0 }}
           >
             <PressableScale
@@ -360,8 +549,11 @@ export default function OrderHistoryScreen() {
                 backgroundColor: outletBrandId ? "#FFFFFF" : brand[900],
               }}
             >
-              <AppText variant="captionMedium" color={outletBrandId ? ink[600] : "#FFFFFF"}>
-                ALL
+              <AppText
+                variant="captionMedium"
+                color={outletBrandId ? ink[600] : "#FFFFFF"}
+              >
+                Semua
               </AppText>
             </PressableScale>
             {brands.map((b) => (
@@ -387,10 +579,20 @@ export default function OrderHistoryScreen() {
 
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16, gap: 4 }}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingBottom: 16,
+              gap: 4,
+            }}
           >
             <OptionRow
-              icon={<InfinityIcon size={24} color={filters.outletId ? ink[600] : brand[700]} />}
+              icon={
+                <Glyph
+                  name="infinity"
+                  size={22}
+                  color={filters.outletId ? ink[600] : brand[700]}
+                />
+              }
               title="Semua Outlet"
               description="Tampilkan pesanan dari semua outlet"
               selected={!filters.outletId}

@@ -1,13 +1,19 @@
 import React from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { PressableScale } from "../components/ui/PressableScale";
-import { ShortcutIcon } from "../components/ShortcutIcon";
-import { brand, ink, surface } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { Glyph, type GlyphName } from "../components/icons/Glyph";
+import {
+  AccountCard,
+  AccountSection,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../components/AccountMenu";
+import { brand, iconGrey, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import {
   availableShortcuts,
   requiredShortcuts,
@@ -15,18 +21,49 @@ import {
   type ShortcutItem,
 } from "../store/shortcutStore";
 
-function Card({ children }: { children: React.ReactNode }) {
+const EDGE = 13.5;
+/** Row geometry shared with the profile's menu. */
+const PAD_LEFT = 8.5;
+const ICON_BOX = 21;
+const LABEL_X = 39.5;
+
+/**
+ * The shortcut store names its marks; each maps to the glyph the profile
+ * menu uses for the same page, so a shortcut looks like the row it opens.
+ */
+const glyphFor: Record<string, GlyphName> = {
+  receipt: "receipt",
+  ticket: "tag",
+  star: "coins",
+  gift: "ticket",
+  "ticket-check": "ticketPercent",
+  bell: "bell",
+  bookmark: "bookmark",
+  search: "search",
+  users: "users",
+  "user-plus": "userPlus",
+  ban: "userOff",
+  user: "tabProfile",
+  pencil: "pencil",
+  lock: "lock",
+  settings: "settings",
+  share: "share",
+};
+
+function Hint({ children }: { children: string }) {
   return (
-    <View
+    <UiText
+      color={QUIET_INK}
       style={{
-        backgroundColor: "#FFFFFF",
-        borderRadius: 15,
-        paddingHorizontal: 14,
-        ...(shadow.xs as object),
+        marginTop: -4,
+        marginBottom: 9,
+        fontSize: 12.5,
+        lineHeight: 17,
+        fontFamily: fontFamilies.medium,
       }}
     >
       {children}
-    </View>
+    </UiText>
   );
 }
 
@@ -41,27 +78,63 @@ function Row({
 }) {
   return (
     <View>
-      {divider ? <View style={{ height: 1, backgroundColor: ink[100] }} /> : null}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 13, paddingVertical: 13 }}>
+      {divider ? (
         <View
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 11,
-            backgroundColor: brand[50],
-            alignItems: "center",
-            justifyContent: "center",
+            height: 1,
+            backgroundColor: RULE,
+            marginLeft: LABEL_X,
+            marginRight: 9.5,
+          }}
+        />
+      ) : null}
+      <View
+        style={{
+          minHeight: 58,
+          flexDirection: "row",
+          alignItems: "center",
+          paddingLeft: PAD_LEFT,
+          paddingRight: 12,
+          paddingVertical: 9,
+        }}
+      >
+        <View style={{ width: ICON_BOX, alignItems: "center" }}>
+          <Glyph
+            name={glyphFor[item.icon] ?? "star"}
+            size={21}
+            color={iconGrey}
+          />
+        </View>
+        <View
+          style={{
+            flex: 1,
+            marginLeft: LABEL_X - PAD_LEFT - ICON_BOX,
+            marginRight: 10,
           }}
         >
-          <ShortcutIcon name={item.icon} size={18} />
-        </View>
-        <View style={{ flex: 1, gap: 1 }}>
-          <AppText variant="h3" numberOfLines={1}>
+          <UiText
+            color={LABEL_INK}
+            numberOfLines={1}
+            style={{
+              fontSize: 15,
+              lineHeight: 19,
+              fontFamily: fontFamilies.semibold,
+            }}
+          >
             {item.label}
-          </AppText>
-          <AppText variant="caption" color={ink[500]} numberOfLines={1}>
+          </UiText>
+          <UiText
+            color={QUIET_INK}
+            numberOfLines={1}
+            style={{
+              marginTop: 1,
+              fontSize: 12.5,
+              lineHeight: 16,
+              fontFamily: fontFamilies.medium,
+            }}
+          >
             {item.description}
-          </AppText>
+          </UiText>
         </View>
         {right}
       </View>
@@ -80,21 +153,46 @@ function RoundButton({
     <PressableScale
       onPress={onPress}
       hitSlop={10}
+      scaleTo={0.9}
       style={{
         width: 28,
         height: 28,
         borderRadius: 14,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: remove ? ink[200] : brand[900],
+        backgroundColor: remove ? "#F2F3F5" : brand[600],
       }}
     >
-      {remove ? (
-        <AppIcon name="minus" size={16} color={ink[700]} />
-      ) : (
-        <AppIcon name="plus" size={16} color="#FFFFFF" />
-      )}
+      <Glyph
+        name={remove ? "minus" : "plus"}
+        size={14}
+        color={remove ? QUIET_INK : "#FFFFFF"}
+      />
     </PressableScale>
+  );
+}
+
+function DefaultTag() {
+  return (
+    <View
+      style={{
+        backgroundColor: "#F2F3F5",
+        borderRadius: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+      }}
+    >
+      <UiText
+        color={QUIET_INK}
+        style={{
+          fontSize: 12,
+          lineHeight: 16,
+          fontFamily: fontFamilies.semibold,
+        }}
+      >
+        Bawaan
+      </UiText>
+    </View>
   );
 }
 
@@ -111,82 +209,71 @@ export default function ShortcutsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="Atur Menu Pintas" />
+      <AppHeader tone="account" title="Atur Menu Pintas" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 34, gap: 22 }}
+        contentContainerStyle={{ paddingHorizontal: EDGE, paddingBottom: 40 }}
       >
-        <View style={{ gap: 10 }}>
-          <View style={{ gap: 3 }}>
-            <AppText variant="h3">Menu Wajib</AppText>
-            <AppText variant="caption" color={ink[500]}>
-              Menu di bawah ini selalu tersedia di pintasan dan tidak bisa dihapus.
-            </AppText>
-          </View>
-          <Card>
-            {requiredShortcuts.map((item, i) => (
+        <AccountSection title="Menu wajib" />
+        <Hint>Selalu ada di pintasan dan tidak bisa dihapus.</Hint>
+        <AccountCard>
+          {requiredShortcuts.map((item, i) => (
+            <Row
+              key={item.id}
+              item={item}
+              divider={i > 0}
+              right={<DefaultTag />}
+            />
+          ))}
+        </AccountCard>
+
+        <AccountSection title="Menu pintasmu" />
+        <Hint>
+          {mine.length === 0
+            ? "Belum ada tambahan. Pilih dari daftar di bawah."
+            : "Ketuk tombol minus untuk melepas pintasan."}
+        </Hint>
+        <AccountCard>
+          {mine.length === 0 ? (
+            <View
+              style={{
+                height: 58,
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+                gap: 8,
+              }}
+            >
+              <Glyph name="grid" size={16} color="#A0A4AE" />
+              <UiText
+                color="#A0A4AE"
+                style={{
+                  fontSize: 14,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                Belum ada pintasan tambahan
+              </UiText>
+            </View>
+          ) : (
+            mine.map((item, i) => (
               <Row
                 key={item.id}
                 item={item}
                 divider={i > 0}
-                right={
-                  <View
-                    style={{
-                      backgroundColor: brand[50],
-                      borderRadius: 9,
-                      paddingHorizontal: 11,
-                      paddingVertical: 6,
-                    }}
-                  >
-                    <AppText variant="caption" color={brand[700]}>
-                      Default
-                    </AppText>
-                  </View>
-                }
+                right={<RoundButton remove onPress={() => unpin(item.id)} />}
               />
-            ))}
-          </Card>
-        </View>
-
-        <View style={{ gap: 10 }}>
-          <View style={{ gap: 3 }}>
-            <AppText variant="h3">Menu Pintasmu</AppText>
-            <AppText variant="caption" color={ink[500]}>
-              {mine.length === 0
-                ? "Belum ada menu pintas tambahan. Pilih dari daftar di bawah untuk menambahkan."
-                : "Tekan tombol minus untuk melepas pintasan."}
-            </AppText>
-          </View>
-          <Card>
-            {mine.length === 0 ? (
-              <View style={{ paddingVertical: 26, alignItems: "center" }}>
-                <AppText variant="body" color={ink[400]}>
-                  Belum ada pintasan tambahan
-                </AppText>
-              </View>
-            ) : (
-              mine.map((item, i) => (
-                <Row
-                  key={item.id}
-                  item={item}
-                  divider={i > 0}
-                  right={<RoundButton remove onPress={() => unpin(item.id)} />}
-                />
-              ))
-            )}
-          </Card>
-        </View>
+            ))
+          )}
+        </AccountCard>
 
         {rest.length > 0 ? (
-          <View style={{ gap: 10 }}>
-            <View style={{ gap: 3 }}>
-              <AppText variant="h3">Tambah Menu Pintas</AppText>
-              <AppText variant="caption" color={ink[500]}>
-                Pilih menu untuk ditambahkan ke pintasan kamu.
-              </AppText>
-            </View>
-            <Card>
+          <>
+            <AccountSection title="Tambah menu pintas" />
+            <Hint>Ketuk tombol plus untuk menambahkannya ke pintasan.</Hint>
+            <AccountCard>
               {rest.map((item, i) => (
                 <Row
                   key={item.id}
@@ -195,8 +282,8 @@ export default function ShortcutsScreen() {
                   right={<RoundButton onPress={() => pin(item.id)} />}
                 />
               ))}
-            </Card>
-          </View>
+            </AccountCard>
+          </>
         ) : null}
       </ScrollView>
     </View>

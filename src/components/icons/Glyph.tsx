@@ -1,4 +1,5 @@
 import React from "react";
+import { View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { glyphPaths, type GlyphName } from "./glyphPaths";
 
@@ -15,14 +16,19 @@ export function Glyph({
   name,
   size = 24,
   color = "#484949",
+  rotate = 0,
 }: {
   name: GlyphName;
   size?: number;
   color?: string;
+  /** Quarter turns, for the one glyph that serves several directions. */
+  rotate?: 0 | 90 | 180 | 270;
 }) {
-  return (
+  const svg = (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path d={glyphPaths[name]} fill={color} fillRule="evenodd" />
     </Svg>
   );
+  if (rotate === 0) return svg;
+  return <View style={{ transform: [{ rotate: `${rotate}deg` }] }}>{svg}</View>;
 }

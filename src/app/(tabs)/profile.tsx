@@ -12,6 +12,7 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UiText } from "../../components/ui/Text";
+import { ACCOUNT_BAR } from "../../components/ui/AppHeader";
 import { Avatar } from "../../components/ui/Avatar";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -61,7 +62,7 @@ const INK_TEXT = "#202020";
 // ending 24.5dp below the title's centre. The fade is spread over 44dp of
 // scrolling — a gentle dissolve, yet complete by the time the card slides
 // under the title.
-const BAR_BG = "#FFEE80";
+const BAR_BG = ACCOUNT_BAR;
 const BAR_H = HEADER_H / 2 + 24.5;
 const BAR_FADE_FROM = 8;
 const BAR_FADE_TO = 52;

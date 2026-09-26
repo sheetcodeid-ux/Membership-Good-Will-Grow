@@ -3,9 +3,11 @@ import { View } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppIcon } from "./AppIcon";
+import { Glyph } from "../icons/Glyph";
 import { PressableScale } from "./PressableScale";
 import { UiText } from "./Text";
 import { brand } from "../../theme/colors";
+import { fontFamilies } from "../../theme/typography";
 import { HIT_SIZE, radius, space } from "../../theme/scale";
 
 interface AppHeaderProps {
@@ -15,8 +17,19 @@ interface AppHeaderProps {
   right?: React.ReactNode;
   /** Screens opened as a sheet use a close cross instead of a back chevron. */
   leftIcon?: "back" | "close";
+  /**
+   * "account" is the bar of the screens under Akun Saya: the pale yellow
+   * the profile's own bar fades into on scroll, square-cornered, a bold
+   * near-black title and a solid arrow — so opening a page from the
+   * profile keeps the same bar in place and only the title changes.
+   */
+  tone?: "default" | "account";
   children?: React.ReactNode;
 }
+
+/** Colour of the account bar; the profile tab fades into the same one. */
+export const ACCOUNT_BAR = "#FFEE80";
+const ACCOUNT_INK = "#202020";
 
 /**
  * White bar with rounded bottom corners, used on every inner screen.
@@ -30,8 +43,74 @@ export function AppHeader({
   onBack,
   right,
   leftIcon = "back",
+  tone = "default",
   children,
 }: AppHeaderProps) {
+  if (tone === "account") {
+    return (
+      <View style={{ backgroundColor: ACCOUNT_BAR }}>
+        <SafeAreaView edges={["top"]}>
+          {/* Same geometry as the profile's bar: 56.5 tall, the title's
+              centre 32 below the status bar. */}
+          <View
+            style={{
+              height: 56.5,
+              paddingTop: 7.5,
+              paddingBottom: 0,
+              flexDirection: "row",
+              alignItems: "center",
+              paddingLeft: 3.3,
+              paddingRight: space.md,
+            }}
+          >
+            {showBack ? (
+              <PressableScale
+                onPress={onBack ?? (() => router.back())}
+                rippleBorderless
+                // The arrow's ink starts 16 in and the title at 42, as
+                // measured on the reference bar.
+                style={{
+                  width: 40,
+                  height: HIT_SIZE,
+                  borderRadius: 20,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Glyph
+                  name={leftIcon === "close" ? "close" : "arrowRight"}
+                  rotate={leftIcon === "close" ? 0 : 180}
+                  size={22}
+                  color={ACCOUNT_INK}
+                />
+              </PressableScale>
+            ) : (
+              <View style={{ width: space.lg }} />
+            )}
+            {title ? (
+              <UiText
+                token="titleLg"
+                color={ACCOUNT_INK}
+                numberOfLines={1}
+                style={{
+                  flex: 1,
+                  marginLeft: showBack ? -1.3 : 0,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                {title}
+              </UiText>
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+            {right}
+          </View>
+          {children}
+        </SafeAreaView>
+      </View>
+    );
+  }
+
   return (
     <View
       style={{
@@ -74,7 +153,12 @@ export function AppHeader({
           )}
 
           {title ? (
-            <UiText token="h3" color={brand[900]} numberOfLines={1} style={{ flex: 1 }}>
+            <UiText
+              token="h3"
+              color={brand[900]}
+              numberOfLines={1}
+              style={{ flex: 1 }}
+            >
               {title}
             </UiText>
           ) : (

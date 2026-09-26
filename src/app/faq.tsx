@@ -1,13 +1,28 @@
 import React, { useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
-import { LayoutAnimation, Platform, ScrollView, UIManager, View } from "react-native";
+import {
+  LayoutAnimation,
+  Platform,
+  ScrollView,
+  UIManager,
+  View,
+} from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { AppText } from "../components/ui/AppText";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
+import { Glyph } from "../components/icons/Glyph";
+import { LegalBody, LegalIntro } from "../components/LegalDoc";
+import {
+  AccountCard,
+  AccountSection,
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+} from "../components/AccountMenu";
+import { fontFamilies } from "../theme/typography";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
-import { brand, ink, surface } from "../theme/colors";
+import { brand, surface } from "../theme/colors";
 import { faqEntries, type FaqEntry } from "../data/faq";
 
 if (
@@ -31,32 +46,39 @@ function Item({
       <PressableScale
         scaleTo={0.995}
         onPress={onToggle}
-        style={{ flexDirection: "row", gap: 14, paddingVertical: 17 }}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          minHeight: 56,
+          paddingVertical: 12,
+          paddingLeft: 14.5,
+          paddingRight: 13,
+        }}
       >
-        <AppText
-          color={brand[800]}
+        <UiText
+          color={LABEL_INK}
           style={{
             flex: 1,
             fontSize: 15,
-            lineHeight: 22,
-            fontFamily: "Urbanist_600SemiBold",
+            lineHeight: 20,
+            fontFamily: fontFamilies.semibold,
           }}
         >
           {entry.question}
-        </AppText>
-        <AppIcon name="chevronRight" rotate={open ? 270 : 90} size={19} color={brand[800]} />
+        </UiText>
+        <Glyph
+          name="chevronRight"
+          rotate={open ? 270 : 90}
+          size={14}
+          color={QUIET_INK}
+        />
       </PressableScale>
 
       {open ? (
-        <View style={{ gap: 14, paddingBottom: 20 }}>
+        <View style={{ gap: 12, paddingHorizontal: 14.5, paddingBottom: 16 }}>
           {entry.answer.map((paragraph) => (
-            <AppText
-              key={paragraph}
-              color={ink[400]}
-              style={{ fontSize: 14, lineHeight: 21 }}
-            >
-              {paragraph}
-            </AppText>
+            <LegalBody key={paragraph}>{paragraph}</LegalBody>
           ))}
 
           {entry.imageLabel ? (
@@ -64,7 +86,7 @@ function Item({
               label={entry.imageLabel}
               radius={12}
               iconSize={26}
-              style={{ height: 190 }}
+              style={{ height: 180 }}
             />
           ) : null}
 
@@ -72,12 +94,19 @@ function Item({
             <PressableScale
               onPress={() => router.push(entry.href as never)}
               hitSlop={8}
-              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
             >
-              <AppText variant="bodySemibold" color={brand[700]}>
+              <UiText
+                color={brand[700]}
+                style={{
+                  fontSize: 14,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
                 {entry.linkLabel}
-              </AppText>
-              <AppIcon name="chevronRight" size={15} color={brand[700]} />
+              </UiText>
+              <Glyph name="chevronRight" size={12} color={brand[700]} />
             </PressableScale>
           ) : null}
         </View>
@@ -87,7 +116,7 @@ function Item({
 }
 
 export default function FaqScreen() {
-  // The reference keeps one answer open at a time.
+  // One answer open at a time, the first to start with.
   const [openId, setOpenId] = useState<string | null>(faqEntries[0].id);
 
   const toggle = (id: string) => {
@@ -98,38 +127,44 @@ export default function FaqScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader title="FAQ" />
+      <AppHeader tone="account" title="FAQ" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 26, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: 13.5,
+          paddingTop: 16,
+          paddingBottom: 40,
+        }}
       >
-        <AppText
-          center
-          color={brand[800]}
-          style={{ fontSize: 38, lineHeight: 46, fontFamily: "Urbanist_800ExtraBold" }}
-        >
-          FAQ.
-        </AppText>
-        <AppText center color={brand[700]} style={{ marginTop: 10, fontSize: 15, lineHeight: 22 }}>
-          Frequently Asked Questions.
-        </AppText>
-        <AppText center color={brand[700]} style={{ fontSize: 15, lineHeight: 22 }}>
-          Pertanyaan yang sering ditanyakan.
-        </AppText>
+        <LegalIntro
+          glyph="help"
+          title="Ada yang bisa kami bantu?"
+          subtitle="Jawaban untuk pertanyaan yang paling sering ditanyakan member."
+        />
 
-        <View style={{ height: 28 }} />
-
-        {faqEntries.map((entry, i) => (
-          <View key={entry.id}>
-            {i > 0 ? <View style={{ height: 1, backgroundColor: ink[200] }} /> : null}
-            <Item
-              entry={entry}
-              open={openId === entry.id}
-              onToggle={() => toggle(entry.id)}
-            />
-          </View>
-        ))}
+        <AccountSection title="Pertanyaan umum" />
+        <AccountCard>
+          {faqEntries.map((entry, i) => (
+            <View key={entry.id}>
+              {i > 0 ? (
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: RULE,
+                    marginLeft: 14.5,
+                    marginRight: 9.5,
+                  }}
+                />
+              ) : null}
+              <Item
+                entry={entry}
+                open={openId === entry.id}
+                onToggle={() => toggle(entry.id)}
+              />
+            </View>
+          ))}
+        </AccountCard>
       </ScrollView>
     </View>
   );
