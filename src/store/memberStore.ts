@@ -17,6 +17,8 @@ interface MemberState {
    * and nothing changes, when the balance is short.
    */
   spendPoints: (amount: number, title: string) => boolean;
+  /** Puts points back, e.g. from a cancelled order, and records it. */
+  refundPoints: (amount: number, title: string) => void;
 }
 
 let spendSeq = 1;
@@ -67,5 +69,21 @@ export const useMemberStore = create<MemberState>((set, get) => ({
       ],
     }));
     return true;
+  },
+  refundPoints: (amount, title) => {
+    if (amount <= 0) return;
+    set((s) => ({
+      points: s.points + amount,
+      history: [
+        ...s.history,
+        {
+          id: `ph-refund-${spendSeq++}`,
+          title,
+          date: formatIndoDate(new Date()),
+          points: amount,
+          type: "earn",
+        },
+      ],
+    }));
   },
 }));

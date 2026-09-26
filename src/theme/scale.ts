@@ -1,7 +1,7 @@
 /**
  * Design tokens for the rebuilt screens.
  *
- * The original scale was derived by measuring the CW Club reference, which
+ * The original scale was derived by measuring the original reference, which
  * put body copy at 12.5pt. That is too small for a feed people read for
  * minutes at a time — iOS sets body at 17pt and Material at 16dp, and both
  * platforms treat 44pt/48dp as the smallest thing a thumb should have to hit.

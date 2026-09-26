@@ -21,7 +21,8 @@ import { statusMeta, channelMeta } from "../../components/OrderIcons";
 import { brand, surface } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
 import { formatRupiah } from "../../utils/format";
-import { getBrand, getOrder } from "../../data/mock";
+import { getBrand } from "../../data/mock";
+import { useOrderRecord } from "../../store/ordersStore";
 import type { ServiceType } from "../../data/types";
 import { useScrolled } from "../../hooks/useScrolled";
 import { CountUp } from "../../components/ui/CountUp";
@@ -173,7 +174,7 @@ function Rule() {
 export default function OrderDetailScreen() {
   const scroll = useScrolled();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const order = getOrder(id);
+  const order = useOrderRecord(id);
 
   if (!order) {
     return (
@@ -193,7 +194,8 @@ export default function OrderDetailScreen() {
   }
 
   const meta = statusMeta[order.status];
-  const total = order.subtotal + order.tax + order.rounding;
+  const total =
+    order.subtotal - (order.couponDiscount ?? 0) + order.tax + order.rounding;
   const copy = (label: string, value: string) => {
     Clipboard.setStringAsync(value).catch(() => {});
     tapSuccess();
@@ -402,16 +404,28 @@ export default function OrderDetailScreen() {
             label="Nominal belanja"
             value={formatRupiah(order.subtotal)}
           />
+          {order.couponDiscount ? (
+            <AmountRow
+              label={order.couponTitle ?? "Potongan kupon"}
+              value={`-${formatRupiah(order.couponDiscount)}`}
+            />
+          ) : null}
           <Rule />
           <AmountRow
             label="Subtotal"
-            value={formatRupiah(order.subtotal)}
+            value={formatRupiah(order.subtotal - (order.couponDiscount ?? 0))}
             bold
           />
           <AmountRow label="PB1" value={formatRupiah(order.tax)} />
           <AmountRow label="Pembulatan" value={formatRupiah(order.rounding)} />
           <Rule />
           <AmountRow label="Total tagihan" value={formatRupiah(total)} bold />
+          {order.pointsUsed ? (
+            <AmountRow
+              label="Poin dipakai"
+              value={`-${formatRupiah(order.pointsUsed)}`}
+            />
+          ) : null}
           <Rule />
           <AmountRow
             label="Total bayar"

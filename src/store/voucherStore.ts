@@ -13,6 +13,8 @@ interface VoucherState {
   claim: (code: string) => ClaimResult;
   /** Spends a voucher on a paid order. */
   markUsed: (id: string) => void;
+  /** Gives a voucher back when its order is cancelled. */
+  restore: (id: string) => void;
 }
 
 export const useVoucherStore = create<VoucherState>((set, get) => ({
@@ -33,5 +35,9 @@ export const useVoucherStore = create<VoucherState>((set, get) => ({
   markUsed: (id) =>
     set((s) => ({
       vouchers: s.vouchers.map((v) => (v.id === id ? { ...v, used: true } : v)),
+    })),
+  restore: (id) =>
+    set((s) => ({
+      vouchers: s.vouchers.map((v) => (v.id === id ? { ...v, used: false } : v)),
     })),
 }));

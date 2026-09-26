@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AppIcon } from "../components/ui/AppIcon";
 import { ScrollView, View } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
@@ -10,8 +10,8 @@ import { PressableScale } from "../components/ui/PressableScale";
 import { brand, danger, ink, surface } from "../theme/colors";
 import { shadow } from "../theme/shadows";
 import { formatRupiah } from "../utils/format";
-import { markCouponUsed, useCheckout } from "../hooks/useCheckout";
-import { useOrderStore } from "../store/orderStore";
+import { useOrderRecord } from "../store/ordersStore";
+import { markOrderPaid } from "../utils/orderFlow";
 
 const PAY_WINDOW_SECONDS = 10 * 60;
 
@@ -24,7 +24,10 @@ const steps = [
 ];
 
 export default function QrisScreen() {
-  const { breakdown, coupon, check } = useCheckout();
+  // The order was placed on checkout; this page only takes its payment.
+  const { order: orderId } = useLocalSearchParams<{ order?: string }>();
+  const order = useOrderRecord(orderId);
+  const total = order?.paid ?? 0;
 
   const [remaining, setRemaining] = useState(PAY_WINDOW_SECONDS);
 
@@ -33,8 +36,6 @@ export default function QrisScreen() {
     return () => clearInterval(id);
   }, []);
 
-  // Minted when the order was confirmed, so it stays put while the clock ticks.
-  const receipt = useOrderStore((s) => s.receipt);
 
   const mmss = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(
     remaining % 60
@@ -86,7 +87,7 @@ export default function QrisScreen() {
               Total Pembayaran:
             </AppText>
             <AppText variant="h3" color={brand[800]}>
-              {formatRupiah(breakdown.finalTotal)}
+              {formatRupiah(total)}
             </AppText>
           </View>
 
@@ -124,9 +125,9 @@ export default function QrisScreen() {
 
           <PressableScale
             onPress={() => {
-              // Paid: the coupon that came off this order is spent.
-              if (coupon && check?.ok) markCouponUsed(coupon.id);
-              router.replace("/order-success");
+              if (!order) return;
+              markOrderPaid(order.id);
+              router.replace(`/order-success?id=${order.id}`);
             }}
             style={{
               flexDirection: "row",
@@ -158,17 +159,17 @@ export default function QrisScreen() {
           <AppText variant="h3">Detail Pembayaran</AppText>
           <Field label="Total Pembayaran">
             <AppText variant="h3" color={brand[800]}>
-              {formatRupiah(breakdown.finalTotal)}
+              {formatRupiah(total)}
             </AppText>
           </Field>
           <Field label="Order Number">
             <AppText variant="body" color={ink[800]}>
-              {receipt?.orderNumber ?? "-"}
+              {order?.transactionId ?? "-"}
             </AppText>
           </Field>
           <Field label="Nomor Nota">
             <AppText variant="body" color={ink[800]}>
-              {receipt?.nota ?? "-"}
+              {order?.nota ?? "-"}
             </AppText>
           </Field>
         </View>

@@ -272,7 +272,7 @@ export interface OrderRecord {
   brandId: string;
   outletId: string;
   outletName: string;
-  /** Receipt number printed on the order, e.g. "CW/46/20260922150944513". */
+  /** Receipt number printed on the order, e.g. "NRD/46/20260922150944513". */
   nota: string;
   /** Short queue code the cashier calls out. */
   orderCode: string;
@@ -290,6 +290,27 @@ export interface OrderRecord {
   /** Amount actually paid, after any discount. */
   paid: number;
   note?: string;
+  /**
+   * Set on orders placed in the app this session, for Status Pesanan: when
+   * it was placed (ms), what came off, and how it is collected.
+   */
+  placedAt?: number;
+  /** When the payment went through, if it has. */
+  paidAt?: number;
+  couponId?: string;
+  couponTitle?: string;
+  couponDiscount?: number;
+  pointsUsed?: number;
+  pickup?: "self" | "table";
+  tableNumber?: string;
+  cutlery?: boolean;
+  gift?: OrderGift;
+}
+
+/** Someone else collects the order: their name and a note on the receipt. */
+export interface OrderGift {
+  to: string;
+  message: string;
 }
 
 /**

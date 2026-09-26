@@ -1,11 +1,11 @@
 import { getOutlet } from "../data/mock";
-import type { Coupon } from "../data/types";
-import { useCartStore } from "../store/cartStore";
+import type { CartLine, Coupon } from "../data/types";
+import { unitPrice, useCartStore } from "../store/cartStore";
 import { useCouponStore } from "../store/couponStore";
 import { useMemberStore } from "../store/memberStore";
 import { useOrderStore } from "../store/orderStore";
 import { useVoucherStore } from "../store/voucherStore";
-import { checkCoupon, type CouponCheck } from "../utils/coupons";
+import { checkCoupon } from "../utils/coupons";
 import { computeBreakdown } from "../utils/pricing";
 
 /** Every coupon and voucher the member holds, as one list. */
@@ -18,36 +18,84 @@ export function useHeldCoupons() {
 /** Whether a held coupon is a voucher from Voucher Saya. */
 export const isVoucher = (c: Coupon) => c.id.startsWith("vc-");
 
-/** Spends a coupon or voucher once its order is paid. */
+/** Spends a coupon or voucher on a placed order. */
 export function markCouponUsed(id: string) {
-  if (id.startsWith("vc-")) useVoucherStore.getState().markUsed(id);
+  if (isVoucher({ id } as Coupon)) useVoucherStore.getState().markUsed(id);
   else useCouponStore.getState().markUsed(id);
 }
 
+/** Gives a coupon or voucher back, when its order is cancelled. */
+export function restoreCoupon(id: string) {
+  if (isVoucher({ id } as Coupon)) useVoucherStore.getState().restore(id);
+  else useCouponStore.getState().restore(id);
+}
+
 /**
- * The order's money, the same on checkout, QRIS and the receipt: the
- * coupon the cart holds (if it still applies to the cart and outlet), then
- * PB1, rounding and points on what is left.
- *
- * `paid` is for the receipt: the coupon was marked used as the payment went
- * through, and should still show as taken off this order.
+ * The order's money from the cart: the coupon it holds (if it still
+ * applies to the cart and outlet), then PB1, rounding and points on what
+ * is left. Pure, so checkout (through the hook) and placing the order
+ * (from the stores' current state) work it out the same way.
  */
-export function useCheckout({ paid = false }: { paid?: boolean } = {}) {
+export function resolveCheckout(input: {
+  lines: CartLine[];
+  usePoints: boolean;
+  couponId?: string;
+  points: number;
+  outletId: string;
+  held: Coupon[];
+}) {
+  const outlet = getOutlet(input.outletId);
+  const subtotal = input.lines.reduce(
+    (sum, l) => sum + unitPrice(l.menuItem, l.selections) * l.qty,
+    0,
+  );
+  const coupon = input.couponId
+    ? input.held.find((c) => c.id === input.couponId)
+    : undefined;
+  const check = coupon
+    ? checkCoupon(coupon, input.lines, outlet?.brandId)
+    : undefined;
+  const discount = check?.ok ? check.amount : 0;
+  const breakdown = computeBreakdown(
+    subtotal,
+    input.usePoints,
+    input.points,
+    discount,
+  );
+  return { breakdown, coupon, check, outlet };
+}
+
+/** The checkout's figures, live from the stores. */
+export function useCheckout() {
   const lines = useCartStore((s) => s.lines);
-  const subtotal = useCartStore((s) => s.subtotal());
   const usePoints = useCartStore((s) => s.usePoints);
   const couponId = useCartStore((s) => s.couponId);
   const points = useMemberStore((s) => s.points);
   const outletId = useOrderStore((s) => s.outletId);
-  const outlet = getOutlet(outletId);
   const held = useHeldCoupons();
+  const resolved = resolveCheckout({
+    lines,
+    usePoints,
+    couponId,
+    points,
+    outletId,
+    held,
+  });
+  return { ...resolved, held, lines };
+}
 
-  const coupon = couponId ? held.find((c) => c.id === couponId) : undefined;
-  const check: CouponCheck | undefined = coupon
-    ? checkCoupon(coupon, lines, outlet?.brandId, { ignoreUsed: paid })
-    : undefined;
-  const discount = check?.ok ? check.amount : 0;
-  const breakdown = computeBreakdown(subtotal, usePoints, points, discount);
-
-  return { breakdown, coupon, check, held, lines, outlet };
+/** The same figures from the stores as they are right now, outside React. */
+export function checkoutNow() {
+  const cart = useCartStore.getState();
+  return resolveCheckout({
+    lines: cart.lines,
+    usePoints: cart.usePoints,
+    couponId: cart.couponId,
+    points: useMemberStore.getState().points,
+    outletId: useOrderStore.getState().outletId,
+    held: [
+      ...useVoucherStore.getState().vouchers,
+      ...useCouponStore.getState().mine,
+    ],
+  });
 }

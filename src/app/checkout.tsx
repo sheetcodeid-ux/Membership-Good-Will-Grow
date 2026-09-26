@@ -1,87 +1,291 @@
 import React, { useState } from "react";
-import { AppIcon } from "../components/ui/AppIcon";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { AppText } from "../components/ui/AppText";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
 import { PressableScale } from "../components/ui/PressableScale";
+import { Glyph } from "../components/icons/Glyph";
 import { BrandLogo } from "../components/BrandLogo";
-import { OutletBar } from "../components/OutletBar";
-import { brand, danger, ink, surface, warning } from "../theme/colors";
-import { shadow } from "../theme/shadows";
+import { EmptyArt, AccountEmpty } from "../components/EmptyArt";
+import {
+  LABEL_INK,
+  QUIET_INK,
+  RULE,
+  WARN_INK,
+} from "../components/AccountMenu";
+import {
+  Block,
+  Checkbox,
+  CutleryIcon,
+  EDGE,
+  OutlinePill,
+  Radio,
+  SumRow,
+} from "../components/checkout/parts";
+import {
+  GiftSheet,
+  NoteSheet,
+  OutletSheet,
+  PaymentMethodSheet,
+  SERVICE_META,
+  ServiceTypeSheet,
+} from "../components/checkout/CheckoutSheets";
+import { brand, danger, success, surface } from "../theme/colors";
+import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
-import { CouponPickerSheet } from "../components/CouponPickerSheet";
-import { isVoucher, useCheckout } from "../hooks/useCheckout";
+import { computeBreakdown } from "../utils/pricing";
 import { checkCoupon } from "../utils/coupons";
-import { showToast } from "../store/toastStore";
-import { tapPress, tapSuccess } from "../utils/haptics";
-import { outletFullName } from "../data/mock";
-import { selectionSummary, unitPrice, useCartStore } from "../store/cartStore";
+import { placeOrder } from "../utils/orderFlow";
+import { menuItems, outletFullName } from "../data/mock";
+import {
+  defaultSelections,
+  selectionSummary,
+  unitPrice,
+  useCartStore,
+} from "../store/cartStore";
 import { MAX_ORDER_DISTANCE_KM, useOrderStore } from "../store/orderStore";
 import { useMemberStore } from "../store/memberStore";
-import type { ServiceType } from "../data/types";
+import { useOrdersStore } from "../store/ordersStore";
+import { showToast } from "../store/toastStore";
+import { isVoucher, useCheckout } from "../hooks/useCheckout";
+import { tapPress, tapSelect, tapSuccess } from "../utils/haptics";
+import type { CartLine } from "../data/types";
 
-const serviceLabels: Record<ServiceType, string> = {
-  dine_in: "Dine In",
-  takeaway: "Take Away",
-  delivery: "Delivery",
-};
+const SAVE_INK = "#0F8A3C";
 
-function Card({ title, children }: { title?: string; children: React.ReactNode }) {
+function Title({ children }: { children: string }) {
+  return (
+    <UiText
+      color={LABEL_INK}
+      style={{
+        fontSize: 17,
+        lineHeight: 22,
+        fontFamily: fontFamilies.extrabold,
+      }}
+    >
+      {children}
+    </UiText>
+  );
+}
+
+function Hairline({ inset = 0 }: { inset?: number }) {
+  return (
+    <View
+      style={{ height: 1, backgroundColor: RULE, marginHorizontal: inset }}
+    />
+  );
+}
+
+/** "Yay! Kamu hemat Rp 9.500 di pesanan ini." under the header. */
+function SavingsStrip({ amount }: { amount: number }) {
   return (
     <View
       style={{
-        backgroundColor: "#FFFFFF",
-        borderRadius: 15,
-        padding: 14,
+        marginHorizontal: EDGE,
+        marginBottom: 12,
+        flexDirection: "row",
+        alignItems: "center",
         gap: 10,
-        ...(shadow.xs as object),
+        borderRadius: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        backgroundColor: success[50],
       }}
     >
-      {title ? <AppText variant="h3">{title}</AppText> : null}
-      {children}
+      <View
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: 13,
+          backgroundColor: SAVE_INK,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Glyph name="ticketPercent" size={15} color="#FFFFFF" />
+      </View>
+      <UiText
+        color={SAVE_INK}
+        style={{
+          flex: 1,
+          fontSize: 14,
+          lineHeight: 19,
+          fontFamily: fontFamilies.medium,
+        }}
+      >
+        Yay! Kamu hemat{" "}
+        <UiText
+          color={SAVE_INK}
+          style={{
+            fontSize: 14,
+            lineHeight: 19,
+            fontFamily: fontFamilies.extrabold,
+          }}
+        >
+          {formatRupiah(amount)}
+        </UiText>{" "}
+        di pesanan ini.
+      </UiText>
     </View>
   );
 }
 
-function Radio({ selected }: { selected: boolean }) {
-  return (
-    <View
+/** − qty + in round outlined buttons. */
+function Stepper({
+  qty,
+  onChange,
+}: {
+  qty: number;
+  onChange: (n: number) => void;
+}) {
+  const btn = (glyph: "minus" | "plus", next: number) => (
+    <PressableScale
+      onPress={() => {
+        tapSelect();
+        onChange(next);
+      }}
+      hitSlop={6}
+      scaleTo={0.9}
       style={{
-        width: 19,
-        height: 19,
-        borderRadius: 10,
-        borderWidth: 1.8,
-        borderColor: selected ? brand[900] : ink[300],
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: brand[600],
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      {selected ? (
-        <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: brand[900] }} />
-      ) : null}
+      <Glyph name={glyph} size={13} color={brand[700]} />
+    </PressableScale>
+  );
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+      {btn("minus", qty - 1)}
+      <UiText
+        color={LABEL_INK}
+        style={{
+          minWidth: 16,
+          textAlign: "center",
+          fontSize: 16,
+          lineHeight: 20,
+          fontFamily: fontFamilies.bold,
+        }}
+      >
+        {qty}
+      </UiText>
+      {btn("plus", qty + 1)}
     </View>
   );
 }
 
-function AmountRow({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+function LineRow({
+  line,
+  onQty,
+}: {
+  line: CartLine;
+  onQty: (n: number) => void;
+}) {
+  const unit = unitPrice(line.menuItem, line.selections);
+  // Every single choice (variant, spice level...), then priced add-ons;
+  // the variant is priced too, so it is not listed twice.
+  const choices = line.menuItem.optionGroups
+    .filter((g) => g.selection === "single")
+    .flatMap((g) => g.options.filter((o) => (line.selections[o.id] ?? 0) > 0))
+    .map((o) => o.name);
+  const extras = selectionSummary(line.menuItem, line.selections).filter(
+    (x) => !choices.includes(x),
+  );
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 5 }}>
-      <AppText style={{ flex: 1 }} variant={bold ? "bodySemibold" : "body"} color={ink[800]}>
-        {label}
-      </AppText>
-      <AppText variant={bold ? "bodySemibold" : "body"} color={ink[800]}>
-        {value}
-      </AppText>
+    <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+      <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <UiText
+            color={LABEL_INK}
+            numberOfLines={2}
+            style={{
+              fontSize: 16,
+              lineHeight: 21,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
+            {line.menuItem.name}
+          </UiText>
+          <UiText
+            color={QUIET_INK}
+            style={{
+              marginTop: 4,
+              fontSize: 13.5,
+              lineHeight: 18,
+              fontFamily: fontFamilies.medium,
+            }}
+          >
+            {[...(choices.length ? choices : ["Original"]), ...extras].join(
+              " · ",
+            )}
+          </UiText>
+          {line.note ? (
+            <UiText
+              color={QUIET_INK}
+              numberOfLines={2}
+              style={{
+                marginTop: 2,
+                fontSize: 12.5,
+                lineHeight: 17,
+                fontFamily: fontFamilies.medium,
+                fontStyle: "italic",
+              }}
+            >
+              “{line.note}”
+            </UiText>
+          ) : null}
+          <UiText
+            color={LABEL_INK}
+            style={{
+              marginTop: 10,
+              fontSize: 15,
+              lineHeight: 19,
+              fontFamily: fontFamilies.semibold,
+            }}
+          >
+            {formatRupiah(unit * line.qty)}
+          </UiText>
+        </View>
+        <ImagePlaceholder
+          seed={line.menuItem.id}
+          radius={14}
+          iconSize={20}
+          style={{ width: 84, height: 84 }}
+        />
+      </View>
+      <View
+        style={{
+          marginTop: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <OutlinePill
+          small
+          icon="pencil"
+          label="Ubah"
+          onPress={() =>
+            router.push(`/product/${line.menuItem.id}?lineId=${line.lineId}`)
+          }
+        />
+        <Stepper qty={line.qty} onChange={onQty} />
+      </View>
     </View>
   );
 }
 
 export default function CheckoutScreen() {
+  const insets = useSafeAreaInsets();
   const usePoints = useCartStore((s) => s.usePoints);
   const toggleUsePoints = useCartStore((s) => s.toggleUsePoints);
   const orderNote = useCartStore((s) => s.orderNote);
@@ -90,553 +294,1179 @@ export default function CheckoutScreen() {
   const setPickup = useCartStore((s) => s.setPickup);
   const tableNumber = useCartStore((s) => s.tableNumber);
   const setTableNumber = useCartStore((s) => s.setTableNumber);
-  const couponId = useCartStore((s) => s.couponId);
-  const setCoupon = useCartStore((s) => s.setCoupon);
+  const payMethod = useCartStore((s) => s.payMethod);
+  const setPayMethod = useCartStore((s) => s.setPayMethod);
+  const cutlery = useCartStore((s) => s.cutlery);
+  const setCutlery = useCartStore((s) => s.setCutlery);
+  const gift = useCartStore((s) => s.gift);
+  const setGift = useCartStore((s) => s.setGift);
+  const setLineQty = useCartStore((s) => s.setLineQty);
+  const addLine = useCartStore((s) => s.addLine);
 
   const serviceType = useOrderStore((s) => s.serviceType);
-  const mintReceipt = useOrderStore((s) => s.mintReceipt);
+  const setServiceType = useOrderStore((s) => s.setServiceType);
+  const setOutlet = useOrderStore((s) => s.setOutlet);
   const points = useMemberStore((s) => s.points);
 
+  const [sheet, setSheet] = useState<
+    "service" | "outlet" | "note" | "gift" | "pay" | null
+  >(null);
   const [confirming, setConfirming] = useState(false);
-  const [picking, setPicking] = useState(false);
+  const [removing, setRemoving] = useState<CartLine | null>(null);
+  const [feesOpen, setFeesOpen] = useState(false);
 
-  // 1 point redeems Rp 1, capped at the bill; a coupon comes off first.
   const { breakdown, coupon, check, held, lines, outlet } = useCheckout();
-  const couponRows = held
+  const usable = held
     .filter((c) => !c.used)
-    .map((c) => ({ coupon: c, check: checkCoupon(c, lines, outlet?.brandId) }));
-  const usableCount = couponRows.filter((r) => r.check.ok).length;
+    .filter((c) => checkCoupon(c, lines, outlet?.brandId).ok).length;
   const tooFar = (outlet?.distanceKm ?? 0) > MAX_ORDER_DISTANCE_KM;
+  // What the order would cost with nothing taken off, struck through
+  // beside the total once something is.
+  const full = computeBreakdown(breakdown.subtotal, false, 0, 0).total;
+  const saved = breakdown.couponDiscount + breakdown.pointsDiscount;
+  const tableMissing = pickup === "table" && !tableNumber.trim();
+
+  const inCart = new Set(lines.map((l) => l.menuItem.id));
+  const extras = menuItems
+    .filter((m) => m.brandId === outlet?.brandId && !inCart.has(m.id))
+    .sort((a, b) => Number(!!b.isBestSeller) - Number(!!a.isBestSeller))
+    .slice(0, 6);
+
+  if (!outlet || lines.length === 0) {
+    return (
+      <View style={{ flex: 1, backgroundColor: surface }}>
+        <StatusBar style="dark" />
+        <AppHeader title="Selesaikan Pesanan" />
+        <AccountEmpty
+          glyph="cart"
+          title="Keranjang masih kosong"
+          subtitle="Pilih menu dulu, lalu selesaikan pesananmu di sini."
+          action={{
+            label: "Pilih menu",
+            onPress: () => router.replace("/order"),
+          }}
+        />
+      </View>
+    );
+  }
+
+  const pickupOptions: {
+    id: "self" | "table";
+    title: string;
+    hint: string;
+    glyph: "footprints" | "armchair";
+    off?: string;
+  }[] = [
+    {
+      id: "self",
+      title: "Ambil sendiri",
+      hint: "Kami panggil namamu di kasir",
+      glyph: "footprints",
+    },
+    {
+      id: "table",
+      title: "Antar ke meja",
+      hint: "Pesanan diantar ke mejamu",
+      glyph: "armchair",
+      off: serviceType === "dine_in" ? undefined : "Hanya untuk Dine In",
+    },
+  ];
+
+  const place = () => {
+    setConfirming(false);
+    const id = placeOrder();
+    if (!id) return;
+    tapSuccess();
+    const order = useOrdersStore.getState().placed.find((o) => o.id === id);
+    if (order?.status === "belum-bayar" && order.paymentMethod === "QRIS") {
+      router.replace(`/qris?order=${id}`);
+    } else {
+      router.replace(`/order-success?id=${id}`);
+    }
+  };
+
+  const payLabel =
+    breakdown.finalTotal === 0 && usePoints
+      ? "Poin Good Will Grow"
+      : payMethod === "qris"
+        ? usePoints
+          ? "QRIS + Poin"
+          : "QRIS"
+        : usePoints
+          ? "Bayar di kasir + Poin"
+          : "Bayar di kasir";
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-
-      <AppHeader title="Selesaikan Pesanan">
-        <OutletBar outlet={outlet} serviceType={serviceType} />
+      <AppHeader title={outletFullName(outlet)}>
+        {saved > 0 ? <SavingsStrip amount={saved} /> : null}
       </AppHeader>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ padding: 16, paddingBottom: 30, gap: 12 }}
+        contentContainerStyle={{ padding: EDGE, paddingBottom: 28, gap: 12 }}
       >
-        <Card title="Opsi Pengambilan">
-          <PressableScale
-            onPress={() => setPickup("self")}
+        {/* How the order is served, and how it reaches the member. */}
+        <Block style={{ borderColor: brand[200], borderWidth: 1.5 }}>
+          <View
             style={{
               flexDirection: "row",
               alignItems: "center",
               gap: 12,
-              backgroundColor: brand[50],
-              borderRadius: 12,
-              padding: 12,
+              paddingLeft: 12,
+              paddingRight: 14,
+              paddingVertical: 12,
+              backgroundColor: "#F3F7FF",
             }}
           >
-            <AppIcon name="footprints" size={22} color={brand[700]} />
+            <EmptyArt glyph={SERVICE_META[serviceType].glyph} size={52} />
             <View style={{ flex: 1 }}>
-              <AppText variant="titleLg">Ambil Sendiri</AppText>
-              <AppText variant="caption" color={ink[500]}>
-                Ambil pesanan di kasir
-              </AppText>
-            </View>
-            <Radio selected={pickup === "self"} />
-          </PressableScale>
-
-          <PressableScale
-            onPress={() => setPickup("table")}
-            style={{ backgroundColor: brand[50], borderRadius: 12, padding: 12, gap: 10 }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <AppIcon name="armchair" size={22} color={brand[700]} />
-              <View style={{ flex: 1 }}>
-                <AppText variant="titleLg">Antar ke Meja</AppText>
-                <AppText variant="caption" color={ink[500]}>
-                  Antar ke mejamu
-                </AppText>
-              </View>
-              <Radio selected={pickup === "table"} />
-            </View>
-
-            {pickup === "table" ? (
-              <>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    height: 38,
-                    borderRadius: 9,
-                    backgroundColor: "#FFFFFF",
-                    paddingHorizontal: 12,
-                  }}
-                >
-                  <TextInput
-                    value={tableNumber}
-                    onChangeText={setTableNumber}
-                    keyboardType="number-pad"
-                    placeholder="Nomor meja"
-                    placeholderTextColor={ink[400]}
-                    style={[
-                      {
-                        flex: 1,
-                        minWidth: 0,
-                        padding: 0,
-                        fontFamily: "Urbanist_400Regular",
-                        fontSize: 12.5,
-                        color: ink[900],
-                      },
-                      Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
-                    ]}
-                  />
-                  <AppIcon name="compose" size={14} color={ink[500]} />
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    backgroundColor: danger[50],
-                    borderRadius: 9,
-                    paddingVertical: 8,
-                    paddingHorizontal: 10,
-                  }}
-                >
-                  <AppIcon name="alertCircle" size={14} color={danger[500]} />
-                  <AppText
-                    variant="caption"
-                    color={danger[500]}
-                    style={{ flex: 1, fontStyle: "italic" }}
-                  >
-                    Beritahu kasir kalau kamu pindah ya!
-                  </AppText>
-                </View>
-              </>
-            ) : null}
-          </PressableScale>
-        </Card>
-
-        <Card title="Ringkasan Pesanan">
-          {lines.map((line) => (
-            <View
-              key={line.lineId}
-              style={{ flexDirection: "row", alignItems: "center", gap: 11 }}
-            >
-              <ImagePlaceholder radius={10} iconSize={16} style={{ width: 46, height: 46 }} />
-              <View style={{ flex: 1 }}>
-                <AppText variant="titleLg" numberOfLines={1}>
-                  {line.menuItem.name}
-                </AppText>
-                <AppText variant="caption" color={ink[400]} numberOfLines={1}>
-                  {line.qty}× {selectionSummary(line.menuItem, line.selections)[0] ?? "Original"} @{" "}
-                  {formatRupiah(unitPrice(line.menuItem, line.selections))}
-                </AppText>
-              </View>
-              <AppText variant="titleLg" color={brand[800]}>
-                {formatRupiah(unitPrice(line.menuItem, line.selections) * line.qty)}
-              </AppText>
-            </View>
-          ))}
-        </Card>
-
-        <Card title="Catatan Pesanan">
-          <View
-            style={{
-              minHeight: 74,
-              borderRadius: 10,
-              backgroundColor: ink[50],
-              padding: 11,
-            }}
-          >
-            <TextInput
-              multiline
-              maxLength={200}
-              value={orderNote}
-              onChangeText={setOrderNote}
-              placeholder="Tekan Untuk Menambah Catatan"
-              placeholderTextColor={ink[400]}
-              style={[
-                {
-                  flex: 1,
-                  minHeight: 38,
-                  padding: 0,
-                  textAlignVertical: "top",
-                  fontFamily: "Urbanist_400Regular",
-                  fontStyle: "italic",
-                  fontSize: 12,
-                  color: ink[900],
-                },
-                Platform.OS === "web" ? ({ outlineStyle: "none" } as object) : null,
-              ]}
-            />
-            <AppText variant="micro" color={ink[400]} style={{ alignSelf: "flex-end" }}>
-              {orderNote.length}/200
-            </AppText>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
-            <AppIcon name="alertCircle" size={13} color={warning[600]} />
-            <AppText variant="caption" color={warning[600]}>
-              Catatan akan disertakan dalam pesanan Anda
-            </AppText>
-          </View>
-        </Card>
-
-        <Card title="Metode Pembayaran">
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-              backgroundColor: brand[50],
-              borderRadius: 12,
-              padding: 12,
-            }}
-          >
-            <View
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 9,
-                backgroundColor: "#FFFFFF",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <AppIcon name="qr" size={22} color={ink[900]} />
-            </View>
-            <View style={{ flex: 1, gap: 2 }}>
-              <AppText variant="titleLg">QRIS</AppText>
-              <AppText variant="caption" color={ink[500]}>
-                Kode QRIS akan ditampilkan saat melakukan checkout. Scan dengan bank atau dompet
-                digital anda.
-              </AppText>
-            </View>
-            <Radio selected />
-          </View>
-        </Card>
-
-        <Card title="Potongan Biaya Produk">
-          <PressableScale
-            onPress={() => {
-              tapPress();
-              setPicking(true);
-            }}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 11,
-              backgroundColor: brand[50],
-              borderRadius: 12,
-              paddingVertical: 11,
-              paddingHorizontal: 12,
-            }}
-          >
-            <View
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: "#FFFFFF",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <AppIcon name="ticketPercent" size={19} color={brand[700]} />
-            </View>
-            <View style={{ flex: 1, gap: 1 }}>
-              <AppText variant="titleLg" numberOfLines={1}>
-                {coupon ? coupon.title : "Kupon & Voucher"}
-              </AppText>
-              {coupon && check && !check.ok ? (
-                <AppText variant="caption" color={warning[600]} numberOfLines={1}>
-                  Belum berlaku: {check.reason}
-                </AppText>
-              ) : coupon && check?.ok ? (
-                <AppText variant="caption" color="#3F8F4A" style={{ fontFamily: "Urbanist_700Bold" }}>
-                  Hemat {formatRupiah(check.amount)}
-                </AppText>
-              ) : (
-                <AppText variant="caption" color={usableCount ? brand[700] : ink[500]}>
-                  {usableCount
-                    ? `${usableCount} bisa dipakai untuk pesanan ini`
-                    : "Belum ada yang cocok dengan pesanan ini"}
-                </AppText>
-              )}
-            </View>
-            <AppText variant="bodySemibold" color={brand[700]}>
-              {coupon ? "Ganti" : "Pilih"}
-            </AppText>
-            <AppIcon name="chevronRight" size={12} color={brand[700]} />
-          </PressableScale>
-        </Card>
-
-        <Card title="Detail Pembayaran">
-          <View>
-            <AmountRow label="Nominal Belanja" value={formatRupiah(breakdown.subtotal)} />
-            {breakdown.couponDiscount > 0 ? (
-              <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 5 }}>
-                <AppText variant="bodySemibold" color="#3F8F4A" style={{ flex: 1 }}>
-                  {coupon && isVoucher(coupon) ? "Potongan Voucher" : "Potongan Kupon"}
-                </AppText>
-                <AppText variant="bodySemibold" color="#3F8F4A">
-                  -{formatRupiah(breakdown.couponDiscount)}
-                </AppText>
-              </View>
-            ) : null}
-            <View style={{ height: 1, backgroundColor: ink[100] }} />
-            <AmountRow label="Sub Total" value={formatRupiah(breakdown.net)} bold />
-            <AmountRow label="Pb1" value={formatRupiah(breakdown.tax)} />
-            <AmountRow label="Pembulatan" value={formatRupiah(breakdown.rounding)} />
-            <View style={{ height: 1, backgroundColor: ink[100] }} />
-            <AmountRow label="Total Tagihan" value={formatRupiah(breakdown.total)} bold />
-            {breakdown.pointsDiscount > 0 ? (
-              <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 5 }}>
-                <AppText variant="bodySemibold" color="#3F8F4A" style={{ flex: 1 }}>
-                  Penggunaan Poin ({breakdown.pointsDiscount.toLocaleString("id-ID")})
-                </AppText>
-                <AppText variant="bodySemibold" color="#3F8F4A">
-                  -{formatRupiah(breakdown.pointsDiscount)}
-                </AppText>
-              </View>
-            ) : null}
-            <View style={{ height: 1, backgroundColor: ink[100] }} />
-            <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8 }}>
-              <AppText variant="h3" color={brand[800]} style={{ flex: 1 }}>
-                Total Bayar
-              </AppText>
-              <AppText variant="h3" color={brand[800]}>
-                {formatRupiah(breakdown.finalTotal)}
-              </AppText>
-            </View>
-          </View>
-        </Card>
-      </ScrollView>
-
-      <View
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderTopLeftRadius: 18,
-          borderTopRightRadius: 18,
-          ...(shadow.lg as object),
-        }}
-      >
-        <SafeAreaView edges={["bottom"]}>
-          <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, gap: 11 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-                backgroundColor: "#FDF6E3",
-                borderRadius: 21,
-                paddingVertical: 9,
-                paddingHorizontal: 14,
-              }}
-            >
-              <AppIcon name="coins" size={17} color="#D9A441" />
-              <AppText variant="titleLg" style={{ flex: 1 }}>
-                {points.toLocaleString("id-ID")} Poin
-              </AppText>
-              <AppText variant="bodyMedium" color={ink[600]}>
-                Gunakan Poin
-              </AppText>
-              <PressableScale
-                onPress={toggleUsePoints}
-                hitSlop={8}
+              <UiText
+                color={LABEL_INK}
                 style={{
-                  width: 42,
-                  height: 24,
-                  borderRadius: 12,
-                  padding: 3,
-                  backgroundColor: usePoints ? "#F0C24B" : ink[200],
-                  alignItems: usePoints ? "flex-end" : "flex-start",
+                  fontSize: 17,
+                  lineHeight: 22,
+                  fontFamily: fontFamilies.extrabold,
                 }}
               >
-                <View
-                  style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: 9,
-                    backgroundColor: usePoints ? "#D9A441" : "#FFFFFF",
-                  }}
-                />
-              </PressableScale>
+                {SERVICE_META[serviceType].label}
+              </UiText>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  fontSize: 13,
+                  lineHeight: 17,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                {SERVICE_META[serviceType].hint}
+              </UiText>
             </View>
-
-            <PressableScale
-              onPress={() => setConfirming(true)}
-              scaleTo={0.98}
+            <OutlinePill label="Ubah" onPress={() => setSheet("service")} />
+          </View>
+          {pickupOptions.map((o) => {
+            const on = pickup === o.id && !o.off;
+            return (
+              <PressableScale
+                key={o.id}
+                disabled={!!o.off}
+                onPress={() => {
+                  tapSelect();
+                  setPickup(o.id);
+                }}
+                scaleTo={0.99}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  paddingVertical: 13,
+                  paddingLeft: 16,
+                  paddingRight: 14,
+                  backgroundColor: on ? "#E6EEFF" : "#FFFFFF",
+                  borderTopWidth: 1,
+                  borderTopColor: on ? "#D4E0FB" : RULE,
+                }}
+              >
+                {on ? (
+                  <View
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 10,
+                      bottom: 10,
+                      width: 4,
+                      borderTopRightRadius: 3,
+                      borderBottomRightRadius: 3,
+                      backgroundColor: brand[600],
+                    }}
+                  />
+                ) : null}
+                <Glyph
+                  name={o.glyph}
+                  size={20}
+                  color={o.off ? "#B0B7C6" : brand[700]}
+                />
+                <View style={{ flex: 1 }}>
+                  <UiText
+                    color={o.off ? "#8A93A6" : LABEL_INK}
+                    style={{
+                      fontSize: 15,
+                      lineHeight: 19,
+                      fontFamily: fontFamilies.bold,
+                    }}
+                  >
+                    {o.title}
+                  </UiText>
+                  <UiText
+                    color={o.off ? "#8A93A6" : on ? brand[700] : QUIET_INK}
+                    style={{
+                      fontSize: 12.5,
+                      lineHeight: 17,
+                      fontFamily: fontFamilies.semibold,
+                    }}
+                  >
+                    {o.off ?? o.hint}
+                  </UiText>
+                </View>
+                <Radio on={on} disabled={!!o.off} />
+              </PressableScale>
+            );
+          })}
+          {pickup === "table" && serviceType === "dine_in" ? (
+            <View
               style={{
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: brand[900],
-                alignItems: "center",
-                justifyContent: "center",
+                paddingHorizontal: 16,
+                paddingBottom: 14,
+                backgroundColor: "#E6EEFF",
               }}
             >
-              <AppText variant="h3" color="#FFFFFF">
-                Bayar • {formatRupiah(breakdown.finalTotal)}
-              </AppText>
-            </PressableScale>
-          </View>
-        </SafeAreaView>
-      </View>
-
-      {picking ? (
-        <CouponPickerSheet
-          rows={couponRows}
-          selectedId={couponId}
-          isVoucher={isVoucher}
-          onClose={() => setPicking(false)}
-          onApply={(id) => {
-            setPicking(false);
-            if (id === couponId) return;
-            setCoupon(id);
-            const picked = couponRows.find((r) => r.coupon.id === id);
-            if (picked?.check.ok) {
-              tapSuccess();
-              showToast(`Hemat ${formatRupiah(picked.check.amount)} dengan ${picked.coupon.title}`);
-            } else if (couponId) {
-              showToast("Kupon dilepas dari pesanan", "info");
-            }
-          }}
-        />
-      ) : null}
-
-      {confirming && outlet ? (
-        <ConfirmDialog
-          title="Konfirmasi Pesanan"
-          cancelLabel="Cek Kembali"
-          confirmLabel="Ya, Lanjutkan"
-          cancelColor={brand[700]}
-          confirmColor={brand[900]}
-          variant="buttons"
-          onCancel={() => setConfirming(false)}
-          onConfirm={() => {
-            setConfirming(false);
-            mintReceipt();
-            router.push("/qris");
-          }}
-        >
-          <View style={{ gap: 9, marginTop: 12 }}>
-            <View style={{ backgroundColor: brand[50], borderRadius: 11, padding: 11, gap: 7 }}>
-              <AppText variant="caption" color={ink[400]}>
-                Lokasi Outlet
-              </AppText>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 9,
-                    backgroundColor: "#FFFFFF",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <BrandLogo brandId={outlet.brandId} size={24} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <AppText variant="titleLg" numberOfLines={1}>
-                    {outletFullName(outlet)}
-                  </AppText>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                    <AppText variant="caption" color={ink[500]}>
-                      {outlet.city} •
-                    </AppText>
-                    <AppText
-                      variant="caption"
-                      color={tooFar ? danger[500] : ink[500]}
-                      style={{ fontFamily: "Urbanist_700Bold" }}
-                    >
-                      {outlet.distanceKm.toFixed(1)} km
-                    </AppText>
-                    {tooFar ? <AppIcon name="alertTriangle" size={11} color={danger[500]} /> : null}
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row", gap: 9 }}>
-              <View style={{ flex: 1, backgroundColor: brand[50], borderRadius: 11, padding: 11, gap: 6 }}>
-                <AppText variant="caption" color={ink[400]}>
-                  Tipe Order
-                </AppText>
-                <AppText variant="titleLg">{serviceLabels[serviceType]}</AppText>
-              </View>
-              <View style={{ flex: 1, backgroundColor: brand[50], borderRadius: 11, padding: 11, gap: 6 }}>
-                <AppText variant="caption" color={ink[400]}>
-                  Opsi Pengambilan
-                </AppText>
-                <AppText variant="titleLg">
-                  {pickup === "self" ? "Ambil Sendiri" : "Antar ke Meja"}
-                </AppText>
-              </View>
-            </View>
-
-            {pickup === "table" && tableNumber ? (
-              <View style={{ backgroundColor: brand[50], borderRadius: 11, padding: 11, gap: 6 }}>
-                <AppText variant="caption" color={ink[400]}>
-                  Catatan Pengambilan
-                </AppText>
-                <AppText variant="titleLg">{tableNumber}</AppText>
-              </View>
-            ) : null}
-
-            {tooFar ? (
               <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 9,
-                  backgroundColor: danger[50],
+                  gap: 8,
+                  height: 44,
+                  borderRadius: 12,
+                  borderWidth: tableMissing ? 1.5 : 1,
+                  borderColor: tableMissing ? WARN_INK : "#C9D6F5",
+                  backgroundColor: "#FFFFFF",
+                  paddingHorizontal: 12,
+                }}
+              >
+                <Glyph name="hash" size={14} color={QUIET_INK} />
+                <TextInput
+                  value={tableNumber}
+                  onChangeText={setTableNumber}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  placeholder="Nomor meja (lihat di stiker meja)"
+                  placeholderTextColor="#8A93A6"
+                  style={[
+                    {
+                      flex: 1,
+                      minWidth: 0,
+                      padding: 0,
+                      fontFamily: fontFamilies.semibold,
+                      fontSize: 15,
+                      color: LABEL_INK,
+                    },
+                    Platform.OS === "web"
+                      ? ({ outlineStyle: "none" } as object)
+                      : null,
+                  ]}
+                />
+              </View>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  marginTop: 6,
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                Pindah meja? Kabari kasir, ya.
+              </UiText>
+            </View>
+          ) : null}
+        </Block>
+
+        {/* Where the order is made, with the note for the outlet. */}
+        <Block style={{ padding: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <BrandLogo brandId={outlet.brandId} size={30} />
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={LABEL_INK}
+                numberOfLines={1}
+                style={{
+                  fontSize: 16,
+                  lineHeight: 21,
+                  fontFamily: fontFamilies.extrabold,
+                }}
+              >
+                {outletFullName(outlet)}
+              </UiText>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
+                <UiText
+                  color={QUIET_INK}
+                  numberOfLines={1}
+                  style={{
+                    flexShrink: 1,
+                    fontSize: 12.5,
+                    lineHeight: 17,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  {outlet.address} ·
+                </UiText>
+                <UiText
+                  color={tooFar ? danger[500] : QUIET_INK}
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 17,
+                    fontFamily: fontFamilies.bold,
+                  }}
+                >
+                  {outlet.distanceKm.toFixed(1)} km
+                </UiText>
+              </View>
+            </View>
+            <OutlinePill label="Ubah" onPress={() => setSheet("outlet")} />
+          </View>
+          {tooFar ? (
+            <View
+              style={{
+                marginTop: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                borderRadius: 10,
+                backgroundColor: danger[50],
+                paddingHorizontal: 10,
+                paddingVertical: 7,
+              }}
+            >
+              <Glyph name="alertCircle" size={13} color={danger[500]} />
+              <UiText
+                color={danger[500]}
+                style={{
+                  flex: 1,
+                  fontSize: 12,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.semibold,
+                }}
+              >
+                Kamu lebih dari {MAX_ORDER_DISTANCE_KM.toFixed(1)} km dari
+                outlet ini.
+              </UiText>
+            </View>
+          ) : null}
+          <PressableScale
+            onPress={() => setSheet("note")}
+            scaleTo={0.99}
+            style={{
+              marginTop: 12,
+              marginLeft: 42,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              borderRadius: 18,
+              backgroundColor: "#F2F3F5",
+              paddingHorizontal: 14,
+              paddingVertical: 9,
+            }}
+          >
+            <UiText
+              color={orderNote ? LABEL_INK : "#6B7488"}
+              numberOfLines={1}
+              style={{
+                flex: 1,
+                fontSize: 14,
+                lineHeight: 18,
+                fontFamily: fontFamilies.medium,
+              }}
+            >
+              {orderNote || "Tambah catatan untuk outlet"}
+            </UiText>
+            <Glyph name="pencil" size={13} color={QUIET_INK} />
+          </PressableScale>
+        </Block>
+
+        {/* The items, then more from the same menu. */}
+        <Block>
+          {lines.map((line, i) => (
+            <View key={line.lineId}>
+              {i > 0 ? <Hairline inset={16} /> : null}
+              <LineRow
+                line={line}
+                onQty={(n) => {
+                  if (n <= 0) setRemoving(line);
+                  else setLineQty(line.lineId, n);
+                }}
+              />
+            </View>
+          ))}
+
+          {extras.length > 0 ? (
+            <>
+              <Hairline />
+              <View style={{ paddingTop: 16 }}>
+                <View style={{ paddingHorizontal: 16 }}>
+                  <Title>Lengkapi pesananmu</Title>
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    padding: 16,
+                    paddingTop: 12,
+                    gap: 10,
+                  }}
+                >
+                  {extras.map((m) => {
+                    const sel = defaultSelections(m.optionGroups);
+                    return (
+                      <View
+                        key={m.id}
+                        style={{
+                          width: 232,
+                          flexDirection: "row",
+                          gap: 10,
+                          borderRadius: 16,
+                          borderWidth: 1,
+                          borderColor: RULE,
+                          padding: 10,
+                        }}
+                      >
+                        <ImagePlaceholder
+                          seed={m.id}
+                          radius={12}
+                          iconSize={16}
+                          style={{ width: 70, height: 70 }}
+                        />
+                        <View
+                          style={{ flex: 1, justifyContent: "space-between" }}
+                        >
+                          <View>
+                            <UiText
+                              color={LABEL_INK}
+                              numberOfLines={2}
+                              style={{
+                                fontSize: 14,
+                                lineHeight: 18,
+                                fontFamily: fontFamilies.bold,
+                              }}
+                            >
+                              {m.name}
+                            </UiText>
+                            <UiText
+                              color={QUIET_INK}
+                              style={{
+                                marginTop: 2,
+                                fontSize: 12.5,
+                                lineHeight: 16,
+                                fontFamily: fontFamilies.medium,
+                              }}
+                            >
+                              {formatRupiah(unitPrice(m, sel))}
+                            </UiText>
+                          </View>
+                          <View
+                            style={{ alignItems: "flex-end", marginTop: 6 }}
+                          >
+                            <OutlinePill
+                              small
+                              label="Tambah"
+                              onPress={() => {
+                                tapSuccess();
+                                addLine(m, 1, sel);
+                                showToast(`${m.name} ditambahkan`);
+                              }}
+                            />
+                          </View>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </>
+          ) : null}
+
+          <Hairline />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+              padding: 16,
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Title>Butuh yang lain?</Title>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  marginTop: 2,
+                  fontSize: 13.5,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                Tambah menu lain, kalau mau.
+              </UiText>
+            </View>
+            <OutlinePill label="Tambah" onPress={() => router.push("/order")} />
+          </View>
+        </Block>
+
+        {/* Promo: the one on the order, and the way to the others. */}
+        <Block>
+          <PressableScale
+            onPress={() => {
+              tapPress();
+              router.push("/checkout-promos");
+            }}
+            scaleTo={0.99}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+              padding: 14,
+              backgroundColor: coupon && check?.ok ? "#F1FBF4" : "#FFFFFF",
+            }}
+          >
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: coupon && check?.ok ? "#DDF5E4" : "#FFF3C4",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Glyph
+                name="ticketPercent"
+                size={22}
+                color={coupon && check?.ok ? SAVE_INK : "#A36A00"}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={LABEL_INK}
+                numberOfLines={2}
+                style={{
+                  fontSize: 15,
+                  lineHeight: 20,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                {coupon ? coupon.title : "Pakai promo biar makin hemat"}
+              </UiText>
+              <UiText
+                color={
+                  coupon && check && !check.ok
+                    ? WARN_INK
+                    : coupon
+                      ? SAVE_INK
+                      : usable
+                        ? brand[700]
+                        : QUIET_INK
+                }
+                style={{
+                  marginTop: 2,
+                  fontSize: 12.5,
+                  lineHeight: 17,
+                  fontFamily: fontFamilies.semibold,
+                }}
+              >
+                {coupon && check && !check.ok
+                  ? `Belum berlaku: ${check.reason}`
+                  : coupon && check?.ok
+                    ? `Hemat ${formatRupiah(check.amount)} · ${isVoucher(coupon) ? "Voucher" : "Kupon"} berakhir dalam ${coupon.daysLeft} hari`
+                    : usable
+                      ? `${usable} promo bisa dipakai untuk pesanan ini`
+                      : "Belum ada promo yang cocok"}
+              </UiText>
+            </View>
+            {coupon && check?.ok ? (
+              <View
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: 13,
+                  backgroundColor: SAVE_INK,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Glyph name="check" size={14} color="#FFFFFF" />
+              </View>
+            ) : (
+              <Glyph name="chevronRight" size={13} color={QUIET_INK} />
+            )}
+          </PressableScale>
+          <Hairline />
+          <PressableScale
+            onPress={() => router.push("/checkout-promos")}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+            }}
+          >
+            <UiText
+              color={brand[700]}
+              style={{
+                flex: 1,
+                fontSize: 15,
+                lineHeight: 19,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
+              Cek promo lainnya
+            </UiText>
+            <Glyph name="arrowRight" size={17} color={brand[700]} />
+          </PressableScale>
+        </Block>
+
+        {/* The bill. */}
+        <View style={{ marginTop: 6, marginLeft: 2 }}>
+          <Title>Rincian pembayaran</Title>
+        </View>
+        <Block style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+          <SumRow label="Harga" value={formatRupiah(breakdown.subtotal)} />
+          <PressableScale onPress={() => setFeesOpen((v) => !v)} scaleTo={1}>
+            <SumRow
+              label={
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                >
+                  <UiText
+                    color="#4C4C4C"
+                    style={{
+                      fontSize: 15,
+                      lineHeight: 20,
+                      fontFamily: fontFamilies.medium,
+                    }}
+                  >
+                    Pajak & pembulatan
+                  </UiText>
+                  <Glyph
+                    name="chevronRight"
+                    size={11}
+                    color={QUIET_INK}
+                    rotate={feesOpen ? 270 : 90}
+                  />
+                </View>
+              }
+              value={formatRupiah(breakdown.tax + breakdown.rounding)}
+            />
+          </PressableScale>
+          {feesOpen ? (
+            <View
+              style={{
+                paddingLeft: 12,
+                borderLeftWidth: 2,
+                borderLeftColor: RULE,
+                marginBottom: 4,
+              }}
+            >
+              <SumRow label="PB1 10%" value={formatRupiah(breakdown.tax)} />
+              <SumRow
+                label="Pembulatan"
+                value={formatRupiah(breakdown.rounding)}
+              />
+            </View>
+          ) : null}
+          {breakdown.couponDiscount > 0 ? (
+            <SumRow
+              tone="save"
+              label={
+                coupon && isVoucher(coupon)
+                  ? "Potongan voucher"
+                  : "Potongan kupon"
+              }
+              value={`-${formatRupiah(breakdown.couponDiscount)}`}
+            />
+          ) : null}
+          {breakdown.pointsDiscount > 0 ? (
+            <SumRow
+              tone="save"
+              label={`Poin dipakai (${breakdown.pointsDiscount.toLocaleString("id-ID")})`}
+              value={`-${formatRupiah(breakdown.pointsDiscount)}`}
+            />
+          ) : null}
+          <View
+            style={{
+              marginVertical: 8,
+              borderTopWidth: 1,
+              borderStyle: "dashed",
+              borderColor: "#D5D8DE",
+            }}
+          />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: 6,
+              gap: 8,
+            }}
+          >
+            <UiText
+              color={LABEL_INK}
+              style={{
+                flex: 1,
+                fontSize: 17,
+                lineHeight: 22,
+                fontFamily: fontFamilies.extrabold,
+              }}
+            >
+              Total bayar
+            </UiText>
+            {saved > 0 ? (
+              <UiText
+                color="#8A93A6"
+                style={{
+                  fontSize: 15,
+                  lineHeight: 20,
+                  fontFamily: fontFamilies.medium,
+                  textDecorationLine: "line-through",
+                }}
+              >
+                {formatRupiah(full)}
+              </UiText>
+            ) : null}
+            <UiText
+              color={LABEL_INK}
+              style={{
+                fontSize: 17,
+                lineHeight: 22,
+                fontFamily: fontFamilies.extrabold,
+              }}
+            >
+              {formatRupiah(breakdown.finalTotal)}
+            </UiText>
+          </View>
+        </Block>
+
+        {/* Points nudge, until they are on the bill. */}
+        {!usePoints && points > 0 ? (
+          <Block style={{ padding: 16 }}>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "#FFF3C4",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Glyph name="coins" size={20} color="#A36A00" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <UiText
+                  color={LABEL_INK}
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 20,
+                    fontFamily: fontFamilies.medium,
+                  }}
+                >
+                  Kamu punya{" "}
+                  <UiText
+                    color={LABEL_INK}
+                    style={{
+                      fontSize: 15,
+                      lineHeight: 20,
+                      fontFamily: fontFamilies.extrabold,
+                    }}
+                  >
+                    {points.toLocaleString("id-ID")} poin
+                  </UiText>
+                  . Pakai untuk potong tagihan, 1 poin = Rp 1.
+                </UiText>
+                <PressableScale
+                  onPress={() => {
+                    tapSuccess();
+                    toggleUsePoints();
+                    showToast("Poin dipakai untuk pesanan ini");
+                  }}
+                  scaleTo={0.96}
+                  style={{
+                    alignSelf: "flex-start",
+                    marginTop: 10,
+                    height: 38,
+                    paddingHorizontal: 18,
+                    borderRadius: 19,
+                    backgroundColor: "#EAF0FF",
+                    justifyContent: "center",
+                  }}
+                >
+                  <UiText
+                    color={brand[700]}
+                    style={{
+                      fontSize: 14.5,
+                      lineHeight: 18,
+                      fontFamily: fontFamilies.bold,
+                    }}
+                  >
+                    Pakai poin
+                  </UiText>
+                </PressableScale>
+              </View>
+            </View>
+          </Block>
+        ) : null}
+
+        {/* Cutlery and gift. */}
+        <Block>
+          <PressableScale
+            onPress={() => {
+              tapSelect();
+              setCutlery(!cutlery);
+            }}
+            scaleTo={0.99}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 14,
+              padding: 16,
+            }}
+          >
+            <CutleryIcon size={24} />
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  fontSize: 16,
+                  lineHeight: 21,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                Minta alat makan/sedotan
+              </UiText>
+              <UiText
+                color={QUIET_INK}
+                style={{
+                  fontSize: 13,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                Centang kalau perlu. Yuk, kurangi sampah!
+              </UiText>
+            </View>
+            <Checkbox on={cutlery} />
+          </PressableScale>
+          <Hairline inset={16} />
+          <PressableScale
+            onPress={() => setSheet("gift")}
+            scaleTo={0.99}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 14,
+              padding: 16,
+            }}
+          >
+            <Glyph name="gift" size={22} color="#C8102E" />
+            <View style={{ flex: 1 }}>
+              <UiText
+                color={LABEL_INK}
+                style={{
+                  fontSize: 16,
+                  lineHeight: 21,
+                  fontFamily: fontFamilies.bold,
+                }}
+              >
+                {gift ? `Hadiah untuk ${gift.to}` : "Kirim sebagai hadiah"}
+              </UiText>
+              <UiText
+                color={QUIET_INK}
+                numberOfLines={1}
+                style={{
+                  fontSize: 13,
+                  lineHeight: 18,
+                  fontFamily: fontFamilies.medium,
+                }}
+              >
+                {gift
+                  ? gift.message || "Tanpa ucapan"
+                  : "Tambah nama penerima dan ucapan."}
+              </UiText>
+            </View>
+            <Glyph name="chevronRight" size={13} color={QUIET_INK} />
+          </PressableScale>
+        </Block>
+      </ScrollView>
+
+      {/* How it is paid and the order button, always in reach. */}
+      <View
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderTopWidth: 1,
+          borderTopColor: RULE,
+          paddingHorizontal: 16,
+          paddingTop: 10,
+          paddingBottom: Math.max(insets.bottom, 12),
+          gap: 10,
+        }}
+      >
+        <PressableScale
+          onPress={() => setSheet("pay")}
+          scaleTo={0.99}
+          style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+        >
+          <View
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: "#F2F5FC",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Glyph
+              name={payMethod === "qris" ? "qr" : "pos"}
+              size={19}
+              color={brand[700]}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <UiText
+              color={QUIET_INK}
+              style={{
+                fontSize: 12.5,
+                lineHeight: 16,
+                fontFamily: fontFamilies.medium,
+              }}
+            >
+              {payLabel}
+            </UiText>
+            <UiText
+              color={LABEL_INK}
+              style={{
+                fontSize: 17,
+                lineHeight: 22,
+                fontFamily: fontFamilies.extrabold,
+              }}
+            >
+              {formatRupiah(breakdown.finalTotal)}
+            </UiText>
+          </View>
+          <View
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              backgroundColor: "#3A3F4B",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Glyph name="more" size={16} color="#FFFFFF" />
+          </View>
+        </PressableScale>
+        <PressableScale
+          onPress={() => {
+            if (tableMissing) {
+              showToast("Isi nomor meja dulu, ya", "error");
+              return;
+            }
+            tapPress();
+            setConfirming(true);
+          }}
+          scaleTo={0.98}
+          style={{
+            height: 52,
+            borderRadius: 26,
+            backgroundColor: brand[600],
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <UiText
+            color="#FFFFFF"
+            style={{
+              fontSize: 17,
+              lineHeight: 22,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
+            {payMethod === "cashier" && breakdown.finalTotal > 0
+              ? "Pesan, bayar di kasir"
+              : "Pesan sekarang"}
+          </UiText>
+        </PressableScale>
+      </View>
+
+      {sheet === "service" ? (
+        <ServiceTypeSheet
+          value={serviceType}
+          available={outlet.services}
+          onClose={() => setSheet(null)}
+          onPick={(t) => {
+            setServiceType(t);
+            if (t !== "dine_in" && pickup === "table") setPickup("self");
+            setSheet(null);
+          }}
+        />
+      ) : null}
+      {sheet === "outlet" ? (
+        <OutletSheet
+          brandId={outlet.brandId}
+          value={outlet.id}
+          onClose={() => setSheet(null)}
+          onPick={(id) => {
+            setOutlet(id);
+            setSheet(null);
+          }}
+        />
+      ) : null}
+      {sheet === "note" ? (
+        <NoteSheet
+          value={orderNote}
+          onClose={() => setSheet(null)}
+          onSave={(v) => {
+            setOrderNote(v);
+            setSheet(null);
+          }}
+        />
+      ) : null}
+      {sheet === "gift" ? (
+        <GiftSheet
+          value={gift}
+          onClose={() => setSheet(null)}
+          onSave={(g) => {
+            setGift(g);
+            setSheet(null);
+            if (g) showToast(`Pesanan ini hadiah untuk ${g.to}`);
+          }}
+        />
+      ) : null}
+      {sheet === "pay" ? (
+        <PaymentMethodSheet
+          method={payMethod}
+          usePoints={usePoints}
+          points={points}
+          onPick={setPayMethod}
+          onTogglePoints={toggleUsePoints}
+          onClose={() => setSheet(null)}
+        />
+      ) : null}
+
+      {removing ? (
+        <ConfirmDialog
+          title="Hapus item ini?"
+          message={`${removing.menuItem.name} akan dihapus dari pesanan.`}
+          cancelLabel="Batal"
+          confirmLabel="Hapus"
+          cancelColor={QUIET_INK}
+          confirmColor={danger[500]}
+          onCancel={() => setRemoving(null)}
+          onConfirm={() => {
+            setLineQty(removing.lineId, 0);
+            setRemoving(null);
+          }}
+        />
+      ) : null}
+
+      {confirming ? (
+        <ConfirmDialog
+          title="Pesanan sudah sesuai?"
+          cancelLabel="Cek lagi"
+          confirmLabel="Ya, pesan"
+          cancelColor={brand[700]}
+          confirmColor={brand[600]}
+          variant="buttons"
+          onCancel={() => setConfirming(false)}
+          onConfirm={place}
+        >
+          <View style={{ gap: 8, marginTop: 12 }}>
+            {[
+              ["Outlet", outletFullName(outlet)],
+              [
+                "Tipe",
+                `${SERVICE_META[serviceType].label} · ${
+                  pickup === "table"
+                    ? `Antar ke meja ${tableNumber}`
+                    : "Ambil sendiri"
+                }`,
+              ],
+              ["Bayar", `${payLabel} · ${formatRupiah(breakdown.finalTotal)}`],
+            ].map(([k, v]) => (
+              <View
+                key={k}
+                style={{
+                  flexDirection: "row",
+                  gap: 10,
                   borderRadius: 11,
+                  backgroundColor: "#F3F7FF",
                   padding: 11,
                 }}
               >
-                <AppIcon name="alertCircle" size={15} color={danger[500]} />
-                <AppText
-                  variant="caption"
-                  color={danger[500]}
-                  style={{ flex: 1, fontStyle: "italic" }}
+                <UiText
+                  color={QUIET_INK}
+                  style={{
+                    width: 52,
+                    fontSize: 13,
+                    lineHeight: 18,
+                    fontFamily: fontFamilies.medium,
+                  }}
                 >
-                  Jarak anda terlalu jauh dari outlet:{" "}
-                  <AppText
-                    variant="caption"
-                    color={danger[500]}
-                    style={{ fontStyle: "italic", fontFamily: "Urbanist_700Bold" }}
-                  >
-                    {MAX_ORDER_DISTANCE_KM.toFixed(1)} km
-                  </AppText>
-                </AppText>
+                  {k}
+                </UiText>
+                <UiText
+                  color={LABEL_INK}
+                  style={{
+                    flex: 1,
+                    fontSize: 13.5,
+                    lineHeight: 18,
+                    fontFamily: fontFamilies.bold,
+                  }}
+                >
+                  {v}
+                </UiText>
+              </View>
+            ))}
+            {tooFar ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 8,
+                  borderRadius: 11,
+                  backgroundColor: danger[50],
+                  padding: 11,
+                }}
+              >
+                <Glyph name="alertCircle" size={14} color={danger[500]} />
+                <UiText
+                  color={danger[500]}
+                  style={{
+                    flex: 1,
+                    fontSize: 12.5,
+                    lineHeight: 17,
+                    fontFamily: fontFamilies.semibold,
+                  }}
+                >
+                  Kamu lebih dari {MAX_ORDER_DISTANCE_KM.toFixed(1)} km dari
+                  outlet. Pastikan bisa mengambilnya, ya.
+                </UiText>
               </View>
             ) : null}
-
             <View
               style={{
                 flexDirection: "row",
-                gap: 9,
-                backgroundColor: "#FDF6E3",
+                gap: 8,
                 borderRadius: 11,
+                backgroundColor: "#FFF8E1",
                 padding: 11,
               }}
             >
-              <AppIcon name="alertCircle" size={15} color={warning[600]} />
-              <AppText
-                variant="caption"
-                color={warning[600]}
-                style={{ flex: 1, fontStyle: "italic", lineHeight: 17 }}
+              <Glyph name="clock" size={14} color={WARN_INK} />
+              <UiText
+                color={WARN_INK}
+                style={{
+                  flex: 1,
+                  fontSize: 12.5,
+                  lineHeight: 17,
+                  fontFamily: fontFamilies.semibold,
+                }}
               >
-                Pastikan outlet dan pesananmu sudah sesuai ya! karena pesanan yang sudah
-                dikonfirmasi{" "}
-                <AppText
-                  variant="caption"
-                  color={warning[600]}
-                  style={{ fontStyle: "italic", fontFamily: "Urbanist_700Bold" }}
-                >
-                  tidak dapat dibatalkan.
-                </AppText>
-              </AppText>
+                Pesanan hanya bisa dibatalkan dalam 1 menit, sebelum outlet
+                mulai menyiapkannya.
+              </UiText>
             </View>
           </View>
         </ConfirmDialog>

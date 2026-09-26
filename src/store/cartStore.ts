@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import type { CartLine, MenuItem, MenuOptionGroup } from "../data/types";
+import type { CartLine, MenuItem, MenuOptionGroup, OrderGift } from "../data/types";
+
+/** How the order is paid: QRIS in the app, or at the cashier. */
+export type PayMethod = "qris" | "cashier";
 
 /** Every single-select group starts on its first option, matching the sheet. */
 export function defaultSelections(groups: MenuOptionGroup[]): Record<string, number> {
@@ -44,6 +47,10 @@ interface CartState {
   pickup: "self" | "table";
   tableNumber: string;
   couponId?: string;
+  payMethod: PayMethod;
+  /** The member asked for cutlery or straws; off by default, less waste. */
+  cutlery: boolean;
+  gift?: OrderGift;
   addLine: (menuItem: MenuItem, qty: number, selections: Record<string, number>, note?: string) => void;
   updateLine: (lineId: string, qty: number, selections: Record<string, number>, note?: string) => void;
   setLineQty: (lineId: string, qty: number) => void;
@@ -55,6 +62,9 @@ interface CartState {
   setPickup: (pickup: "self" | "table") => void;
   setTableNumber: (value: string) => void;
   setCoupon: (couponId?: string) => void;
+  setPayMethod: (payMethod: PayMethod) => void;
+  setCutlery: (cutlery: boolean) => void;
+  setGift: (gift?: OrderGift) => void;
   lineTotal: (line: CartLine) => number;
   subtotal: () => number;
   itemCount: () => number;
@@ -67,6 +77,9 @@ export const useCartStore = create<CartState>((set, get) => ({
   pickup: "self",
   tableNumber: "",
   couponId: undefined,
+  payMethod: "qris",
+  cutlery: false,
+  gift: undefined,
   addLine: (menuItem, qty, selections, note) =>
     set((state) => ({
       lines: [
@@ -94,12 +107,23 @@ export const useCartStore = create<CartState>((set, get) => ({
   removeLine: (lineId) =>
     set((state) => ({ lines: state.lines.filter((l) => l.lineId !== lineId) })),
   clear: () =>
-    set({ lines: [], orderNote: "", tableNumber: "", couponId: undefined, usePoints: false }),
+    set({
+      lines: [],
+      orderNote: "",
+      tableNumber: "",
+      couponId: undefined,
+      usePoints: false,
+      cutlery: false,
+      gift: undefined,
+    }),
   toggleUsePoints: () => set((state) => ({ usePoints: !state.usePoints })),
   setOrderNote: (orderNote) => set({ orderNote }),
   setPickup: (pickup) => set({ pickup }),
   setTableNumber: (tableNumber) => set({ tableNumber }),
   setCoupon: (couponId) => set({ couponId }),
+  setPayMethod: (payMethod) => set({ payMethod }),
+  setCutlery: (cutlery) => set({ cutlery }),
+  setGift: (gift) => set({ gift }),
   lineTotal: (line) => unitPrice(line.menuItem, line.selections) * line.qty,
   subtotal: () => get().lines.reduce((sum, l) => sum + get().lineTotal(l), 0),
   itemCount: () => get().lines.reduce((sum, l) => sum + l.qty, 0),

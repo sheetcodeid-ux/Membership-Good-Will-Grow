@@ -1146,10 +1146,6 @@ export function getPost(id: string) {
   return feedPosts.find((p) => p.id === id);
 }
 
-export function getOrder(id: string) {
-  return orders.find((o) => o.id === id);
-}
-
 /** Outlets are stored with a short name ("Mega Mall"); cards outside the
  *  outlet picker show it prefixed with the brand ("Nordu Coffee Mega Mall"). */
 export function outletFullName(outlet: Outlet) {

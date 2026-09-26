@@ -21,7 +21,8 @@ import { channelMeta, statusMeta } from "../components/OrderIcons";
 import { brand, ink, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
-import { brands, menuItems, orders, outlets } from "../data/mock";
+import { brands, menuItems, outlets } from "../data/mock";
+import { useAllOrders } from "../store/ordersStore";
 import { useOrderStore } from "../store/orderStore";
 import { defaultSelections, useCartStore } from "../store/cartStore";
 import { showToast } from "../store/toastStore";
@@ -192,6 +193,7 @@ export default function OrderHistoryScreen() {
   const [outletBrandId, setOutletBrandId] = useState<string | null>(null);
   const [outletQuery, setOutletQuery] = useState("");
   const scroll = useScrolled();
+  const orders = useAllOrders();
 
   const visible = useMemo(
     () =>
@@ -201,7 +203,7 @@ export default function OrderHistoryScreen() {
           (!filters.status || o.status === filters.status) &&
           (!filters.outletId || o.outletId === filters.outletId),
       ),
-    [filters],
+    [filters, orders],
   );
 
   const filtered = !!(filters.channel || filters.status || filters.outletId);
@@ -383,7 +385,12 @@ export default function OrderHistoryScreen() {
                     }}
                   >
                     <PressableScale
-                      onPress={() => router.push(`/order/${o.id}`)}
+                      // Orders placed here open on their live status.
+                      onPress={() =>
+                        router.push(
+                          o.placedAt ? `/order-status/${o.id}` : `/order/${o.id}`,
+                        )
+                      }
                       scaleTo={0.99}
                       style={{
                         paddingHorizontal: 14,

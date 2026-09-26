@@ -21,6 +21,8 @@ interface CouponState {
   buy: (offerId: string) => Coupon | undefined;
   /** Spends a coupon on a paid order. */
   markUsed: (id: string) => void;
+  /** Gives a coupon back when its order is cancelled. */
+  restore: (id: string) => void;
 }
 
 let seq = 1;
@@ -65,5 +67,9 @@ export const useCouponStore = create<CouponState>((set, get) => ({
   markUsed: (id) =>
     set((s) => ({
       mine: s.mine.map((c) => (c.id === id ? { ...c, used: true } : c)),
+    })),
+  restore: (id) =>
+    set((s) => ({
+      mine: s.mine.map((c) => (c.id === id ? { ...c, used: false } : c)),
     })),
 }));
