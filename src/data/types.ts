@@ -107,6 +107,8 @@ export interface CouponDetail {
    * member needs to meet any one of them ("ATAU" between groups).
    */
   requirements: string[][];
+  /** Heading over each requirement group; "Beli item berikut" when unset. */
+  requirementsTitle?: string;
   note?: string;
   outletIds: string[];
 }

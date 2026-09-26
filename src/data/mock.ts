@@ -629,6 +629,49 @@ export const couponOffers: CouponOffer[] = [
   },
 ];
 
+/**
+ * Voucher codes the app accepts in Voucher Saya, keyed by code. Each
+ * claim turns into a voucher shaped like a coupon.
+ */
+export const voucherCodes: Record<string, Omit<Coupon, "id" | "used">> = {
+  GWGBARU: {
+    title: "Voucher Member Baru Rp 10.000",
+    daysLeft: 14,
+    detail: {
+      benefits: ["Potongan Rp 10.000 untuk transaksi pertama"],
+      claimTerms: [
+        "Satu kode hanya bisa diklaim sekali per akun.",
+        "Voucher berlaku 14 hari sejak diklaim.",
+      ],
+      requirements: [
+        ["Transaksi minimal Rp 40.000 di semua brand Good Will Grow"],
+      ],
+      requirementsTitle: "Minimal transaksi",
+      note: "Tidak dapat digabung dengan kupon lain.",
+      outletIds: [
+        "nordu-megamall",
+        "cattu-sepakat",
+        "lesung-gajahmada",
+        "busari-veteran",
+      ],
+    },
+  },
+  NORDUHEMAT: {
+    brandId: "nordu",
+    title: "Voucher Nordu Hemat 20%",
+    daysLeft: 7,
+    detail: {
+      benefits: ["Diskon 20% semua minuman", "Maksimal potongan Rp 8.000"],
+      claimTerms: [
+        "Satu kode hanya bisa diklaim sekali per akun.",
+        "Voucher berlaku 7 hari sejak diklaim.",
+      ],
+      requirements: [["Minuman apa pun di Nordu Coffee, 1 item"]],
+      outletIds: ["nordu-megamall", "nordu-tanjungsari", "nordu-merdeka"],
+    },
+  },
+};
+
 export const promos: Promo[] = [
   {
     id: "promo-buy1get1",

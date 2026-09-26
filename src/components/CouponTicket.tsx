@@ -5,7 +5,7 @@ import { PressableScale } from "./ui/PressableScale";
 import { Glyph } from "./icons/Glyph";
 import { BrandLogo } from "./BrandLogo";
 import { LABEL_INK, QUIET_INK, RULE, WARN_INK } from "./AccountMenu";
-import { success, surface } from "../theme/colors";
+import { brand, success, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import type { Coupon } from "../data/types";
 
@@ -116,7 +116,12 @@ export function CouponTicket({
             justifyContent: "center",
           }}
         >
-          <BrandLogo brandId={coupon.brandId} size={16} />
+          {coupon.brandId ? (
+            <BrandLogo brandId={coupon.brandId} size={16} />
+          ) : (
+            // good at every brand: the shop mark in place of a logo
+            <Glyph name="store" size={13} color={brand[600]} />
+          )}
         </View>
         {fresh ? (
           <View

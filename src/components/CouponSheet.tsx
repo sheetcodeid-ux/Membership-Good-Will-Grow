@@ -140,9 +140,12 @@ export function CouponSheet({
   coupon,
   onClose,
   offer,
+  noun = "kupon",
 }: {
   coupon: Coupon;
   onClose: () => void;
+  /** What the member calls it: "kupon", or "voucher" from Voucher Saya. */
+  noun?: "kupon" | "voucher";
   /** Opened from "Kupon tersedia": priced in points, bought from the footer. */
   offer?: { price: number; onBuy: () => void };
 }) {
@@ -163,8 +166,8 @@ export function CouponSheet({
     if (target && target.id !== outletId) setOutlet(target.id);
     showToast(
       target
-        ? `Pilih menu di ${outletFullName(target)}, kupon dipakai saat bayar`
-        : "Pilih menu, kupon bisa dipakai saat bayar",
+        ? `Pilih menu di ${outletFullName(target)}, ${noun} dipakai saat bayar`
+        : `Pilih menu, ${noun} bisa dipakai saat bayar`,
       "info",
     );
     onClose();
@@ -279,7 +282,7 @@ export function CouponSheet({
                     fontFamily: fontFamilies.bold,
                   }}
                 >
-                  Pakai kupon
+                  Pakai {noun}
                 </UiText>
               </PressableScale>
             )}
@@ -323,7 +326,11 @@ export function CouponSheet({
             marginTop: 8,
           }}
         >
-          <BrandLogo brandId={coupon.brandId} size={18} />
+          {coupon.brandId ? (
+            <BrandLogo brandId={coupon.brandId} size={18} />
+          ) : (
+            <Glyph name="store" size={16} color={brand[600]} />
+          )}
           <UiText
             color={LABEL_INK}
             style={{
@@ -449,7 +456,7 @@ export function CouponSheet({
                       fontFamily: fontFamilies.bold,
                     }}
                   >
-                    Beli item berikut
+                    {detail.requirementsTitle ?? "Beli item berikut"}
                   </UiText>
                   <LegalBullets items={group} />
                 </View>

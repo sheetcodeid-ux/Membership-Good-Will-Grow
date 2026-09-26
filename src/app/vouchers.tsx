@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Platform, TextInput, View } from "react-native";
+import { Platform, ScrollView, TextInput, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
@@ -8,6 +8,7 @@ import { Glyph } from "../components/icons/Glyph";
 import { AccountEmpty } from "../components/EmptyArt";
 import {
   AccountCard,
+  AccountSection,
   LABEL_INK,
   QUIET_INK,
   RULE,
@@ -16,7 +17,12 @@ import { brand, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { router } from "expo-router";
 import { showToast } from "../store/toastStore";
-import { tapError } from "../utils/haptics";
+import { tapError, tapPress, tapSuccess } from "../utils/haptics";
+import { useVoucherStore } from "../store/voucherStore";
+import { CouponTicket } from "../components/CouponTicket";
+import { CouponSheet } from "../components/CouponSheet";
+import { useScrolled } from "../hooks/useScrolled";
+import type { Coupon } from "../data/types";
 
 const EDGE = 13.5;
 const FIELD_H = 46;
@@ -25,11 +31,40 @@ export default function VouchersScreen() {
   const [code, setCode] = useState("");
   const [focused, setFocused] = useState(false);
   const ready = code.trim().length > 0;
+  const vouchers = useVoucherStore((st) => st.vouchers);
+  const claim = useVoucherStore((st) => st.claim);
+  const [open, setOpen] = useState<Coupon | null>(null);
+  const [error, setError] = useState<string | undefined>();
+  // The voucher claimed on this visit, marked "Baru" in the list.
+  const [latest, setLatest] = useState<string | undefined>();
+  const scroll = useScrolled();
+
+  const submit = () => {
+    const result = claim(code);
+    if (result.ok) {
+      tapSuccess();
+      setCode("");
+      setError(undefined);
+      setLatest(result.voucher.id);
+      showToast(`${result.voucher.title} berhasil diklaim`);
+      return;
+    }
+    tapError();
+    const msg =
+      result.reason === "claimed"
+        ? "Kode ini sudah pernah kamu klaim."
+        : `Kode "${code.trim().toUpperCase()}" tidak ditemukan. Periksa lagi hurufnya.`;
+    setError(msg);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Voucher Saya" />
+      <AppHeader
+        tone="account"
+        title="Voucher Saya"
+        divider={scroll.scrolled}
+      />
 
       <View style={{ paddingHorizontal: EDGE, paddingTop: 16 }}>
         <AccountCard style={{ padding: 14 }}>
@@ -74,7 +109,12 @@ export default function VouchersScreen() {
           <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
             <TextInput
               value={code}
-              onChangeText={setCode}
+              onChangeText={(t) => {
+                setCode(t);
+                setError(undefined);
+              }}
+              onSubmitEditing={ready ? submit : undefined}
+              returnKeyType="done"
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
               autoCapitalize="characters"
@@ -84,8 +124,8 @@ export default function VouchersScreen() {
                 flex: 1,
                 height: FIELD_H,
                 borderRadius: 12,
-                borderWidth: focused ? 1.5 : 1,
-                borderColor: focused ? brand[600] : RULE,
+                borderWidth: error || focused ? 1.5 : 1,
+                borderColor: error ? "#E11D48" : focused ? brand[600] : RULE,
                 backgroundColor: "#FFFFFF",
                 paddingHorizontal: 13,
                 fontFamily: fontFamilies.semibold,
@@ -100,11 +140,7 @@ export default function VouchersScreen() {
             <PressableScale
               scaleTo={0.97}
               disabled={!ready}
-              onPress={() => {
-                // No voucher codes exist yet, so every code is unknown.
-                tapError();
-                showToast(`Kode "${code.trim()}" tidak ditemukan`, "error");
-              }}
+              onPress={submit}
               style={{
                 height: FIELD_H,
                 paddingHorizontal: 22,
@@ -127,15 +163,73 @@ export default function VouchersScreen() {
               </UiText>
             </PressableScale>
           </View>
+          {error ? (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                marginTop: 8,
+              }}
+            >
+              <Glyph name="alertCircle" size={13} color="#E11D48" />
+              <UiText
+                color="#E11D48"
+                style={{
+                  flex: 1,
+                  fontSize: 12.5,
+                  lineHeight: 16,
+                  fontFamily: fontFamilies.semibold,
+                }}
+              >
+                {error}
+              </UiText>
+            </View>
+          ) : null}
         </AccountCard>
       </View>
 
-      <AccountEmpty
-        glyph="gift"
-        title="Belum ada voucher"
-        subtitle="Voucher yang berhasil kamu klaim akan tersimpan di sini."
-        action={{ label: "Lihat promo", onPress: () => router.push("/promo") }}
-      />
+      {vouchers.length === 0 ? (
+        <AccountEmpty
+          glyph="gift"
+          title="Belum ada voucher"
+          subtitle="Voucher yang berhasil kamu klaim akan tersimpan di sini."
+          action={{
+            label: "Lihat promo",
+            onPress: () => router.push("/promo"),
+          }}
+        />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          onScroll={scroll.onScroll}
+          scrollEventThrottle={scroll.scrollEventThrottle}
+          contentContainerStyle={{ paddingHorizontal: EDGE, paddingBottom: 40 }}
+        >
+          <AccountSection title={`${vouchers.length} voucher aktif`} />
+          <View style={{ gap: 10 }}>
+            {vouchers.map((v) => (
+              <CouponTicket
+                key={v.id}
+                coupon={v}
+                fresh={v.id === latest}
+                onPress={() => {
+                  tapPress();
+                  setOpen(v);
+                }}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      )}
+
+      {open ? (
+        <CouponSheet
+          coupon={open}
+          noun="voucher"
+          onClose={() => setOpen(null)}
+        />
+      ) : null}
     </View>
   );
 }
