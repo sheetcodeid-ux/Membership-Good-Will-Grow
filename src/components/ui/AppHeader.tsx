@@ -18,7 +18,7 @@ interface AppHeaderProps {
   /** Screens opened as a sheet use a close cross instead of a back chevron. */
   leftIcon?: "back" | "close";
   /**
-   * "account" is the bar of the screens under Akun Saya: the pale yellow
+   * "account" is the bar of the screens under Akun Saya: the pale blue
    * the profile's own bar fades into on scroll, square-cornered, a bold
    * near-black title and a solid arrow — so opening a page from the
    * profile keeps the same bar in place and only the title changes.
@@ -29,8 +29,12 @@ interface AppHeaderProps {
   children?: React.ReactNode;
 }
 
-/** Colour of the account bar; the profile tab fades into the same one. */
-export const ACCOUNT_BAR = "#FFEE80";
+/**
+ * Colour of the account bar; the profile tab fades into the same one. A
+ * pale brand blue, a step deeper than the sky of the account scene, so the
+ * bar reads as its own band over the scene yet belongs to it.
+ */
+export const ACCOUNT_BAR = "#D9E5FF";
 const ACCOUNT_INK = "#202020";
 
 /**
@@ -55,7 +59,7 @@ export function AppHeader({
         style={{
           backgroundColor: ACCOUNT_BAR,
           borderBottomWidth: 1,
-          borderBottomColor: divider ? "rgba(112,43,0,0.14)" : ACCOUNT_BAR,
+          borderBottomColor: divider ? "rgba(11,43,115,0.16)" : ACCOUNT_BAR,
           zIndex: 2,
         }}
       >

@@ -59,7 +59,7 @@ const CARD_R = 12;
 const STRIP_R = 15;
 const STRIP_TUCK = CARD_R;
 const INK_TEXT = "#202020";
-// Top bar that fades in on scroll (measured on the reference): pale yellow,
+// Top bar that fades in on scroll (measured on the reference): pale blue,
 // ending 24.5dp below the title's centre. The fade is spread over 44dp of
 // scrolling — a gentle dissolve, yet complete by the time the card slides
 // under the title.
