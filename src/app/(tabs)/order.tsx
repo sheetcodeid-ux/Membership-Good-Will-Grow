@@ -8,6 +8,7 @@ import { AppText } from "../../components/ui/AppText";
 import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { BrandLogo } from "../../components/BrandLogo";
+import { MenuArt } from "../../components/MenuArt";
 import { CategoryIcon } from "../../components/CategoryIcons";
 import { ServiceTypeRow } from "../../components/ServiceTypeRow";
 import { brand, danger, ink, surface } from "../../theme/colors";
@@ -306,7 +307,7 @@ export default function OrderScreen() {
                 scaleTo={0.99}
                 style={{ width: 76, height: "100%" }}
               >
-                <ImagePlaceholder radius={0} iconSize={20} style={{ flex: 1 }} />
+                <MenuArt item={item} radius={0} style={{ flex: 1 }} />
               </PressableScale>
               <View
                 style={{

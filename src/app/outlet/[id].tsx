@@ -5,12 +5,16 @@ import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UiText } from "../../components/ui/Text";
 import { AppHeader } from "../../components/ui/AppHeader";
-import { PressableScale } from "../../components/ui/PressableScale";
 import { Glyph, type GlyphName } from "../../components/icons/Glyph";
 import { BrandLogo } from "../../components/BrandLogo";
 import { AccountEmpty } from "../../components/EmptyArt";
 import { LABEL_INK, QUIET_INK, RULE } from "../../components/AccountMenu";
-import { Block, EDGE } from "../../components/checkout/parts";
+import {
+  Block,
+  EDGE,
+  GradientButton,
+  LIFT,
+} from "../../components/checkout/parts";
 import { SERVICE_META } from "../../components/checkout/CheckoutSheets";
 import { brand, danger, success, surface } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
@@ -182,14 +186,18 @@ export default function OutletScreen() {
         <View
           style={{
             backgroundColor: "#FFFFFF",
-            borderTopWidth: 1,
-            borderTopColor: RULE,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            ...LIFT,
+            shadowOffset: { width: 0, height: -4 },
             paddingHorizontal: 16,
             paddingTop: 12,
             paddingBottom: Math.max(insets.bottom, 12),
           }}
         >
-          <PressableScale
+          <GradientButton
+            label="Pesan dari outlet ini"
+            icon="cart"
             onPress={() => {
               tapPress();
               // Start the order here; the outlet sheet asks Dine In or
@@ -198,29 +206,7 @@ export default function OutletScreen() {
               reopenOutletSheet();
               router.push("/order");
             }}
-            scaleTo={0.97}
-            style={{
-              height: 52,
-              borderRadius: 26,
-              backgroundColor: brand[600],
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-            }}
-          >
-            <Glyph name="cart" size={17} color="#FFFFFF" />
-            <UiText
-              color="#FFFFFF"
-              style={{
-                fontSize: 16.5,
-                lineHeight: 21,
-                fontFamily: fontFamilies.bold,
-              }}
-            >
-              Pesan dari outlet ini
-            </UiText>
-          </PressableScale>
+          />
         </View>
       ) : null}
     </View>

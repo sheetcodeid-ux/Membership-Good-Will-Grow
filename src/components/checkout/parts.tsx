@@ -1,10 +1,11 @@
 import React from "react";
-import { View, type StyleProp, type ViewStyle } from "react-native";
+import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Path } from "react-native-svg";
 import { UiText } from "../ui/Text";
 import { PressableScale } from "../ui/PressableScale";
 import { Glyph, type GlyphName } from "../icons/Glyph";
-import { LABEL_INK, RULE } from "../AccountMenu";
+import { LABEL_INK } from "../AccountMenu";
 import { brand } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
 import { tapSelect } from "../../utils/haptics";
@@ -12,7 +13,21 @@ import { tapSelect } from "../../utils/haptics";
 /** Page side margin on the checkout and order status screens. */
 export const EDGE = 13.5;
 
-/** White card on the grey page: the checkout's and status page's block. */
+/** The soft, blue-tinted lift every block and bar in the order flow sits on. */
+export const LIFT = {
+  shadowColor: "#0B2B73",
+  shadowOpacity: 0.07,
+  shadowRadius: 16,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
+} as const;
+
+/**
+ * White card on the grey page: the checkout's and status page's block.
+ * It floats a little (a soft blue shadow, a barely-there edge) rather
+ * than being drawn with a line, so the page reads in layers. The shadow
+ * sits on an outer view: the inner one clips the content to the corners.
+ */
 export function Block({
   children,
   style,
@@ -20,20 +35,246 @@ export function Block({
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
+  const flat = StyleSheet.flatten(style) ?? {};
+  const {
+    margin,
+    marginTop,
+    marginBottom,
+    marginHorizontal,
+    marginVertical,
+    alignSelf,
+    width,
+    flex,
+    ...inner
+  } = flat;
   return (
     <View
-      style={[
-        {
-          backgroundColor: "#FFFFFF",
-          borderRadius: 18,
-          borderWidth: 1,
-          borderColor: RULE,
-          overflow: "hidden",
-        },
-        style,
-      ]}
+      style={{
+        borderRadius: 20,
+        backgroundColor: "#FFFFFF",
+        margin,
+        marginTop,
+        marginBottom,
+        marginHorizontal,
+        marginVertical,
+        alignSelf,
+        width,
+        flex,
+        ...LIFT,
+      }}
     >
-      {children}
+      <View
+        style={[
+          {
+            backgroundColor: "#FFFFFF",
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: "#ECEFF5",
+            overflow: "hidden",
+          },
+          inner,
+        ]}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The flow's main button: a brand gradient lit from the top, a soft glow
+ * under it, and an optional chip on the right (the price, say).
+ */
+export function GradientButton({
+  label,
+  onPress,
+  disabled,
+  icon,
+  chip,
+  height = 54,
+  flex,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  icon?: GlyphName;
+  chip?: React.ReactNode;
+  height?: number;
+  flex?: number;
+}) {
+  return (
+    <PressableScale
+      onPress={onPress}
+      disabled={disabled}
+      scaleTo={0.97}
+      style={{
+        flex,
+        height,
+        borderRadius: height / 2,
+        ...(disabled
+          ? null
+          : {
+              shadowColor: brand[700],
+              shadowOpacity: 0.32,
+              shadowRadius: 14,
+              shadowOffset: { width: 0, height: 7 },
+              elevation: 6,
+            }),
+      }}
+    >
+      <LinearGradient
+        colors={
+          disabled
+            ? ["#E4E7EC", "#E4E7EC"]
+            : ["#4C78E0", brand[600], brand[800]]
+        }
+        locations={[0, 0.55, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          flex: 1,
+          borderRadius: height / 2,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: chip ? "space-between" : "center",
+          paddingLeft: chip ? 22 : 16,
+          paddingRight: chip ? 6 : 16,
+          gap: 8,
+          overflow: "hidden",
+        }}
+      >
+        {/* light along the top edge */}
+        <LinearGradient
+          pointerEvents="none"
+          colors={["rgba(255,255,255,0.28)", "rgba(255,255,255,0)"]}
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            height: height / 2,
+          }}
+        />
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          {icon ? (
+            <Glyph
+              name={icon}
+              size={17}
+              color={disabled ? "#8A93A6" : "#FFFFFF"}
+            />
+          ) : null}
+          <UiText
+            color={disabled ? "#8A93A6" : "#FFFFFF"}
+            numberOfLines={1}
+            style={{
+              fontSize: 16.5,
+              lineHeight: 21,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
+            {label}
+          </UiText>
+        </View>
+        {chip ? (
+          <View
+            style={{
+              height: height - 12,
+              borderRadius: (height - 12) / 2,
+              paddingHorizontal: 14,
+              backgroundColor: "rgba(255,255,255,0.18)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.28)",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {chip}
+          </View>
+        ) : null}
+      </LinearGradient>
+    </PressableScale>
+  );
+}
+
+/**
+ * Where the member is in the order: Keranjang, Checkout, Bayar. Done
+ * steps carry a tick, the current one is ringed, a bar joins them.
+ */
+export function FlowSteps({ step }: { step: 0 | 1 | 2 }) {
+  const labels = ["Keranjang", "Checkout", "Bayar"];
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 22,
+        paddingTop: 2,
+        paddingBottom: 12,
+      }}
+    >
+      {labels.map((label, i) => {
+        const done = i < step;
+        const now = i === step;
+        return (
+          <React.Fragment key={label}>
+            {i > 0 ? (
+              <View
+                style={{
+                  flex: 1,
+                  height: 3,
+                  borderRadius: 2,
+                  marginHorizontal: 6,
+                  backgroundColor:
+                    i <= step ? brand[600] : "rgba(18,60,163,0.14)",
+                }}
+              />
+            ) : null}
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            >
+              <View
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 11,
+                  backgroundColor: done || now ? brand[600] : "#FFFFFF",
+                  borderWidth: now ? 3 : done ? 0 : 1.5,
+                  borderColor: now ? "#B9CCF7" : "rgba(18,60,163,0.2)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {done ? (
+                  <Glyph name="check" size={11} color="#FFFFFF" />
+                ) : (
+                  <UiText
+                    color={now ? "#FFFFFF" : "#6B7488"}
+                    style={{
+                      fontSize: 10.5,
+                      lineHeight: 13,
+                      fontFamily: fontFamilies.extrabold,
+                    }}
+                  >
+                    {i + 1}
+                  </UiText>
+                )}
+              </View>
+              <UiText
+                color={done || now ? LABEL_INK : "#6B7488"}
+                style={{
+                  fontSize: 12.5,
+                  lineHeight: 16,
+                  fontFamily: now
+                    ? fontFamilies.extrabold
+                    : fontFamilies.semibold,
+                }}
+              >
+                {label}
+              </UiText>
+            </View>
+          </React.Fragment>
+        );
+      })}
     </View>
   );
 }

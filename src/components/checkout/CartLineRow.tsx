@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { UiText } from "../ui/Text";
-import { ImagePlaceholder } from "../ui/ImagePlaceholder";
+import { MenuArt } from "../MenuArt";
 import { PressableScale } from "../ui/PressableScale";
 import { Glyph } from "../icons/Glyph";
 import { LABEL_INK, QUIET_INK } from "../AccountMenu";
@@ -95,11 +95,10 @@ export function CartLineRow({
             {formatRupiah(unit * line.qty)}
           </UiText>
         </View>
-        <ImagePlaceholder
-          seed={line.menuItem.id}
-          radius={14}
-          iconSize={20}
-          style={{ width: 84, height: 84 }}
+        <MenuArt
+          item={line.menuItem}
+          radius={16}
+          style={{ width: 88, height: 88 }}
         />
       </View>
       {onNote ? (

@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
-import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
+import { QrArt } from "../components/QrArt";
+import { CountUp } from "../components/ui/CountUp";
+import { PulseDot } from "../components/ui/PulseDot";
 import { PressableScale } from "../components/ui/PressableScale";
 import { Glyph } from "../components/icons/Glyph";
 import { BrandLogo } from "../components/BrandLogo";
@@ -17,7 +19,14 @@ import {
   RULE,
   WARN_INK,
 } from "../components/AccountMenu";
-import { Block, EDGE, OutlinePill } from "../components/checkout/parts";
+import {
+  Block,
+  EDGE,
+  FlowSteps,
+  GradientButton,
+  LIFT,
+  OutlinePill,
+} from "../components/checkout/parts";
 import { brand, danger, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
@@ -103,6 +112,8 @@ export default function QrisScreen() {
   const order = useOrderRecord(orderId);
   const insets = useSafeAreaInsets();
   const scroll = useScrolled();
+  const { width } = useWindowDimensions();
+  const qrSize = Math.min(250, Math.round(width * 0.6));
   const [remaining, setRemaining] = useState(PAY_WINDOW_SECONDS);
 
   useEffect(() => {
@@ -149,7 +160,9 @@ export default function QrisScreen() {
         tone="account"
         title="Pembayaran QRIS"
         divider={scroll.scrolled}
-      />
+      >
+        <FlowSteps step={2} />
+      </AppHeader>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -226,36 +239,80 @@ export default function QrisScreen() {
             >
               Total pembayaran
             </UiText>
-            <UiText
+            <CountUp
+              value={order.paid}
+              format={formatRupiah}
               color={LABEL_INK}
               style={{
                 marginTop: 2,
-                fontSize: 28,
-                lineHeight: 34,
+                fontSize: 30,
+                lineHeight: 36,
                 fontFamily: fontFamilies.extrabold,
               }}
-            >
-              {formatRupiah(order.paid)}
-            </UiText>
+            />
+            {!expired ? (
+              <View
+                style={{
+                  marginTop: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 7,
+                  borderRadius: 14,
+                  paddingHorizontal: 11,
+                  paddingVertical: 4,
+                  backgroundColor: "#EAF0FF",
+                }}
+              >
+                <PulseDot color={brand[600]} />
+                <UiText
+                  color={brand[700]}
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.bold,
+                  }}
+                >
+                  Menunggu pembayaran
+                </UiText>
+              </View>
+            ) : null}
 
+            {/* the code on its own white card, corners marked */}
             <View
               style={{
                 marginTop: 16,
-                width: "82%",
-                aspectRatio: 1,
-                borderRadius: 18,
-                borderWidth: 1,
-                borderColor: RULE,
-                padding: 12,
-                opacity: expired ? 0.25 : 1,
+                padding: 14,
+                borderRadius: 22,
+                backgroundColor: "#FFFFFF",
+                opacity: expired ? 0.2 : 1,
+                ...LIFT,
               }}
             >
-              <ImagePlaceholder
-                label="Kode QR"
-                radius={10}
-                iconSize={30}
-                style={{ flex: 1 }}
-              />
+              <QrArt seed={order.id} size={qrSize} scanning={!expired} />
+              {(["tl", "tr", "bl", "br"] as const).map((k) => (
+                <View
+                  key={k}
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    width: 22,
+                    height: 22,
+                    borderColor: brand[500],
+                    borderTopWidth: k[0] === "t" ? 3 : 0,
+                    borderBottomWidth: k[0] === "b" ? 3 : 0,
+                    borderLeftWidth: k[1] === "l" ? 3 : 0,
+                    borderRightWidth: k[1] === "r" ? 3 : 0,
+                    borderTopLeftRadius: k === "tl" ? 10 : 0,
+                    borderTopRightRadius: k === "tr" ? 10 : 0,
+                    borderBottomLeftRadius: k === "bl" ? 10 : 0,
+                    borderBottomRightRadius: k === "br" ? 10 : 0,
+                    top: k[0] === "t" ? 0 : undefined,
+                    bottom: k[0] === "b" ? 0 : undefined,
+                    left: k[1] === "l" ? 0 : undefined,
+                    right: k[1] === "r" ? 0 : undefined,
+                  }}
+                />
+              ))}
             </View>
             {expired ? (
               <View
@@ -434,49 +491,24 @@ export default function QrisScreen() {
       <View
         style={{
           backgroundColor: "#FFFFFF",
-          borderTopWidth: 1,
-          borderTopColor: RULE,
           paddingHorizontal: 16,
           paddingTop: 12,
           paddingBottom: Math.max(insets.bottom, 12),
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          ...LIFT,
+          shadowOffset: { width: 0, height: -4 },
         }}
       >
-        <PressableScale
+        <GradientButton
+          label="Cek status pembayaran"
+          icon="refresh"
+          disabled={expired}
           onPress={() => {
-            if (expired) {
-              showToast("Buat kode QR baru dulu, ya", "error");
-              return;
-            }
             markOrderPaid(order.id);
             router.replace(`/order-success?id=${order.id}`);
           }}
-          scaleTo={0.97}
-          style={{
-            height: 52,
-            borderRadius: 26,
-            backgroundColor: expired ? "#E4E7EC" : brand[600],
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-          }}
-        >
-          <Glyph
-            name="refresh"
-            size={16}
-            color={expired ? "#8A93A6" : "#FFFFFF"}
-          />
-          <UiText
-            color={expired ? "#8A93A6" : "#FFFFFF"}
-            style={{
-              fontSize: 16.5,
-              lineHeight: 21,
-              fontFamily: fontFamilies.bold,
-            }}
-          >
-            Cek status pembayaran
-          </UiText>
-        </PressableScale>
+        />
       </View>
     </View>
   );

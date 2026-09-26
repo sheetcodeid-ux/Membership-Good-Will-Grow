@@ -6,13 +6,21 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { PressableScale } from "../components/ui/PressableScale";
 import { Glyph } from "../components/icons/Glyph";
 import { BrandLogo } from "../components/BrandLogo";
 import { AccountEmpty } from "../components/EmptyArt";
 import { LABEL_INK, QUIET_INK, RULE } from "../components/AccountMenu";
 import { CartLineRow } from "../components/checkout/CartLineRow";
-import { Block, EDGE, OutlinePill, SumRow } from "../components/checkout/parts";
+import {
+  Block,
+  EDGE,
+  FlowSteps,
+  GradientButton,
+  LIFT,
+  OutlinePill,
+  SumRow,
+} from "../components/checkout/parts";
+import { CountUp } from "../components/ui/CountUp";
 import { NoteSheet, SERVICE_META } from "../components/checkout/CheckoutSheets";
 import { brand, danger, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
@@ -71,7 +79,9 @@ export default function CartScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: surface }}>
       <StatusBar style="dark" />
-      <AppHeader tone="account" title="Keranjang" divider={scroll.scrolled} />
+      <AppHeader tone="account" title="Keranjang" divider={scroll.scrolled}>
+        <FlowSteps step={0} />
+      </AppHeader>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -245,17 +255,19 @@ export default function CartScreen() {
       <View
         style={{
           backgroundColor: "#FFFFFF",
-          borderTopWidth: 1,
-          borderTopColor: RULE,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           paddingHorizontal: 16,
-          paddingTop: 12,
+          paddingTop: 14,
           paddingBottom: Math.max(insets.bottom, 12),
           flexDirection: "row",
           alignItems: "center",
-          gap: 12,
+          gap: 14,
+          ...LIFT,
+          shadowOffset: { width: 0, height: -4 },
         }}
       >
-        <View style={{ flex: 1 }}>
+        <View>
           <UiText
             color={QUIET_INK}
             style={{
@@ -266,45 +278,26 @@ export default function CartScreen() {
           >
             Total · {itemCount} item
           </UiText>
-          <UiText
+          <CountUp
+            value={breakdown.total}
+            format={formatRupiah}
             color={LABEL_INK}
             style={{
-              fontSize: 18,
-              lineHeight: 23,
+              fontSize: 20,
+              lineHeight: 25,
               fontFamily: fontFamilies.extrabold,
             }}
-          >
-            {formatRupiah(breakdown.total)}
-          </UiText>
+          />
         </View>
-        <PressableScale
+        <GradientButton
+          flex={1}
+          label="Lanjut bayar"
+          icon="arrowRight"
           onPress={() => {
             tapPress();
             router.push("/checkout");
           }}
-          scaleTo={0.97}
-          style={{
-            height: 50,
-            paddingHorizontal: 26,
-            borderRadius: 25,
-            backgroundColor: brand[600],
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <UiText
-            color="#FFFFFF"
-            style={{
-              fontSize: 16,
-              lineHeight: 20,
-              fontFamily: fontFamilies.bold,
-            }}
-          >
-            Lanjut bayar
-          </UiText>
-          <Glyph name="arrowRight" size={15} color="#FFFFFF" />
-        </PressableScale>
+        />
       </View>
 
       {noteLine ? (

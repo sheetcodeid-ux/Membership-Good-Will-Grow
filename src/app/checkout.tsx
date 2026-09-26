@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Platform, ScrollView, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UiText } from "../components/ui/Text";
 import { AppHeader } from "../components/ui/AppHeader";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { ImagePlaceholder } from "../components/ui/ImagePlaceholder";
+import { MenuArt } from "../components/MenuArt";
 import { PressableScale } from "../components/ui/PressableScale";
 import { Glyph } from "../components/icons/Glyph";
 import { BrandLogo } from "../components/BrandLogo";
@@ -19,9 +20,13 @@ import {
   RULE,
   WARN_INK,
 } from "../components/AccountMenu";
+import { CountUp } from "../components/ui/CountUp";
 import {
   Block,
   Checkbox,
+  FlowSteps,
+  GradientButton,
+  LIFT,
   CutleryIcon,
   EDGE,
   OutlinePill,
@@ -36,18 +41,14 @@ import {
   SERVICE_META,
   ServiceTypeSheet,
 } from "../components/checkout/CheckoutSheets";
-import { brand, danger, success, surface } from "../theme/colors";
+import { brand, danger, surface } from "../theme/colors";
 import { fontFamilies } from "../theme/typography";
 import { formatRupiah } from "../utils/format";
 import { computeBreakdown } from "../utils/pricing";
 import { checkCoupon } from "../utils/coupons";
 import { placeOrder } from "../utils/orderFlow";
 import { menuItems, outletFullName } from "../data/mock";
-import {
-  defaultSelections,
-  unitPrice,
-  useCartStore,
-} from "../store/cartStore";
+import { defaultSelections, unitPrice, useCartStore } from "../store/cartStore";
 import { MAX_ORDER_DISTANCE_KM, useOrderStore } from "../store/orderStore";
 import { useMemberStore } from "../store/memberStore";
 import { useOrdersStore } from "../store/ordersStore";
@@ -84,31 +85,35 @@ function Hairline({ inset = 0 }: { inset?: number }) {
 /** "Yay! Kamu hemat Rp 9.500 di pesanan ini." under the header. */
 function SavingsStrip({ amount }: { amount: number }) {
   return (
-    <View
+    <LinearGradient
+      colors={["#D9F5E3", "#F1FBF4"]}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
       style={{
         marginHorizontal: EDGE,
         marginBottom: 12,
         flexDirection: "row",
         alignItems: "center",
         gap: 10,
-        borderRadius: 14,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#BFEBCF",
         paddingHorizontal: 12,
         paddingVertical: 10,
-        backgroundColor: success[50],
       }}
     >
-      <View
+      <LinearGradient
+        colors={["#34C06A", SAVE_INK]}
         style={{
-          width: 26,
-          height: 26,
-          borderRadius: 13,
-          backgroundColor: SAVE_INK,
+          width: 30,
+          height: 30,
+          borderRadius: 15,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Glyph name="ticketPercent" size={15} color="#FFFFFF" />
-      </View>
+        <Glyph name="ticketPercent" size={16} color="#FFFFFF" />
+      </LinearGradient>
       <UiText
         color={SAVE_INK}
         style={{
@@ -131,7 +136,8 @@ function SavingsStrip({ amount }: { amount: number }) {
         </UiText>{" "}
         di pesanan ini.
       </UiText>
-    </View>
+      <Glyph name="sparkles" size={16} color="#34C06A" />
+    </LinearGradient>
   );
 }
 
@@ -258,6 +264,7 @@ export default function CheckoutScreen() {
         title={outletFullName(outlet)}
         divider={scroll.scrolled}
       >
+        <FlowSteps step={1} />
         {saved > 0 ? <SavingsStrip amount={saved} /> : null}
       </AppHeader>
 
@@ -584,10 +591,9 @@ export default function CheckoutScreen() {
                           padding: 10,
                         }}
                       >
-                        <ImagePlaceholder
-                          seed={m.id}
+                        <MenuArt
+                          item={m}
                           radius={12}
-                          iconSize={16}
                           style={{ width: 70, height: 70 }}
                         />
                         <View
@@ -885,88 +891,108 @@ export default function CheckoutScreen() {
                 {formatRupiah(full)}
               </UiText>
             ) : null}
-            <UiText
+            <CountUp
+              value={breakdown.finalTotal}
+              format={formatRupiah}
               color={LABEL_INK}
               style={{
-                fontSize: 17,
-                lineHeight: 22,
+                fontSize: 18,
+                lineHeight: 23,
                 fontFamily: fontFamilies.extrabold,
               }}
-            >
-              {formatRupiah(breakdown.finalTotal)}
-            </UiText>
+            />
           </View>
         </Block>
 
-        {/* Points nudge, until they are on the bill. */}
+        {/* Points nudge, until they are on the bill: the points gold. */}
         {!usePoints && points > 0 ? (
-          <Block style={{ padding: 16 }}>
-            <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ borderRadius: 20, ...LIFT }}>
+            <LinearGradient
+              colors={["#FFDD00", "#FFE44D", "#FFF8D6"]}
+              locations={[0, 0.45, 1]}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={{
+                borderRadius: 20,
+                padding: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+                overflow: "hidden",
+              }}
+            >
               <View
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: "#FFF3C4",
+                  width: 46,
+                  height: 46,
+                  borderRadius: 23,
+                  backgroundColor: "rgba(255,255,255,0.6)",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Glyph name="coins" size={20} color="#A36A00" />
+                <Glyph name="coins" size={24} color="#702B00" />
               </View>
               <View style={{ flex: 1 }}>
                 <UiText
-                  color={LABEL_INK}
+                  color="#702B00"
                   style={{
-                    fontSize: 15,
-                    lineHeight: 20,
-                    fontFamily: fontFamilies.medium,
+                    fontSize: 12.5,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.semibold,
                   }}
                 >
-                  Kamu punya{" "}
-                  <UiText
-                    color={LABEL_INK}
-                    style={{
-                      fontSize: 15,
-                      lineHeight: 20,
-                      fontFamily: fontFamilies.extrabold,
-                    }}
-                  >
-                    {points.toLocaleString("id-ID")} poin
-                  </UiText>
-                  . Pakai untuk potong tagihan, 1 poin = Rp 1.
+                  Poinmu bisa potong tagihan
                 </UiText>
-                <PressableScale
-                  onPress={() => {
-                    tapSuccess();
-                    toggleUsePoints();
-                    showToast("Poin dipakai untuk pesanan ini");
-                  }}
-                  scaleTo={0.96}
+                <UiText
+                  color="#702B00"
                   style={{
-                    alignSelf: "flex-start",
-                    marginTop: 10,
-                    height: 38,
-                    paddingHorizontal: 18,
-                    borderRadius: 19,
-                    backgroundColor: "#EAF0FF",
-                    justifyContent: "center",
+                    fontSize: 18,
+                    lineHeight: 23,
+                    fontFamily: fontFamilies.extrabold,
                   }}
                 >
-                  <UiText
-                    color={brand[700]}
-                    style={{
-                      fontSize: 14.5,
-                      lineHeight: 18,
-                      fontFamily: fontFamilies.bold,
-                    }}
-                  >
-                    Pakai poin
-                  </UiText>
-                </PressableScale>
+                  {points.toLocaleString("id-ID")} poin
+                </UiText>
+                <UiText
+                  color="#8A4A12"
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 16,
+                    fontFamily: fontFamilies.semibold,
+                  }}
+                >
+                  Senilai {formatRupiah(points)}, 1 poin = Rp 1
+                </UiText>
               </View>
-            </View>
-          </Block>
+              <PressableScale
+                onPress={() => {
+                  tapSuccess();
+                  toggleUsePoints();
+                  showToast("Poin dipakai untuk pesanan ini");
+                }}
+                scaleTo={0.95}
+                style={{
+                  height: 38,
+                  paddingHorizontal: 16,
+                  borderRadius: 19,
+                  backgroundColor: "#702B00",
+                  justifyContent: "center",
+                }}
+              >
+                <UiText
+                  color="#FFF9D5"
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 18,
+                    fontFamily: fontFamilies.bold,
+                  }}
+                >
+                  Pakai
+                </UiText>
+              </PressableScale>
+            </LinearGradient>
+          </View>
         ) : null}
 
         {/* Cutlery and gift. */}
@@ -1055,12 +1081,14 @@ export default function CheckoutScreen() {
       <View
         style={{
           backgroundColor: "#FFFFFF",
-          borderTopWidth: 1,
-          borderTopColor: RULE,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           paddingHorizontal: 16,
-          paddingTop: 10,
+          paddingTop: 12,
           paddingBottom: Math.max(insets.bottom, 12),
-          gap: 10,
+          gap: 12,
+          ...LIFT,
+          shadowOffset: { width: 0, height: -4 },
         }}
       >
         <PressableScale
@@ -1095,31 +1123,47 @@ export default function CheckoutScreen() {
             >
               {payLabel}
             </UiText>
-            <UiText
+            <CountUp
+              value={breakdown.finalTotal}
+              format={formatRupiah}
               color={LABEL_INK}
               style={{
-                fontSize: 17,
-                lineHeight: 22,
+                fontSize: 18,
+                lineHeight: 23,
                 fontFamily: fontFamilies.extrabold,
               }}
-            >
-              {formatRupiah(breakdown.finalTotal)}
-            </UiText>
+            />
           </View>
           <View
             style={{
-              width: 34,
-              height: 34,
-              borderRadius: 17,
-              backgroundColor: "#3A3F4B",
+              flexDirection: "row",
               alignItems: "center",
-              justifyContent: "center",
+              gap: 4,
+              height: 34,
+              paddingHorizontal: 12,
+              borderRadius: 17,
+              backgroundColor: "#EAF0FF",
             }}
           >
-            <Glyph name="more" size={16} color="#FFFFFF" />
+            <UiText
+              color={brand[700]}
+              style={{
+                fontSize: 13.5,
+                lineHeight: 17,
+                fontFamily: fontFamilies.bold,
+              }}
+            >
+              Ganti
+            </UiText>
+            <Glyph name="chevronRight" size={10} color={brand[700]} />
           </View>
         </PressableScale>
-        <PressableScale
+        <GradientButton
+          label={
+            payMethod === "cashier" && breakdown.finalTotal > 0
+              ? "Pesan, bayar di kasir"
+              : "Pesan sekarang"
+          }
           onPress={() => {
             if (tableMissing) {
               showToast("Isi nomor meja dulu, ya", "error");
@@ -1128,28 +1172,7 @@ export default function CheckoutScreen() {
             tapPress();
             setConfirming(true);
           }}
-          scaleTo={0.98}
-          style={{
-            height: 52,
-            borderRadius: 26,
-            backgroundColor: brand[600],
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <UiText
-            color="#FFFFFF"
-            style={{
-              fontSize: 17,
-              lineHeight: 22,
-              fontFamily: fontFamilies.bold,
-            }}
-          >
-            {payMethod === "cashier" && breakdown.finalTotal > 0
-              ? "Pesan, bayar di kasir"
-              : "Pesan sekarang"}
-          </UiText>
-        </PressableScale>
+        />
       </View>
 
       {sheet === "service" ? (

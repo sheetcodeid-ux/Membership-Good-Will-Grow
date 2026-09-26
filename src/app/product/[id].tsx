@@ -13,11 +13,17 @@ import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
 import { UiText } from "../../components/ui/Text";
-import { ImagePlaceholder } from "../../components/ui/ImagePlaceholder";
+import { MenuArt } from "../../components/MenuArt";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { Glyph } from "../../components/icons/Glyph";
 import { LABEL_INK, QUIET_INK, RULE } from "../../components/AccountMenu";
-import { Radio, Stepper } from "../../components/checkout/parts";
+import {
+  GradientButton,
+  LIFT,
+  Radio,
+  Stepper,
+} from "../../components/checkout/parts";
+import { CountUp } from "../../components/ui/CountUp";
 import { brand } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
 import { formatRupiah } from "../../utils/format";
@@ -246,11 +252,10 @@ export default function ProductSheet() {
             contentContainerStyle={{ paddingBottom: 24 }}
           >
             <View>
-              <ImagePlaceholder
-                label="Foto Produk"
-                seed={item.id}
+              <MenuArt
+                item={item}
+                big
                 radius={0}
-                iconSize={36}
                 style={{ width: "100%", aspectRatio: 4 / 3 }}
               />
               <View
@@ -465,41 +470,35 @@ export default function ProductSheet() {
           <View
             style={{
               backgroundColor: "#FFFFFF",
-              borderTopWidth: 1,
-              borderTopColor: RULE,
               paddingHorizontal: 16,
               paddingTop: 12,
               paddingBottom: Math.max(insets.bottom, 12),
               flexDirection: "row",
               alignItems: "center",
               gap: 14,
+              ...LIFT,
+              shadowOffset: { width: 0, height: -4 },
             }}
           >
             <Stepper qty={qty} onChange={setQty} min={1} size={34} filledPlus />
-            <PressableScale
+            <GradientButton
+              flex={1}
+              label={editing ? "Simpan" : "Tambah"}
               onPress={submit}
-              scaleTo={0.97}
-              style={{
-                flex: 1,
-                height: 50,
-                borderRadius: 25,
-                backgroundColor: brand[600],
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <UiText
-                color="#FFFFFF"
-                numberOfLines={1}
-                style={{
-                  fontSize: 16,
-                  lineHeight: 20,
-                  fontFamily: fontFamilies.bold,
-                }}
-              >
-                {editing ? "Simpan" : "Tambah"} · {formatRupiah(total)}
-              </UiText>
-            </PressableScale>
+              chip={
+                <CountUp
+                  value={total}
+                  format={formatRupiah}
+                  color="#FFFFFF"
+                  duration={350}
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 19,
+                    fontFamily: fontFamilies.extrabold,
+                  }}
+                />
+              }
+            />
           </View>
         </Animated.View>
       </View>

@@ -28,7 +28,8 @@ import {
 import { SERVICE_META } from "../../components/checkout/CheckoutSheets";
 import { brand, danger, surface } from "../../theme/colors";
 import { fontFamilies } from "../../theme/typography";
-import { getOutlet } from "../../data/mock";
+import { getOutlet, menuItems } from "../../data/mock";
+import { MenuArt } from "../../components/MenuArt";
 import { promoBanners } from "../../data/banners";
 import { useOrderRecord } from "../../store/ordersStore";
 import { showToast } from "../../store/toastStore";
@@ -561,33 +562,66 @@ export default function OrderStatusScreen() {
           {/* what was ordered */}
           <Block style={{ padding: 16 }}>
             <SectionTitle>Item pesanan</SectionTitle>
-            <View style={{ marginTop: 8, gap: 6 }}>
+            <View style={{ marginTop: 10, gap: 10 }}>
               {order.lines.map((l) => (
-                <View key={l.id} style={{ flexDirection: "row", gap: 12 }}>
-                  <UiText
-                    color={QUIET_INK}
-                    style={{
-                      flex: 1,
-                      fontSize: 15,
-                      lineHeight: 20,
-                      fontFamily: fontFamilies.medium,
-                    }}
-                  >
-                    {l.name}
-                    {l.variant && l.variant !== "Original"
-                      ? ` (${l.variant})`
-                      : ""}
-                  </UiText>
+                <View
+                  key={l.id}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <MenuArt
+                    item={menuItems.find((m) => m.name === l.name)}
+                    radius={12}
+                    style={{ width: 44, height: 44 }}
+                  />
                   <UiText
                     color={LABEL_INK}
                     style={{
+                      flex: 1,
                       fontSize: 15,
                       lineHeight: 20,
                       fontFamily: fontFamilies.semibold,
                     }}
                   >
-                    {l.qty}
+                    {l.name}
+                    {l.variant && l.variant !== "Original" ? (
+                      <UiText
+                        color={QUIET_INK}
+                        style={{
+                          fontSize: 13.5,
+                          lineHeight: 20,
+                          fontFamily: fontFamilies.medium,
+                        }}
+                      >
+                        {`  ${l.variant}`}
+                      </UiText>
+                    ) : null}
                   </UiText>
+                  <View
+                    style={{
+                      minWidth: 30,
+                      height: 26,
+                      borderRadius: 13,
+                      paddingHorizontal: 8,
+                      backgroundColor: "#EAF0FF",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <UiText
+                      color={brand[700]}
+                      style={{
+                        fontSize: 13.5,
+                        lineHeight: 17,
+                        fontFamily: fontFamilies.extrabold,
+                      }}
+                    >
+                      {l.qty}×
+                    </UiText>
+                  </View>
                 </View>
               ))}
             </View>
