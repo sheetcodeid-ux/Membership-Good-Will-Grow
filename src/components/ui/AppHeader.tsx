@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View } from "react-native";
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppIcon } from "./AppIcon";
@@ -24,7 +30,10 @@ interface AppHeaderProps {
    * profile keeps the same bar in place and only the title changes.
    */
   tone?: "default" | "account";
-  /** Account bar only: a hairline under the bar once the page has scrolled. */
+  /**
+   * Account bar only: the page has scrolled. The bar turns warm yellow
+   * and gains a hairline, so it stands apart from the content under it.
+   */
   divider?: boolean;
   children?: React.ReactNode;
 }
@@ -35,6 +44,11 @@ interface AppHeaderProps {
  * bar reads as its own band over the scene yet belongs to it.
  */
 export const ACCOUNT_BAR = "#D9E5FF";
+/**
+ * What every top bar turns to once its page scrolls: a soft yellow, the
+ * way the reference's bar reads while you move down a page.
+ */
+export const ACCOUNT_BAR_SCROLLED = "#FFEE80";
 const ACCOUNT_INK = "#202020";
 
 /**
@@ -53,16 +67,26 @@ export function AppHeader({
   divider = false,
   children,
 }: AppHeaderProps) {
+  const scrolled = useSharedValue(divider ? 1 : 0);
+  useEffect(() => {
+    scrolled.value = withTiming(divider ? 1 : 0, { duration: 220 });
+  }, [divider, scrolled]);
+  const barStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      scrolled.value,
+      [0, 1],
+      [ACCOUNT_BAR, ACCOUNT_BAR_SCROLLED],
+    ),
+    borderBottomColor: interpolateColor(
+      scrolled.value,
+      [0, 1],
+      [ACCOUNT_BAR, "rgba(0,0,0,0.06)"],
+    ),
+  }));
+
   if (tone === "account") {
     return (
-      <View
-        style={{
-          backgroundColor: ACCOUNT_BAR,
-          borderBottomWidth: 1,
-          borderBottomColor: divider ? "rgba(11,43,115,0.16)" : ACCOUNT_BAR,
-          zIndex: 2,
-        }}
-      >
+      <Animated.View style={[{ borderBottomWidth: 1, zIndex: 2 }, barStyle]}>
         <SafeAreaView edges={["top"]}>
           {/* Same geometry as the profile's bar: 56.5 tall, the title's
               centre 32 below the status bar. */}
@@ -121,7 +145,7 @@ export function AppHeader({
           </View>
           {children}
         </SafeAreaView>
-      </View>
+      </Animated.View>
     );
   }
 

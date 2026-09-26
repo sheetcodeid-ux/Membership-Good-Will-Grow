@@ -1,4 +1,4 @@
-import React, { useId, useState } from "react";
+import React, { useId, useState, type RefObject } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
 import Svg, {
   Defs,
@@ -44,6 +44,11 @@ interface LiquidGlassProps {
   opacity?: number;
   /** Lets the surface flex under a press on iOS 26. */
   interactive?: boolean;
+  /**
+   * The BlurTargetView holding what the glass sits over. Android blurs
+   * nothing without one; iOS and web ignore it.
+   */
+  blurTarget?: RefObject<View | null>;
   /** Draws the specular rim (fallback only). Defaults on for rounded glass. */
   rim?: boolean;
   style?: ViewStyle | ViewStyle[];
@@ -148,6 +153,7 @@ export function LiquidGlass({
   tint = "rgba(155,185,255,0.12)",
   opacity = 1,
   interactive = false,
+  blurTarget,
   rim = radius > 0,
   style,
 }: LiquidGlassProps) {
@@ -190,6 +196,7 @@ export function LiquidGlass({
         // light, leaving it off would show the feed through the bar in sharp
         // focus instead of behind glass.
         blurMethod="dimezisBlurView"
+        blurTarget={blurTarget}
         blurReductionFactor={4}
         style={StyleSheet.absoluteFill}
       />

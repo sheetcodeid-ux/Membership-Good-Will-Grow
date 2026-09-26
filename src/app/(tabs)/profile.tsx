@@ -18,8 +18,8 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import {
   AccountHeroArt,
   HERO_ART_OVERHANG,
-  HERO_SKY,
 } from "../../components/AccountHeroArt";
+import { ACCOUNT_BAR_SCROLLED } from "../../components/ui/AppHeader";
 import { AccountMenu, AccountSection } from "../../components/AccountMenu";
 import { Glyph } from "../../components/icons/Glyph";
 import {
@@ -59,13 +59,12 @@ const CARD_R = 12;
 const STRIP_R = 15;
 const STRIP_TUCK = CARD_R;
 const INK_TEXT = "#202020";
-// Top bar that fades in on scroll: the scene's own sky colour, so the top
-// of the page keeps the colour it had before scrolling, with a hairline
-// under it. It ends 24.5dp below the title's centre (measured on the
+// Top bar that fades in on scroll: the same soft yellow every top bar
+// turns to once its page moves, with a hairline under it. It ends 24.5dp below the title's centre (measured on the
 // reference). The fade is spread over 44dp of
 // scrolling — a gentle dissolve, yet complete by the time the card slides
 // under the title.
-const BAR_BG = HERO_SKY;
+const BAR_BG = ACCOUNT_BAR_SCROLLED;
 const BAR_H = HEADER_H / 2 + 24.5;
 const BAR_FADE_FROM = 8;
 const BAR_FADE_TO = 52;
@@ -489,7 +488,7 @@ export default function AccountScreen() {
               height: top + BAR_H,
               backgroundColor: BAR_BG,
               borderBottomWidth: 1,
-              borderBottomColor: "rgba(11,43,115,0.07)",
+              borderBottomColor: "rgba(0,0,0,0.06)",
             },
             barStyle,
           ]}

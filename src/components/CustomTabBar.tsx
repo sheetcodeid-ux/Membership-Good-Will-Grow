@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, type RefObject } from "react";
 import { StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   interpolateColor,
@@ -34,6 +35,7 @@ import { shadow } from "../theme/shadows";
 import { space, TAB_BAR_HEIGHT } from "../theme/scale";
 import { useResponsive } from "../theme/responsive";
 import { useUiStore } from "../store/uiStore";
+import { useBlurTargetStore } from "../store/blurTargetStore";
 
 /** Sized so every tab clears the 48pt minimum touch target. */
 const FAB_SIZE = 60;
@@ -222,6 +224,66 @@ function Droplet({ index, tabW }: { index: number; tabW: number }) {
   );
 }
 
+/** Page colour the band below fades into. */
+const FADE_INK = "243,244,249";
+
+/**
+ * A band along the bottom of the screen, behind the bar, where the page
+ * softens as it scrolls under: two layers of blur, lighter at the top,
+ * and a fade into the page colour, so nothing reads in sharp focus
+ * behind or below the floating bar.
+ */
+function BottomFade({
+  height,
+  blurTarget,
+}: {
+  height: number;
+  blurTarget?: RefObject<View | null>;
+}) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height,
+      }}
+    >
+      <BlurView
+        intensity={18}
+        tint="light"
+        blurMethod="dimezisBlurView"
+        blurTarget={blurTarget}
+        style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: 0 }}
+      />
+      <BlurView
+        intensity={40}
+        tint="light"
+        blurMethod="dimezisBlurView"
+        blurTarget={blurTarget}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          top: height * 0.4,
+        }}
+      />
+      <LinearGradient
+        colors={[
+          `rgba(${FADE_INK},0)`,
+          `rgba(${FADE_INK},0.55)`,
+          `rgba(${FADE_INK},0.92)`,
+        ]}
+        locations={[0, 0.45, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+    </View>
+  );
+}
+
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const r = useResponsive();
@@ -230,6 +292,9 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const fab = fabActions[activeName] ?? fabActions.index;
   const onFabPress = fab.opensMenu ? openShortcuts : fab.onPress;
   const [barW, setBarW] = useState(0);
+  const blurTarget = useBlurTargetStore(
+    (s) => s.targets[state.routes[state.index]?.key ?? ""],
+  );
 
   const tabRoutes = state.routes.filter((route) => tabs[route.name]);
   const activeTab = tabRoutes.findIndex(
@@ -251,114 +316,129 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   );
 
   return (
-    <LiquidGlassGroup
-      spacing={18}
-      pointerEvents="box-none"
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        // Stays with the content column instead of stretching across a
-        // tablet, where a bar the full width puts the tabs further apart
-        // than a thumb can reach.
-        width: r.contentWidth + FAB_SIZE + space.xl,
-        maxWidth: "100%",
-        alignSelf: "center",
-        flexDirection: "row",
-        alignItems: "center",
-        gap: space.sm,
-        paddingHorizontal: space.md,
-        paddingBottom: insets.bottom + space.md,
-      }}
-    >
-      <LiquidGlass
-        radius={TAB_BAR_HEIGHT / 2}
-        interactive
+    <>
+      <BottomFade
+        height={TAB_BAR_HEIGHT + insets.bottom + space.md + 30}
+        blurTarget={blurTarget}
+      />
+      <LiquidGlassGroup
+        spacing={18}
+        pointerEvents="box-none"
         style={{
-          flex: 1,
-          height: TAB_BAR_HEIGHT,
-          ...(shadow.lg as object),
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          // Stays with the content column instead of stretching across a
+          // tablet, where a bar the full width puts the tabs further apart
+          // than a thumb can reach.
+          width: r.contentWidth + FAB_SIZE + space.xl,
+          maxWidth: "100%",
+          alignSelf: "center",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: space.sm,
+          paddingHorizontal: space.md,
+          paddingBottom: insets.bottom + space.md,
         }}
       >
-        <View
-          onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
+        <LiquidGlass
+          radius={TAB_BAR_HEIGHT / 2}
+          interactive
+          blurTarget={blurTarget}
           style={{
             flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: BAR_PAD,
+            height: TAB_BAR_HEIGHT,
+            ...(shadow.lg as object),
           }}
         >
-          {activeTab >= 0 ? <Droplet index={activeTab} tabW={tabW} /> : null}
-          {tabRoutes.map((route) => {
-            const focused = route.key === state.routes[state.index]?.key;
-            return (
-              <TabButton
-                key={route.key}
-                name={route.name}
-                focused={focused}
-                onPress={() => {
-                  const event = navigation.emit({
-                    type: "tabPress",
-                    target: route.key,
-                    canPreventDefault: true,
-                  });
-                  if (!focused && !event.defaultPrevented)
-                    navigation.navigate(route.name);
-                }}
-              />
-            );
-          })}
-        </View>
-      </LiquidGlass>
+          <View
+            onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: BAR_PAD,
+            }}
+          >
+            {activeTab >= 0 ? <Droplet index={activeTab} tabW={tabW} /> : null}
+            {tabRoutes.map((route) => {
+              const focused = route.key === state.routes[state.index]?.key;
+              return (
+                <TabButton
+                  key={route.key}
+                  name={route.name}
+                  focused={focused}
+                  onPress={() => {
+                    const event = navigation.emit({
+                      type: "tabPress",
+                      target: route.key,
+                      canPreventDefault: true,
+                    });
+                    if (!focused && !event.defaultPrevented)
+                      navigation.navigate(route.name);
+                  }}
+                />
+              );
+            })}
+          </View>
+        </LiquidGlass>
 
-      <PressableScale
-        onPress={() => {
-          fabSpin.value = withTiming(90, { duration: 150 });
-          fabSpin.value = withSpring(0, { damping: 11, stiffness: 200 });
-          onFabPress?.();
-        }}
-        scaleTo={0.92}
-        style={{
-          width: FAB_SIZE,
-          height: FAB_SIZE,
-          borderRadius: FAB_SIZE / 2,
-          overflow: "hidden",
-          ...(shadow.brand as object),
-        }}
-      >
-        {liquidGlassAvailable ? (
-          <LiquidGlass
-            radius={FAB_SIZE / 2}
-            interactive
-            tint="rgba(11,43,115,0.55)"
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            {fabGlyph}
-          </LiquidGlass>
-        ) : (
-          <LinearGradient
-            colors={["#5C82E6", brand[600], brand[900]]}
-            locations={[0, 0.5, 1]}
-            start={{ x: 0.15, y: 0 }}
-            end={{ x: 0.85, y: 1 }}
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            {/* glass cap: a soft sheen over the top half and the same
+        <PressableScale
+          onPress={() => {
+            fabSpin.value = withTiming(90, { duration: 150 });
+            fabSpin.value = withSpring(0, { damping: 11, stiffness: 200 });
+            onFabPress?.();
+          }}
+          scaleTo={0.92}
+          style={{
+            width: FAB_SIZE,
+            height: FAB_SIZE,
+            borderRadius: FAB_SIZE / 2,
+            overflow: "hidden",
+            ...(shadow.brand as object),
+          }}
+        >
+          {liquidGlassAvailable ? (
+            <LiquidGlass
+              radius={FAB_SIZE / 2}
+              interactive
+              tint="rgba(11,43,115,0.55)"
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {fabGlyph}
+            </LiquidGlass>
+          ) : (
+            <LinearGradient
+              colors={["#5C82E6", brand[600], brand[900]]}
+              locations={[0, 0.5, 1]}
+              start={{ x: 0.15, y: 0 }}
+              end={{ x: 0.85, y: 1 }}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {/* glass cap: a soft sheen over the top half and the same
                 specular rim as the bar, so the button reads as a bead of
                 tinted glass beside it */}
-            <LinearGradient
-              colors={["rgba(255,255,255,0.32)", "rgba(255,255,255,0)"]}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 0.6 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <GlassRim radius={FAB_SIZE / 2} strength={0.8} />
-            {fabGlyph}
-          </LinearGradient>
-        )}
-      </PressableScale>
-    </LiquidGlassGroup>
+              <LinearGradient
+                colors={["rgba(255,255,255,0.32)", "rgba(255,255,255,0)"]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 0.6 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <GlassRim radius={FAB_SIZE / 2} strength={0.8} />
+              {fabGlyph}
+            </LinearGradient>
+          )}
+        </PressableScale>
+      </LiquidGlassGroup>
+    </>
   );
 }

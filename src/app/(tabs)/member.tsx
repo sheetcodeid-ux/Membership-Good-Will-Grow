@@ -19,7 +19,8 @@ import { UiText } from "../../components/ui/Text";
 import { PressableScale } from "../../components/ui/PressableScale";
 import { CountUp } from "../../components/ui/CountUp";
 import { Glyph, type GlyphName } from "../../components/icons/Glyph";
-import { HERO_SKY, SkylineBand } from "../../components/AccountHeroArt";
+import { MemberHeroArt } from "../../components/MemberHeroArt";
+import { ACCOUNT_BAR_SCROLLED } from "../../components/ui/AppHeader";
 import { CoinStack } from "../../components/CoinStack";
 import {
   MemberTierCard,
@@ -221,47 +222,84 @@ function ProgressRow({
     width: `${Math.max(fill.value * 100, fill.value > 0 ? 4 : 0)}%`,
   }));
   return (
-    <View style={{ gap: 7 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Glyph name={icon} size={15} color={brand[600]} />
-        <UiText
-          color={LABEL_INK}
-          style={{
-            flex: 1,
-            fontSize: 14,
-            lineHeight: 19,
-            fontFamily: fontFamilies.semibold,
-          }}
-        >
-          {label}
-        </UiText>
-        <UiText
-          color={QUIET_INK}
-          style={{
-            fontSize: 12.5,
-            lineHeight: 17,
-            fontFamily: fontFamilies.semibold,
-          }}
-        >
-          {value}
-        </UiText>
-      </View>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+      {/* glossy tile in the level's colours, lit from the top left */}
       <View
         style={{
-          height: 10,
-          borderRadius: 5,
-          backgroundColor: "#E9EDF5",
-          overflow: "hidden",
+          borderRadius: 13,
+          shadowColor: colors[1],
+          shadowOpacity: 0.35,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 4,
         }}
       >
-        <Animated.View style={[{ height: 10, borderRadius: 5 }, fillStyle]}>
+        <LinearGradient
+          colors={[colors[0], colors[1]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 13,
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            borderTopWidth: 1,
+            borderLeftWidth: 1,
+            borderColor: "rgba(255,255,255,0.5)",
+          }}
+        >
           <LinearGradient
-            colors={colors}
+            colors={["rgba(255,255,255,0.38)", "rgba(255,255,255,0)"]}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ flex: 1, borderRadius: 5 }}
+            end={{ x: 0.6, y: 0.7 }}
+            style={StyleSheet.absoluteFill}
           />
-        </Animated.View>
+          <Glyph name={icon} size={19} color="#FFFFFF" />
+        </LinearGradient>
+      </View>
+      <View style={{ flex: 1, gap: 7 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <UiText
+            color={LABEL_INK}
+            style={{
+              flex: 1,
+              fontSize: 14,
+              lineHeight: 19,
+              fontFamily: fontFamilies.semibold,
+            }}
+          >
+            {label}
+          </UiText>
+          <UiText
+            color={QUIET_INK}
+            style={{
+              fontSize: 12.5,
+              lineHeight: 17,
+              fontFamily: fontFamilies.semibold,
+            }}
+          >
+            {value}
+          </UiText>
+        </View>
+        <View
+          style={{
+            height: 10,
+            borderRadius: 5,
+            backgroundColor: "#E9EDF5",
+            overflow: "hidden",
+          }}
+        >
+          <Animated.View style={[{ height: 10, borderRadius: 5 }, fillStyle]}>
+            <LinearGradient
+              colors={colors}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flex: 1, borderRadius: 5 }}
+            />
+          </Animated.View>
+        </View>
       </View>
     </View>
   );
@@ -365,14 +403,14 @@ function ProgressCard({ shown, reached }: { shown: number; reached: number }) {
           label="Total belanja"
           value={`${formatRupiah(totalSpend)} / ${formatRupiah(target.minSpend)}`}
           ratio={totalSpend / target.minSpend}
-          colors={[look.body[0], look.body[1]]}
+          colors={[look.body[0], look.body[2]]}
         />
         <ProgressRow
           icon="receipt"
           label="Total transaksi"
           value={`${totalTx} / ${target.minTransactions}`}
           ratio={totalTx / target.minTransactions}
-          colors={[look.body[0], look.body[1]]}
+          colors={[look.body[0], look.body[2]]}
         />
       </View>
 
@@ -729,12 +767,16 @@ export default function MemberScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
       >
-        <View style={{ position: "absolute", left: 0, right: 0, top: 0 }}>
-          <SkylineBand
-            width={width}
-            height={top + HEADER_H + cardHeight * 0.52}
-          />
-        </View>
+        <MemberHeroArt
+          width={width}
+          height={top + HEADER_H + 4 + cardHeight + 90}
+          cardTop={top + HEADER_H + 4}
+          cardWidth={cardWidth}
+          cardHeight={cardHeight}
+          x={x}
+          pageWidth={width}
+          tierIds={memberTiers.map((t) => t.id)}
+        />
 
         <View style={{ height: top + HEADER_H }} />
 
@@ -745,7 +787,7 @@ export default function MemberScreen() {
           onScroll={onPage}
           scrollEventThrottle={16}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: 4, paddingBottom: 26 }}
+          contentContainerStyle={{ paddingTop: 4, paddingBottom: 52 }}
         >
           {memberTiers.map((t, i) => (
             <CarouselCard key={t.id} index={i} x={x} pageWidth={width}>
@@ -780,9 +822,9 @@ export default function MemberScreen() {
             StyleSheet.absoluteFill,
             {
               height: top + BAR_H,
-              backgroundColor: HERO_SKY,
+              backgroundColor: ACCOUNT_BAR_SCROLLED,
               borderBottomWidth: 1,
-              borderBottomColor: "rgba(11,43,115,0.07)",
+              borderBottomColor: "rgba(0,0,0,0.06)",
             },
             barStyle,
           ]}
