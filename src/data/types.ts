@@ -89,6 +89,26 @@ export interface Coupon {
   /** Days before the coupon expires, as the ticket card prints it. */
   daysLeft: number;
   used: boolean;
+  /**
+   * The coupon's background artwork, once designed. Until then the ticket
+   * stub stays white with a coupon mark; the brand logo sits on top either way.
+   */
+  image?: string;
+  /** What the sheet shows when the coupon is opened. */
+  detail?: CouponDetail;
+}
+
+export interface CouponDetail {
+  /** The benefit, one line each, e.g. "Diskon Rp 9.500 per transaksi". */
+  benefits: string[];
+  claimTerms: string[];
+  /**
+   * Purchase conditions: each inner list is one way to qualify, and the
+   * member needs to meet any one of them ("ATAU" between groups).
+   */
+  requirements: string[][];
+  note?: string;
+  outletIds: string[];
 }
 
 export interface Promo {

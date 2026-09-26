@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AppText } from "../components/ui/AppText";
 import { AppHeader } from "../components/ui/AppHeader";
-import { BottomSheet } from "../components/ui/BottomSheet";
+import { AccountSheet } from "../components/AccountSheet";
 import { UiText } from "../components/ui/Text";
 import { Glyph, type GlyphName } from "../components/icons/Glyph";
 import { AccountEmpty } from "../components/EmptyArt";
@@ -557,7 +557,7 @@ export default function OrderHistoryScreen() {
       </ScrollView>
 
       {sheet === "channel" ? (
-        <BottomSheet
+        <AccountSheet
           title="Pilih Channel"
           onClose={() => setSheet(null)}
           maxHeightRatio={0.7}
@@ -611,11 +611,11 @@ export default function OrderHistoryScreen() {
               );
             })}
           </ScrollView>
-        </BottomSheet>
+        </AccountSheet>
       ) : null}
 
       {sheet === "status" ? (
-        <BottomSheet
+        <AccountSheet
           title="Pilih Status"
           onClose={() => setSheet(null)}
           maxHeightRatio={0.7}
@@ -665,11 +665,11 @@ export default function OrderHistoryScreen() {
               />
             ))}
           </ScrollView>
-        </BottomSheet>
+        </AccountSheet>
       ) : null}
 
       {sheet === "outlet" ? (
-        <BottomSheet
+        <AccountSheet
           title="Pilih Outlet"
           onClose={() => setSheet(null)}
           maxHeightRatio={0.82}
@@ -800,7 +800,7 @@ export default function OrderHistoryScreen() {
               />
             ))}
           </ScrollView>
-        </BottomSheet>
+        </AccountSheet>
       ) : null}
     </View>
   );

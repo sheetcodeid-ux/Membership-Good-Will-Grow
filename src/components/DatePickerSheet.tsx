@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { BottomSheet } from "./ui/BottomSheet";
+import { AccountSheet } from "./AccountSheet";
 import { UiText } from "./ui/Text";
 import { PressableScale } from "./ui/PressableScale";
 import { LABEL_INK, QUIET_INK } from "./AccountMenu";
@@ -103,8 +103,39 @@ export function DatePickerSheet({
   const days = Array.from({ length: maxDay }, (_, i) => String(i + 1));
 
   return (
-    <BottomSheet title="Tanggal lahir" onClose={onClose} maxHeightRatio={0.72}>
-      <View style={{ paddingHorizontal: 16, paddingTop: 6 }}>
+    <AccountSheet
+      title="Tanggal lahir"
+      onClose={onClose}
+      maxHeightRatio={0.72}
+      footer={
+        <PressableScale
+          scaleTo={0.98}
+          onPress={() => {
+            tapSuccess();
+            onPick(new Date(year, month, shownDay));
+          }}
+          style={{
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: brand[600],
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <UiText
+            color="#FFFFFF"
+            style={{
+              fontSize: 16,
+              lineHeight: 20,
+              fontFamily: fontFamilies.bold,
+            }}
+          >
+            Pilih {shownDay} {MONTHS[month]} {year}
+          </UiText>
+        </PressableScale>
+      }
+    >
+      <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: 12 }}>
         <View style={{ flexDirection: "row", paddingBottom: 6 }}>
           {[
             ["Tanggal", 0.8],
@@ -145,34 +176,7 @@ export function DatePickerSheet({
             onSelect={(i) => setYear(years[i])}
           />
         </View>
-        <PressableScale
-          scaleTo={0.98}
-          onPress={() => {
-            tapSuccess();
-            onPick(new Date(year, month, shownDay));
-          }}
-          style={{
-            marginTop: 14,
-            marginBottom: 12,
-            height: 48,
-            borderRadius: 24,
-            backgroundColor: brand[600],
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <UiText
-            color="#FFFFFF"
-            style={{
-              fontSize: 16,
-              lineHeight: 20,
-              fontFamily: fontFamilies.bold,
-            }}
-          >
-            Pilih {shownDay} {MONTHS[month]} {year}
-          </UiText>
-        </PressableScale>
       </View>
-    </BottomSheet>
+    </AccountSheet>
   );
 }

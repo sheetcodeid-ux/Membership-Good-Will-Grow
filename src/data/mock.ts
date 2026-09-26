@@ -453,12 +453,101 @@ export const menuItems: MenuItem[] = [
   },
 ];
 
+const oneDayClaim = [
+  "Tidak ada batasan tanggal atau waktu untuk klaim kupon.",
+  "Kupon berlaku 1 hari sejak diklaim.",
+];
+
 export const coupons: Coupon[] = [
-  { id: "cp-1", brandId: "ayam-busari", title: "Hot Hour Deals - Pontianak", daysLeft: 1, used: false },
-  { id: "cp-2", brandId: "cattu", title: "VIP Member Reward - Cattu Coffee", daysLeft: 1, used: false },
-  { id: "cp-3", brandId: "nordu", title: "Sale 40%", daysLeft: 3, used: false },
-  { id: "cp-4", brandId: "nordu", title: "Arenga Coffee Rp 19.000", daysLeft: 3, used: false },
-  { id: "cp-5", brandId: "lesung-pipi", title: "Gratis 1 Kue Lapis", daysLeft: 5, used: false },
+  {
+    id: "cp-1",
+    brandId: "ayam-busari",
+    title: "Hot Hour Deals - Pontianak",
+    daysLeft: 1,
+    used: false,
+    detail: {
+      benefits: ["Diskon Rp 9.500 per transaksi"],
+      claimTerms: oneDayClaim,
+      requirements: [
+        ["Nasi Ayam Geprek Chili Padi, varian apa pun, 1 item"],
+        ["Nasi Ayam Bakar Madu, varian apa pun, 1 item"],
+      ],
+      note: "Tidak berlaku kelipatan.",
+      outletIds: ["busari-veteran", "busari-pancasila"],
+    },
+  },
+  {
+    id: "cp-2",
+    brandId: "cattu",
+    title: "VIP Member Reward - Cattu Coffee",
+    daysLeft: 1,
+    used: false,
+    detail: {
+      benefits: ["Gratis 1 minuman ukuran reguler"],
+      claimTerms: oneDayClaim,
+      requirements: [["Transaksi minimal Rp 50.000 di Cattu Coffee"]],
+      note: "Khusus member tier VIP ke atas. Satu kupon untuk satu transaksi.",
+      outletIds: ["cattu-sepakat", "cattu-ks-tubun"],
+    },
+  },
+  {
+    id: "cp-3",
+    brandId: "nordu",
+    title: "Sale 40%",
+    daysLeft: 3,
+    used: false,
+    detail: {
+      benefits: ["Diskon 40% untuk satu minuman", "Maksimal potongan Rp 12.000"],
+      claimTerms: [
+        "Tidak ada batasan tanggal atau waktu untuk klaim kupon.",
+        "Kupon berlaku 3 hari sejak diklaim.",
+      ],
+      requirements: [
+        ["Coffee Creamy, varian apa pun, 1 item"],
+        ["Caffe Latte, varian apa pun, 1 item"],
+        ["Matcha Latte, varian apa pun, 1 item"],
+      ],
+      note: "Tidak berlaku kelipatan dan tidak dapat digabung promo lain.",
+      outletIds: ["nordu-megamall", "nordu-tanjungsari", "nordu-merdeka"],
+    },
+  },
+  {
+    id: "cp-4",
+    brandId: "nordu",
+    title: "Arenga Coffee Rp 19.000",
+    daysLeft: 3,
+    used: false,
+    detail: {
+      benefits: ["Harga spesial Arenga Coffee jadi Rp 19.000"],
+      claimTerms: [
+        "Tidak ada batasan tanggal atau waktu untuk klaim kupon.",
+        "Kupon berlaku 3 hari sejak diklaim.",
+      ],
+      requirements: [["Arenga Coffee, varian apa pun, 1 item"]],
+      note: "Berlaku untuk 1 cup per transaksi.",
+      outletIds: ["nordu-megamall", "nordu-tanjungsari", "nordu-merdeka"],
+    },
+  },
+  {
+    id: "cp-5",
+    brandId: "lesung-pipi",
+    title: "Gratis 1 Kue Lapis",
+    daysLeft: 5,
+    used: false,
+    detail: {
+      benefits: ["Gratis 1 potong Kue Lapis Legit"],
+      claimTerms: [
+        "Tidak ada batasan tanggal atau waktu untuk klaim kupon.",
+        "Kupon berlaku 5 hari sejak diklaim.",
+      ],
+      requirements: [
+        ["Dimsum Ayam Kukus, varian apa pun, 1 item"],
+        ["Dimsum Udang, varian apa pun, 1 item"],
+      ],
+      note: "Selama persediaan masih ada.",
+      outletIds: ["lesung-gajahmada", "lesung-hijas"],
+    },
+  },
 ];
 
 export const promos: Promo[] = [
