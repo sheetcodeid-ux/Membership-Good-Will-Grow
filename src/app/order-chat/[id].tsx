@@ -38,6 +38,18 @@ const QUICK = [
  */
 function replyTo(text: string, readyAt: number | undefined) {
   const t = text.toLowerCase();
+  if (t.includes("dana") || t.includes("dibatalkan")) {
+    return "Dana pesanan yang dibatalkan kembali ke metode bayarmu dalam 1x24 jam, Kak. Poin yang terpakai sudah kami kembalikan.";
+  }
+  if (t.includes("bayar")) {
+    return "Siap, Kak. Kami cek status pembayaranmu sekarang, mohon tunggu sebentar, ya.";
+  }
+  if (t.includes("kurang") || t.includes("salah")) {
+    return "Mohon maaf, Kak. Sebutkan itemnya, nanti kami lengkapi atau ganti di kasir.";
+  }
+  if (t.includes("catatan")) {
+    return "Boleh, Kak. Tulis catatannya, langsung kami teruskan ke barista dan koki.";
+  }
   if (t.includes("siap") || t.includes("lama") || t.includes("kapan")) {
     return readyAt
       ? `Pesananmu sedang kami siapkan, Kak. Perkiraan siap pukul ${clock(readyAt)}.`
@@ -128,12 +140,13 @@ function Bubble({ m, brandId }: { m: ChatMessage; brandId: string }) {
  * outlet greets first and answers each message.
  */
 export default function OrderChatScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, draft } = useLocalSearchParams<{ id: string; draft?: string }>();
   const order = useOrderRecord(id);
   const insets = useSafeAreaInsets();
   const messages = useChatStore((s) => (id ? s.threads[id] : undefined)) ?? [];
   const send = useChatStore((s) => s.send);
-  const [text, setText] = useState("");
+  // A topic picked on Status Pesanan arrives written out, ready to send.
+  const [text, setText] = useState(draft ?? "");
   const [typing, setTyping] = useState(false);
   const list = useRef<ScrollView>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -353,6 +366,7 @@ export default function OrderChatScreen() {
             placeholder="Tulis pesan ke outlet"
             placeholderTextColor="#8A93A6"
             multiline
+            autoFocus={!!draft}
             maxLength={300}
             style={[
               {

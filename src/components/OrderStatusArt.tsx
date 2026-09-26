@@ -323,18 +323,46 @@ export function HelpArt({ size = 110 }: { size?: number }) {
           <Stop offset="0" stopColor={brand[900]} stopOpacity={0.28} />
           <Stop offset="1" stopColor={brand[900]} stopOpacity={0} />
         </RadialGradient>
+        <RadialGradient id="haGlow" cx="0.5" cy="0.5" r="0.5">
+          <Stop offset="0" stopColor={brand[100]} stopOpacity={0.95} />
+          <Stop offset="0.6" stopColor={brand[50]} stopOpacity={0.6} />
+          <Stop offset="1" stopColor={brand[50]} stopOpacity={0} />
+        </RadialGradient>
+        <RadialGradient id="haOrb" cx="0.35" cy="0.3" r="0.75">
+          <Stop offset="0" stopColor="#DCE6FF" />
+          <Stop offset="0.5" stopColor={brand[400]} />
+          <Stop offset="1" stopColor={brand[700]} />
+        </RadialGradient>
+        <RadialGradient id="haGold" cx="0.35" cy="0.3" r="0.75">
+          <Stop offset="0" stopColor="#FFF1A6" />
+          <Stop offset="1" stopColor="#E39A00" />
+        </RadialGradient>
+        <RadialGradient id="haMint" cx="0.35" cy="0.3" r="0.75">
+          <Stop offset="0" stopColor="#B9F3CF" />
+          <Stop offset="0.55" stopColor="#2FBF6B" />
+          <Stop offset="1" stopColor="#168A49" />
+        </RadialGradient>
+        <LinearGradient id="haBubble" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFFFFF" />
+          <Stop offset="1" stopColor="#E8EFFF" />
+        </LinearGradient>
         <ClipPath id="haClip">
           <Rect x={29} y={22} width={40} height={72} rx={8} />
         </ClipPath>
       </Defs>
 
-      {/* dot grid behind */}
-      <G fill="#C9D7F7">
-        {[0, 1, 2, 3, 4].map((r) =>
-          [0, 1, 2].map((c) => (
-            <Circle key={`${r}${c}`} cx={84 + c * 9} cy={14 + r * 9} r={2.4} />
-          )),
-        )}
+      {/* a soft glow and the far half of an orbit, behind the phone */}
+      <Circle cx={54} cy={58} r={50} fill="url(#haGlow)" />
+      <G transform="rotate(-14 52 74)">
+        <Path
+          d="M8 74 A44 13 0 0 1 96 74"
+          fill="none"
+          stroke={brand[300]}
+          strokeOpacity={0.7}
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+        <Circle cx={20} cy={65.5} r={4.2} fill="url(#haGold)" />
       </G>
 
       {/* soft shadow on the floor */}
@@ -470,6 +498,116 @@ export function HelpArt({ size = 110 }: { size?: number }) {
           transform="rotate(-35 43.5 48.5)"
         />
       </G>
+
+      {/* the near half of the orbit, passing in front of the phone */}
+      <G transform="rotate(-14 52 74)">
+        <Path
+          d="M96 74 A44 13 0 0 1 8 74"
+          fill="none"
+          stroke={brand[300]}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+        />
+        <Ellipse
+          cx={88.5}
+          cy={82.5}
+          rx={5}
+          ry={2}
+          fill={brand[900]}
+          opacity={0.12}
+        />
+        <Circle cx={87} cy={79.5} r={5.6} fill="url(#haOrb)" />
+        <Circle cx={85.3} cy={77.6} r={1.6} fill="#FFFFFF" opacity={0.8} />
+      </G>
+
+      {/* a chat bubble floating up at the top right */}
+      <G transform="rotate(8 88 22)">
+        <Path
+          d="M78 29 Q77 36 71.5 38.5 Q79 39 84 32 Z"
+          fill={brand[200]}
+          stroke={brand[200]}
+          strokeWidth={2}
+          strokeLinejoin="round"
+          transform="translate(1.6 1.8)"
+        />
+        <Rect
+          x={72.6}
+          y={9.8}
+          width={34}
+          height={23}
+          rx={9}
+          fill={brand[200]}
+        />
+        <Path
+          d="M78 29 Q77 36 71.5 38.5 Q79 39 84 32 Z"
+          fill="#EDF2FF"
+          stroke="#EDF2FF"
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
+        <Rect
+          x={71}
+          y={8}
+          width={34}
+          height={23}
+          rx={9}
+          fill="url(#haBubble)"
+        />
+        <Rect
+          x={71.6}
+          y={8.6}
+          width={32.8}
+          height={21.8}
+          rx={8.4}
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth={1.2}
+        />
+        <Rect
+          x={77}
+          y={14.5}
+          width={22}
+          height={3.6}
+          rx={1.8}
+          fill={brand[400]}
+        />
+        <Rect
+          x={77}
+          y={21}
+          width={14}
+          height={3.6}
+          rx={1.8}
+          fill={brand[200]}
+        />
+      </G>
+
+      {/* sorted: a small green check coin at the bottom left */}
+      <Ellipse
+        cx={17.5}
+        cy={99}
+        rx={7}
+        ry={2}
+        fill={brand[900]}
+        opacity={0.12}
+      />
+      <Circle cx={17} cy={88} r={8.5} fill="url(#haMint)" />
+      <Path
+        d="M13.4 88.2 L16 90.8 L20.8 85.6"
+        fill="none"
+        stroke="#FFFFFF"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Ellipse
+        cx={14.2}
+        cy={84.2}
+        rx={2.6}
+        ry={1.4}
+        fill="#FFFFFF"
+        opacity={0.55}
+        transform="rotate(-35 14.2 84.2)"
+      />
     </Svg>
   );
 }

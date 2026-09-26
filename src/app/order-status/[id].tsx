@@ -12,13 +12,13 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Glyph, type GlyphName } from "../../components/icons/Glyph";
 import { BrandLogo } from "../../components/BrandLogo";
 import { AccountEmpty } from "../../components/EmptyArt";
-import { HelpArt, OrderStatusArt } from "../../components/OrderStatusArt";
+import { OrderStatusArt } from "../../components/OrderStatusArt";
+import { OrderHelpCard } from "../../components/OrderHelpCard";
 import { LABEL_INK, QUIET_INK, RULE } from "../../components/AccountMenu";
 import {
   Block,
   CutleryIcon,
   EDGE,
-  OutlinePill,
   SumRow,
 } from "../../components/checkout/parts";
 import { SERVICE_META } from "../../components/checkout/CheckoutSheets";
@@ -998,40 +998,12 @@ export default function OrderStatusScreen() {
           </Block>
 
           {/* help */}
-          <View
-            style={{
-              borderRadius: 18,
-              borderWidth: 1,
-              borderColor: RULE,
-              backgroundColor: "#F8F9FC",
-              padding: 16,
-              paddingRight: 118,
-              minHeight: 132,
-              overflow: "hidden",
-            }}
-          >
-            <SectionTitle>Butuh bantuan?</SectionTitle>
-            <UiText
-              color={QUIET_INK}
-              style={{
-                marginTop: 4,
-                fontSize: 13.5,
-                lineHeight: 19,
-                fontFamily: fontFamilies.medium,
-              }}
-            >
-              Apa pun kendalanya, kami siap bantu.
-            </UiText>
-            <View style={{ marginTop: 12, alignSelf: "flex-start" }}>
-              <OutlinePill
-                label="Ke Pusat Bantuan"
-                onPress={() => router.push("/faq")}
-              />
-            </View>
-            <View style={{ position: "absolute", right: 4, bottom: 4 }}>
-              <HelpArt size={116} />
-            </View>
-          </View>
+          <OrderHelpCard
+            orderId={order.id}
+            orderCode={order.orderCode}
+            stage={stage}
+            cancelled={cancelled}
+          />
 
           <PressableScale
             onPress={() => router.push("/order-history")}
