@@ -42,6 +42,8 @@ interface LiquidGlassProps {
    * over arbitrary content.
    */
   opacity?: number;
+  /** Blur strength for the fallback glass, 1..100. */
+  intensity?: number;
   /** Lets the surface flex under a press on iOS 26. */
   interactive?: boolean;
   /**
@@ -153,6 +155,7 @@ export function LiquidGlass({
   tint = "rgba(155,185,255,0.12)",
   opacity = 1,
   interactive = false,
+  intensity = 90,
   blurTarget,
   rim = radius > 0,
   style,
@@ -189,7 +192,7 @@ export function LiquidGlass({
           only there to keep contrast, and past about a third it stops being a
           window and turns into frosted plastic. */}
       <BlurView
-        intensity={90}
+        intensity={intensity}
         tint="light"
         // Android blurs nothing unless asked: blurMethod defaults to "none",
         // so BlurView is only a translucent tint there. With the wash this

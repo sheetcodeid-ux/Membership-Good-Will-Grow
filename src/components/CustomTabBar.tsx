@@ -1,8 +1,7 @@
-import React, { useEffect, useState, type RefObject } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   interpolateColor,
@@ -224,66 +223,6 @@ function Droplet({ index, tabW }: { index: number; tabW: number }) {
   );
 }
 
-/** Page colour the band below fades into. */
-const FADE_INK = "243,244,249";
-
-/**
- * A band along the bottom of the screen, behind the bar, where the page
- * softens as it scrolls under: two layers of blur, lighter at the top,
- * and a fade into the page colour, so nothing reads in sharp focus
- * behind or below the floating bar.
- */
-function BottomFade({
-  height,
-  blurTarget,
-}: {
-  height: number;
-  blurTarget?: RefObject<View | null>;
-}) {
-  return (
-    <View
-      pointerEvents="none"
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height,
-      }}
-    >
-      <BlurView
-        intensity={18}
-        tint="light"
-        blurMethod="dimezisBlurView"
-        blurTarget={blurTarget}
-        style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: 0 }}
-      />
-      <BlurView
-        intensity={40}
-        tint="light"
-        blurMethod="dimezisBlurView"
-        blurTarget={blurTarget}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          top: height * 0.4,
-        }}
-      />
-      <LinearGradient
-        colors={[
-          `rgba(${FADE_INK},0)`,
-          `rgba(${FADE_INK},0.55)`,
-          `rgba(${FADE_INK},0.92)`,
-        ]}
-        locations={[0, 0.45, 1]}
-        style={StyleSheet.absoluteFill}
-      />
-    </View>
-  );
-}
-
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const r = useResponsive();
@@ -317,10 +256,6 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <>
-      <BottomFade
-        height={TAB_BAR_HEIGHT + insets.bottom + space.md + 30}
-        blurTarget={blurTarget}
-      />
       <LiquidGlassGroup
         spacing={18}
         pointerEvents="box-none"
@@ -346,6 +281,8 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           radius={TAB_BAR_HEIGHT / 2}
           interactive
           blurTarget={blurTarget}
+          intensity={100}
+          opacity={1.3}
           style={{
             flex: 1,
             height: TAB_BAR_HEIGHT,
